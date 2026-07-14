@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/schemas/common/source-link.schema.json",
+  "title": "EOS SourceLink",
+  "description": "Links a concrete claim or field to an authoritative SourceReference.",
+  "type": "object",
+  "required": [
+    "sourceReferenceId",
+    "sourceClass",
+    "usageType",
+    "verificationStatus"
+  ],
+  "properties": {
+    "sourceReferenceId": { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/SRC" },
+    "sourceClass": {
+      "type": "string",
+      "enum": ["N", "L", "P", "V"]
+    },
+    "supportedClaim": { "type": "string", "minLength": 1 },
+    "supportedField": { "type": "string", "minLength": 1 },
+    "usageType": {
+      "type": "string",
+      "enum": [
+        "citation",
+        "interpretation",
+        "recommendation",
+        "productionExperience",
+        "verification",
+        "limitation"
+      ]
+    },
+    "sourceLocation": { "type": "string", "minLength": 1 },
+    "interpretationNote": { "type": "string", "minLength": 1 },
+    "verificationStatus": { "$ref": "https://eos.local/schemas/common/lifecycle-status.schema.json#/$defs/VerificationStatus" }
+  },
+  "anyOf": [
+    { "required": ["supportedClaim"] },
+    { "required": ["supportedField"] }
+  ],
+  "additionalProperties": false
+}
+

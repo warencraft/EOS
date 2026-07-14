@@ -1,0 +1,21 @@
+{
+  "id": "SRC-000001",
+  "schemaVersion": "0.2.0",
+  "recordVersion": "0.1.0",
+  "revision": 0,
+  "status": "Draft",
+  "createdAt": "2026-07-13T10:00:00Z",
+  "createdBy": "Codex",
+  "updatedAt": "2026-07-13T10:00:00Z",
+  "updatedBy": "Codex",
+  "sourceLinks": [],
+  "changeSummary": "Initial fictional test source.",
+  "sourceClass": "P",
+  "referenceType": "internalRecord",
+  "title": "Fictional internal note for schema testing",
+  "citation": "Fictional internal note, test fixture only.",
+  "publicationDate": "2026-07-13",
+  "organization": "EOS Test Organization",
+  "copyrightNote": "Fictional fixture. No real technical content."
+}
+

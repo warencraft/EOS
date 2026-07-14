@@ -1,0 +1,29 @@
+{
+  "id": "NRM-0001",
+  "schemaVersion": "0.2.0",
+  "recordVersion": "0.1.0",
+  "revision": 0,
+  "status": "Draft",
+  "createdAt": "2026-07-13T10:00:00Z",
+  "createdBy": "Codex",
+  "updatedAt": "2026-07-13T10:00:00Z",
+  "updatedBy": "Codex",
+  "sourceLinks": [
+    {
+      "sourceReferenceId": "SRC-000001",
+      "sourceClass": "N",
+      "supportedField": "officialDesignation",
+      "usageType": "citation",
+      "verificationStatus": "Draft"
+    }
+  ],
+  "changeSummary": "Initial fictional normative reference.",
+  "officialDesignation": "FICTIONAL-NORM-0001",
+  "title": "Fictional normative reference for schema testing",
+  "editionOrYear": "2026",
+  "issuingOrganization": "Fictional Standards Body",
+  "validityStatus": "Unknown",
+  "scopeInEos": "Test fixture for validation only.",
+  "fullTextStored": false
+}
+

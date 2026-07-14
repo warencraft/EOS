@@ -1,0 +1,25 @@
+{
+  "id": "EOS-006",
+  "schemaVersion": "0.2.0",
+  "recordVersion": "0.1.0",
+  "revision": 0,
+  "status": "Draft",
+  "createdAt": "2026-07-13T10:00:00Z",
+  "createdBy": "Codex",
+  "updatedAt": "2026-07-13T10:00:00Z",
+  "updatedBy": "Codex",
+  "sourceLinks": [],
+  "changeSummary": "Initial fictional document record.",
+  "title": "Fictional Governance Document",
+  "filePath": "docs/governance/EOS-006_Data_Validation_Standard.md",
+  "documentType": "governance",
+  "documentVersion": "0.1",
+  "documentRevision": 0,
+  "documentStatus": "Draft",
+  "author": "Codex",
+  "lastUpdate": "2026-07-13",
+  "documentBasis": "Internal governance decision",
+  "relatedDocumentIds": ["EOS-000"],
+  "relatedAdrIds": ["ADR-0009"]
+}
+

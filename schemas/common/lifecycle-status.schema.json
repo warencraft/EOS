@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/schemas/common/lifecycle-status.schema.json",
+  "title": "EOS Lifecycle Status",
+  "type": "object",
+  "$defs": {
+    "RecordStatus": {
+      "type": "string",
+      "enum": ["Draft", "Review", "Approved", "Deprecated", "Archived"]
+    },
+    "VerificationStatus": {
+      "type": "string",
+      "enum": ["Draft", "Reviewed", "Approved", "Disputed"]
+    },
+    "DocumentStatus": {
+      "type": "string",
+      "enum": ["Draft", "Review", "Approved", "Deprecated", "Archived"]
+    }
+  },
+  "additionalProperties": false
+}
+

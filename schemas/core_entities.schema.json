@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/schemas/core_entities.schema.json",
+  "title": "EOS Core Entity Contracts Compatibility Entry",
+  "description": "Compatibility entry for Phase 0.2A. The authoritative modular schema index is schemas/index.schema.json.",
+  "$ref": "https://eos.local/schemas/index.schema.json"
+}
+

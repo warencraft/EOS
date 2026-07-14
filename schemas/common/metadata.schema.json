@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/schemas/common/metadata.schema.json",
+  "title": "EOS Common Metadata",
+  "type": "object",
+  "required": [
+    "id",
+    "schemaVersion",
+    "recordVersion",
+    "revision",
+    "status",
+    "createdAt",
+    "createdBy",
+    "updatedAt",
+    "updatedBy",
+    "sourceLinks",
+    "changeSummary"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "schemaVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "recordVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "revision": { "type": "integer", "minimum": 0 },
+    "status": { "$ref": "https://eos.local/schemas/common/lifecycle-status.schema.json#/$defs/RecordStatus" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "createdBy": { "type": "string", "minLength": 1 },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "updatedBy": { "type": "string", "minLength": 1 },
+    "sourceLinks": {
+      "type": "array",
+      "items": { "$ref": "https://eos.local/schemas/common/source-link.schema.json" }
+    },
+    "changeSummary": { "type": "string", "minLength": 1 },
+    "replaces": { "type": "string", "minLength": 1 },
+    "replacedBy": { "type": "string", "minLength": 1 },
+    "notes": { "type": "string" }
+  },
+  "additionalProperties": false
+}
+

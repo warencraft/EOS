@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/schemas/source-reference.schema.json",
+  "title": "EOS SourceReference",
+  "type": "object",
+  "required": [
+    "id",
+    "schemaVersion",
+    "recordVersion",
+    "revision",
+    "status",
+    "createdAt",
+    "createdBy",
+    "updatedAt",
+    "updatedBy",
+    "sourceLinks",
+    "changeSummary",
+    "sourceClass",
+    "referenceType",
+    "title",
+    "citation",
+    "copyrightNote"
+  ],
+  "properties": {
+    "id": { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/SRC" },
+    "schemaVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "recordVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "revision": { "type": "integer", "minimum": 0 },
+    "status": { "$ref": "https://eos.local/schemas/common/lifecycle-status.schema.json#/$defs/RecordStatus" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "createdBy": { "type": "string", "minLength": 1 },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "updatedBy": { "type": "string", "minLength": 1 },
+    "sourceLinks": {
+      "type": "array",
+      "items": { "$ref": "https://eos.local/schemas/common/source-link.schema.json" }
+    },
+    "changeSummary": { "type": "string", "minLength": 1 },
+    "replaces": { "type": "string", "minLength": 1 },
+    "replacedBy": { "type": "string", "minLength": 1 },
+    "notes": { "type": "string" },
+    "sourceClass": {
+      "type": "string",
+      "enum": ["N", "L", "P", "V"]
+    },
+    "referenceType": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "book",
+        "manufacturerDocumentation",
+        "technicalArticle",
+        "drawing",
+        "internalRecord",
+        "jobEvidence",
+        "supplierDocument",
+        "website",
+        "other"
+      ]
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "citation": { "type": "string", "minLength": 1 },
+    "edition": { "type": "string", "minLength": 1 },
+    "sourceVersion": { "type": "string", "minLength": 1 },
+    "publicationDate": { "type": "string", "format": "date" },
+    "accessDate": { "type": "string", "format": "date" },
+    "author": { "type": "string", "minLength": 1 },
+    "organization": { "type": "string", "minLength": 1 },
+    "uri": { "type": "string", "format": "uri" },
+    "copyrightNote": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": false
+}
+

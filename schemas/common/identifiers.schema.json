@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/schemas/common/identifiers.schema.json",
+  "title": "EOS Identifier Patterns",
+  "type": "object",
+  "$defs": {
+    "EOS": { "type": "string", "pattern": "^EOS-[0-9]{3}$" },
+    "MET": { "type": "string", "pattern": "^MET-[0-9]{3}$" },
+    "STD": { "type": "string", "pattern": "^STD-[0-9]{3}$" },
+    "NRM": { "type": "string", "pattern": "^NRM-[0-9]{4}$" },
+    "SRC": { "type": "string", "pattern": "^SRC-[0-9]{6}$" },
+    "MAT": { "type": "string", "pattern": "^MAT-[0-9]{4}$" },
+    "POL": { "type": "string", "pattern": "^POL-[0-9]{4}$" },
+    "TEC": { "type": "string", "pattern": "^TEC-[0-9]{4}$" },
+    "MAC": { "type": "string", "pattern": "^MAC-[0-9]{4}$" },
+    "TOOL": { "type": "string", "pattern": "^TOOL-[0-9]{4}$" },
+    "SUP": { "type": "string", "pattern": "^SUP-[0-9]{4}$" },
+    "JOB": { "type": "string", "pattern": "^JOB-[0-9]{4}-[0-9]{4}$" },
+    "JOB_OPERATION": { "type": "string", "pattern": "^JOB-[0-9]{4}-[0-9]{4}-OP-[0-9]{3}$" },
+    "JOB_TIME_RECORD": { "type": "string", "pattern": "^JOB-[0-9]{4}-[0-9]{4}-OP-[0-9]{3}-TM-[0-9]{3}$" },
+    "JOB_RISK": { "type": "string", "pattern": "^JOB-[0-9]{4}-[0-9]{4}-RSK-[0-9]{3}$" },
+    "JOB_QUOTATION_NOTE": { "type": "string", "pattern": "^JOB-[0-9]{4}-[0-9]{4}-QN-[0-9]{3}$" },
+    "CAL": { "type": "string", "pattern": "^CAL-[0-9]{4}$" },
+    "FRM": { "type": "string", "pattern": "^FRM-[0-9]{4}$" },
+    "ADR": { "type": "string", "pattern": "^ADR-[0-9]{4}$" },
+    "DOCUMENT_ID": {
+      "type": "string",
+      "pattern": "^(EOS-[0-9]{3}|MET-[0-9]{3}|STD-[0-9]{3}|CAL-[0-9]{4}|FRM-[0-9]{4}|ADR-[0-9]{4})$"
+    }
+  },
+  "additionalProperties": false
+}
