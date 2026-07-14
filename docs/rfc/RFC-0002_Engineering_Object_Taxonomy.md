@@ -3,8 +3,8 @@
 **Project:** EOS - Engineering Operating System  
 **RFC ID:** RFC-0002  
 **Version:** 0.1  
-**Revision:** 0  
-**Status:** Draft  
+**Revision:** 1  
+**Status:** Review  
 **Author:** Chief Engineering Knowledge Architect + Codex  
 **Last update:** 2026-07-14  
 **Document basis:** Internal architecture proposal  
@@ -37,6 +37,29 @@ Návrh rešpektuje tieto existujúce rozhodnutia:
 - job-owned entity používajú hierarchické ID,
 - JSON schémy majú byť Draft 2020-12 a uzavreté podľa `additionalProperties: false`,
 - výpočtový kód nesmie byť autoritatívnym zdrojom inžinierskych znalostí.
+
+### 2.1 Engineering Knowledge Layer
+
+Tento RFC navrhuje zaviesť architektonickú vrstvu **Engineering Knowledge Layer** medzi governance pravidlá a konkrétne znalostné entity.
+
+Odporúčané vrstvy EOS:
+
+1. Governance Layer: manifest, identifikácia, lifecycle, ADR, RFC, dokumentačné pravidlá.
+2. Engineering Knowledge Layer: taxonómia objektov, vlastnosti, jednotky, podmienky, pozorovania, rozhodnutia, porovnateľnosť, evidence pravidlá a odvodené výsledky.
+3. Knowledge Entity Layer: `Material`, `StockMaterial`, `Machine`, `ManufacturingProcess`, `Supplier`, `Job` a ďalšie doménové entity.
+4. Application and Engine Layer: validácia, quotation engine, manufacturing engine, AI layer, exporty a automatizácia.
+
+Účel Engineering Knowledge Layer je zabrániť tomu, aby sa všeobecné znalostné pravidlá opakovane a nekonzistentne implementovali priamo v jednotlivých entitách.
+
+### 2.2 Odporúčané fázovanie po tomto RFC
+
+Pred implementáciou plných knowledge entities sa odporúča rozdeliť nasledujúcu prácu takto:
+
+1. `0.2B.1 Knowledge Core Contracts` - základné value objects, observation/evidence pravidlá, decision model, snapshot a derived result kontrakty.
+2. `0.2B.2 Knowledge Catalogs` - Property Catalog, Unit Catalog, Condition Type Catalog a prípadne Classification Catalog.
+3. `0.2C Knowledge Entities` - `Material`, `StockMaterial`, `Machine`, `ManufacturingProcess`, `Supplier`, `Job` a ďalšie entity.
+
+Toto fázovanie znižuje riziko, že entitné schémy vzniknú skôr než spoločné znalostné primitíva.
 
 ## 3. Základné kategórie objektov
 
@@ -268,6 +291,8 @@ Nepatrí sem:
 - dočasný odvodený výpočet,
 - objekt vlastnený iným agregátom.
 
+Pravidlo: Aggregate Root nikdy nevlastní iný Aggregate Root. Môže ho iba referencovať stabilným ID. Ak objekt potrebuje vlastné ID, vlastný lifecycle a vlastnú auditnú históriu, nemá byť vnorený ako vlastnený objekt iného agregátu.
+
 ### 3.9 Catalog Entry
 
 Definícia: autoritatívna položka riadeného slovníka alebo katalógu.
@@ -346,6 +371,37 @@ Nepatrí sem:
 - zdrojová znalosť,
 - autoritatívna materiálová vlastnosť,
 - reálne meranie.
+
+### 3.12 Decision
+
+Definícia: auditovateľný záznam, že engineer alebo schválený proces prijal, odmietol alebo podmienene prijal tvrdenie, pozorovanie, odvodený výsledok alebo odporúčanie.
+
+Vlastnosti:
+
+- vlastné stabilné ID: odporúčané v budúcej fáze,
+- vlastný lifecycle: áno,
+- samostatná existencia: áno, ak ovplyvňuje znalostný alebo obchodný výsledok,
+- citovateľnosť: áno,
+- versioned/revised: áno,
+- auditovateľnosť: áno,
+- `sourceLinks`: áno, ak rozhodnutie vychádza zo zdrojovaných tvrdení.
+
+Typické vstupy:
+
+- `Observation`,
+- `Derived Result`,
+- `Snapshot`,
+- engineer approval,
+- `SourceReference`,
+- súvisiace entity alebo katalógové položky.
+
+Nepatrí sem:
+
+- samotné meranie,
+- automatický výpočet bez schválenia,
+- autoritatívna vlastnosť bez rozhodovacieho kroku.
+
+`Decision` je dôležitý najmä pre budúci Quotation Engine, Manufacturing Engine a AI layer, pretože oddeľuje návrh alebo dôkaz od prijatého inžinierskeho rozhodnutia.
 
 ## 4. Entity
 
@@ -633,7 +689,7 @@ Archivácia, nahradenie, supersede: áno.
 
 Identity boundary: jedno konkrétne pozorovanie, meranie, skúška alebo udalosť s dôkazovým významom.
 
-Lifecycle owner: `Observation` sám, alebo `Job`, ak bude v budúcnosti zvolený job-owned variant.
+Lifecycle owner: `Observation` sám. Kontext vzniku sa nemá riešiť rozdelením na dva typy pozorovania, ale poľom `observationScope`.
 
 Aggregate root: odporúčanie je áno, ak má `OBS-xxxxxx` globálne ID a môže podporovať viac tvrdení.
 
@@ -643,11 +699,13 @@ Môže vlastniť:
 - podmienky,
 - metódu,
 - zdrojové väzby,
-- stav overenia.
+- stav overenia,
+- snapshot vstupov alebo kontextu, ak je potrebný pre audit.
 
 Iba referencuje:
 
 - `Job`,
+- `Project` alebo `Experiment`, ak budú zavedené v budúcnosti,
 - `PropertyRecord` cez `propertyId`,
 - `SourceReference`,
 - meraný alebo pozorovaný objekt.
@@ -661,6 +719,15 @@ Používané value objects:
 - `Classification`.
 
 Archivácia, nahradenie, supersede: áno, ale odporúčané správanie je append-only s korekciou alebo novým pozorovaním.
+
+Odporúčané hodnoty `observationScope`:
+
+- `global` - pozorovanie má všeobecný dôkazový význam mimo jednej zákazky,
+- `job` - pozorovanie vzniklo v konkrétnej zákazke a primárne slúži jej auditu,
+- `project` - pozorovanie vzniklo v širšom internom projekte alebo programe,
+- `experiment` - pozorovanie vzniklo v skúške, experimente alebo overovacej aktivite.
+
+Tento model je preferovaný pred dvoma samostatnými typmi `Observation`, pretože zachováva jednotný evidence model a zároveň umožňuje rozlíšiť kontext vzniku.
 
 ### 4.11 `DocumentRecord`
 
@@ -742,7 +809,7 @@ Poznámka: názov `MeasurementQuality` je pre taxonómiu preferovaný pred `Valu
 
 ### 5.4 `PropertyRecord`
 
-Kategória: value object.
+Kategória: embedded claim-like value object.
 
 Vlastné ID: nie; používa `propertyId` ako odkaz na budúci Property Catalog, nie ako identitu konkrétneho vnoreného záznamu.
 
@@ -755,6 +822,8 @@ Znovupoužitie medzi entitami: áno ako štruktúra; konkrétna inštancia patr�
 Samostatná citácia: áno cez rodiča a konkrétny `SourceLink`.
 
 Immutability: odporúčané immutable v rámci schválenej revízie rodiča.
+
+Poznámka: `PropertyRecord` nie je obyčajná hodnota. Nesie tvrdenie o vlastnosti, zdroje a stav overenia. Preto má byť v dokumentácii aj validácii chápaný ako vnorený claim-like objekt, nie ako samostatná entita.
 
 ### 5.5 `Condition`
 
@@ -822,7 +891,7 @@ Immutability: odporúčané immutable po schválení.
 
 ### 5.9 `AvailabilityRecord`
 
-Kategória: value object v 0.2B, potenciálne event-like alebo samostatná entita v budúcnosti.
+Kategória: embedded observation record v 0.2B, potenciálne samostatná event-like entita v budúcnosti.
 
 Vlastné ID: nie v 0.2B.
 
@@ -836,9 +905,11 @@ Samostatná citácia: áno cez `sourceLinks`.
 
 Immutability: odporúčané append-only v rámci historických záznamov dostupnosti.
 
+Poznámka: dostupnosť je časovo závislé pozorovanie. Nesmie sa správať ako trvalá vlastnosť materiálu, stroja alebo dodávateľa.
+
 ### 5.10 `CommercialObservation`
 
-Kategória: value object v 0.2B, potenciálne event-like objekt v budúcnosti.
+Kategória: embedded observation record v 0.2B, potenciálne samostatná event-like entita v budúcnosti.
 
 Vlastné ID: nie v 0.2B.
 
@@ -851,6 +922,8 @@ Znovupoužitie medzi entitami: áno ako štruktúra.
 Samostatná citácia: áno cez `sourceLinks`.
 
 Immutability: odporúčané append-only, ak ovplyvňuje rozhodnutie alebo audit.
+
+Poznámka: obchodné pozorovanie môže byť vstupom pre budúci `Decision`, ale samo nie je cena, cenová ponuka ani právny záväzok.
 
 ## 6. Observation
 
@@ -874,14 +947,47 @@ Pravidlá:
 - Jedna `Observation` nesmie automaticky meniť všeobecnú vlastnosť materiálu, stroja alebo procesu.
 - Povýšenie pozorovania na autoritatívny `PropertyRecord` musí byť vedomý schvaľovací krok.
 
-## 7. Events
+## 7. Decision
 
-### 7.1 Rozlíšenie pojmov
+`Decision` je samostatný budúci objekt Engineering Knowledge Layer.
+
+Účel: zachytiť rozhodnutie, že určitý dôkaz, výsledok alebo odporúčanie bol prijatý, odmietnutý alebo prijatý s podmienkou.
+
+Minimálne budúce polia:
+
+- `id`,
+- `decisionType`,
+- `decisionStatus`,
+- `decidedAt`,
+- `decidedBy`,
+- `inputObservationIds`,
+- `inputDerivedResultIds`,
+- `inputSnapshotIds`,
+- `relatedEntityIds`,
+- `decisionRationale`,
+- `conditions`,
+- `sourceLinks`,
+- `changeSummary`.
+
+Pravidlá:
+
+- `Decision` nie je `Observation`.
+- `Decision` nie je `Derived Result`.
+- `Decision` je schvaľovací alebo zamietací akt nad vstupmi.
+- AI návrh sa môže stať vstupom rozhodnutia, ale nie rozhodnutím samotným.
+- Engineer approval musí byť auditovateľný.
+- Rozhodnutie môže viesť k vytvoreniu alebo zmene autoritatívneho záznamu, ale táto zmena musí zostať samostatne verzovaná.
+
+`Decision` sa zatiaľ neimplementuje v tomto RFC, ale má byť súčasťou návrhu `0.2B.1 Knowledge Core Contracts`.
+
+## 8. Events
+
+### 8.1 Rozlíšenie pojmov
 
 | Objekt | Odporúčané zaradenie | Poznámka |
 | --- | --- | --- |
 | `Event` | generická kategória | Zatiaľ nie samostatná entita v 0.2B. |
-| `Observation` | entita + event-like evidence object | Má `OBS-xxxxxx`. |
+| `Observation` | entita + event-like evidence object | Má `OBS-xxxxxx` a `observationScope`. |
 | `JobOperation` | job-owned entity | Má `JOB-yyyy-xxxx-OP-xxx`. Nie je iba event. |
 | `TimeRecord` | job-owned entity | Má `JOB-yyyy-xxxx-OP-xxx-TM-xxx`. |
 | `InspectionResult` | budúca Observation subtype alebo entita | Patrí do budúcej fázy. |
@@ -889,8 +995,9 @@ Pravidlá:
 | `Purchase` | budúca obchodná alebo skladová udalosť | Nie je súčasť 0.2B. |
 | `HeatTreatment` | budúca výrobná udalosť alebo procesný záznam | Nie je súčasť 0.2B. |
 | `Nonconformance` | budúca kvalitatívna entita/event | Nie je súčasť 0.2B. |
+| `Decision` | schvaľovací event-like objekt | Patrí do `0.2B.1` ako návrh kontraktu. |
 
-### 7.2 Pravidlá
+### 8.2 Pravidlá
 
 Samostatné entity:
 
@@ -922,9 +1029,33 @@ Budúce fázy:
 - `Nonconformance`,
 - všeobecný `Event` model.
 
-## 8. Reference Objects a katalógy
+## 9. Reference Objects a katalógy
 
-### 8.1 Property Catalog
+### 9.0 Catalog hierarchy
+
+Katalógy majú mať spoločný metadátový základ, ale governance významovo sa odporúča rozlišovať dve skupiny:
+
+- Reference Catalog,
+- Knowledge Catalog.
+
+Reference Catalog obsahuje položky, ktoré reprezentujú externý, všeobecný alebo technicky referenčný význam. Typické príklady:
+
+- Unit Catalog,
+- Classification Catalog,
+- typy zdrojov,
+- externé referenčné systémy.
+
+Knowledge Catalog obsahuje položky, ktoré definujú interný EOS význam používaný pri rozhodovaní a znalostných tvrdeniach. Typické príklady:
+
+- Property Catalog,
+- Condition Type Catalog,
+- Process Type Catalog,
+- Risk Type Catalog,
+- Capability Type Catalog, ak vznikne.
+
+Spoločný model katalógovej položky môže zostať jednotný, ale pravidlá správy, schvaľovania a zmeny sa majú líšiť podľa toho, či ide o Reference Catalog alebo Knowledge Catalog.
+
+### 9.1 Property Catalog
 
 Typ: samostatný autoritatívny katalóg.
 
@@ -942,7 +1073,7 @@ Aliasy: povolené ako neautoritatívne lookup hodnoty.
 
 Fáza: navrhnúť pre 0.2B, implementovať až po schválení.
 
-### 8.2 Unit Catalog
+### 9.2 Unit Catalog
 
 Typ: samostatný autoritatívny katalóg.
 
@@ -960,7 +1091,7 @@ Aliasy: áno, ale neautoritatívne.
 
 Fáza: odporúčané riešiť skoro, ale samostatne od prvých entity schém.
 
-### 8.3 Condition Type Catalog
+### 9.3 Condition Type Catalog
 
 Typ: autoritatívny katalóg typov podmienok.
 
@@ -978,7 +1109,7 @@ Aliasy: áno, najmä pre migráciu voľných textov.
 
 Fáza: neskôr než základné value object schémy, ale pred masovým ukladaním dát.
 
-### 8.4 Classification Catalog
+### 9.4 Classification Catalog
 
 Typ: potenciálny autoritatívny katalóg.
 
@@ -996,7 +1127,7 @@ Aliasy: áno, ale viazané na konkrétny klasifikačný systém.
 
 Fáza: neskoršia fáza, v 0.2B stačí value object.
 
-### 8.5 Process Type Catalog
+### 9.5 Process Type Catalog
 
 Typ: budúci katalóg výrobných alebo kontrolných typov procesu.
 
@@ -1014,7 +1145,7 @@ Aliasy: áno.
 
 Fáza: neskôr, po základných `ManufacturingProcess` kontraktoch.
 
-### 8.6 Risk Type Catalog
+### 9.6 Risk Type Catalog
 
 Typ: budúci katalóg typov rizík.
 
@@ -1032,9 +1163,11 @@ Aliasy: áno.
 
 Fáza: neskôr, pri rozšírení job/risk modelu.
 
-## 9. Aggregate Boundaries
+## 10. Aggregate Boundaries
 
-### 9.1 Material aggregate
+Všeobecné pravidlo: Aggregate Root nikdy nevlastní iný Aggregate Root. Vzťah medzi aggregate roots musí byť modelovaný referenciou cez stabilné ID, nie vnorením celého objektu.
+
+### 10.1 Material aggregate
 
 Aggregate root: `Material`.
 
@@ -1068,7 +1201,7 @@ Nesmie sa vnárať priamo:
 - job history,
 - konkrétne skladové dostupnosti.
 
-### 9.2 StockMaterial aggregate
+### 10.2 StockMaterial aggregate
 
 Aggregate root: `StockMaterial`.
 
@@ -1100,7 +1233,7 @@ Nesmie sa vnárať priamo:
 - úplný `Material`,
 - historické nákupy ako trvalé vlastnosti.
 
-### 9.3 Machine aggregate
+### 10.3 Machine aggregate
 
 Aggregate root: `Machine`.
 
@@ -1130,7 +1263,7 @@ Nesmie sa vnárať priamo:
 - celé zákazky,
 - kompletné procesné katalógy.
 
-### 9.4 ManufacturingProcess aggregate
+### 10.4 ManufacturingProcess aggregate
 
 Aggregate root: `ManufacturingProcess`.
 
@@ -1160,7 +1293,7 @@ Nesmie sa vnárať priamo:
 - konkrétne zákazkové operácie,
 - konkrétne reálne výrobné časy.
 
-### 9.5 Job aggregate
+### 10.5 Job aggregate
 
 Aggregate root: `Job`.
 
@@ -1190,6 +1323,8 @@ Pravidlá integrity:
 - job-owned ID musia obsahovať ID zákazky,
 - historické záznamy sa nesmú prepísať bez auditu,
 - job observation nesmie automaticky meniť všeobecné znalostné entity.
+- Ak je `Observation` samostatný aggregate root s `OBS-xxxxxx`, `Job` ho iba referencuje.
+- Ak má byť pozorovanie úplne vlastnené zákazkou, musí byť job-owned entity alebo vnorený job-local observation record bez globálnej identity.
 
 Nesmie sa vnárať priamo:
 
@@ -1197,7 +1332,7 @@ Nesmie sa vnárať priamo:
 - úplný strojový záznam,
 - normové texty.
 
-### 9.6 Source/Reference aggregate
+### 10.6 Source/Reference aggregate
 
 Aggregate root: `SourceReference` alebo `NormReference`.
 
@@ -1223,7 +1358,7 @@ Nesmie sa vnárať priamo:
 - plné znenia noriem bez oprávnenia,
 - technické vlastnosti odvodené zo zdroja.
 
-### 9.7 Document aggregate
+### 10.7 Document aggregate
 
 Aggregate root: `DocumentRecord`.
 
@@ -1253,9 +1388,9 @@ Nesmie sa vnárať priamo:
 - technické hodnoty,
 - plné dátové entity.
 
-## 10. Relationships
+## 11. Relationships
 
-### 10.1 Odporúčané väzby
+### 11.1 Odporúčané väzby
 
 | Vzťah | Význam | Modelovanie v 0.2B | Budúci Relationship object |
 | --- | --- | --- | --- |
@@ -1272,7 +1407,7 @@ Nesmie sa vnárať priamo:
 | `producedBy` | vyrobené procesom alebo operáciou | ID pole | áno neskôr |
 | `suppliedBy` | dodané dodávateľom | ID pole | áno neskôr |
 
-### 10.2 Rozhodnutie
+### 11.2 Rozhodnutie
 
 Pre 0.2B sa majú väzby modelovať primárne cez explicitné ID polia a vnorené value objects.
 
@@ -1286,9 +1421,11 @@ Samostatný `Relationship` object sa zatiaľ neimplementuje. Môže vzniknúť n
 
 Grafová databáza nie je súčasťou tohto návrhu.
 
-## 11. Lifecycle rules
+Odporúčanie: `Relationship` má byť v budúcnosti first-class object, ale nie v 0.2B. Pre `0.2B.1` a `0.2B.2` stačia explicitné ID referencie. First-class `Relationship` má vzniknúť až vtedy, keď vzťahy začnú niesť vlastné zdroje, časovú platnosť, audit alebo graph export význam.
 
-### 11.1 Plný lifecycle
+## 12. Lifecycle rules
+
+### 12.1 Plný lifecycle
 
 Plný lifecycle `Draft`, `Review`, `Approved`, `Deprecated`, `Archived` používajú:
 
@@ -1300,7 +1437,7 @@ Plný lifecycle `Draft`, `Review`, `Approved`, `Deprecated`, `Archived` použív
 - budúce catalog entries,
 - samostatné `Observation`, ak sa potvrdí ako entita.
 
-### 11.2 Iba verificationStatus
+### 12.2 Iba verificationStatus
 
 Iba `verificationStatus` alebo podobný stav majú používať:
 
@@ -1310,7 +1447,7 @@ Iba `verificationStatus` alebo podobný stav majú používať:
 - hodnotené časti `Observation`,
 - vybrané value objects, ak obsahujú overiteľné tvrdenie.
 
-### 11.3 Iba stav rodiča
+### 12.3 Iba stav rodiča
 
 Stav rodiča dedia:
 
@@ -1321,7 +1458,7 @@ Stav rodiča dedia:
 - `Designation`,
 - `Classification` ako vnorený value object.
 
-### 11.4 Event immutability
+### 12.4 Event immutability
 
 Event-like objekty majú byť po schválení prakticky immutable.
 
@@ -1332,7 +1469,7 @@ Oprava nemá ticho prepísať historickú udalosť. Preferované možnosti:
 - nové pozorovanie,
 - označenie pôvodného záznamu ako sporného.
 
-### 11.5 Append-only history
+### 12.5 Append-only history
 
 Append-only históriu majú používať najmä:
 
@@ -1342,23 +1479,25 @@ Append-only históriu majú používať najmä:
 - budúce výrobné udalosti,
 - budúce inspection alebo measurement záznamy.
 
-### 11.6 Osobitné prípady
+### 12.6 Osobitné prípady
 
-`Observation`: samostatná entita, auditovateľná, append-only orientovaná.
+`Observation`: samostatná entita, auditovateľná, append-only orientovaná, s povinným rozhodnutím o `observationScope`.
 
-`PropertyRecord`: value object bez plného lifecycle, ale s `verificationStatus`.
+`PropertyRecord`: embedded claim-like value object bez plného lifecycle, ale s `verificationStatus`.
 
-`AvailabilityRecord`: value object v 0.2B, časovo závislý a ideálne append-only.
+`AvailabilityRecord`: embedded observation record v 0.2B, časovo závislý a ideálne append-only.
 
-`CommercialObservation`: value object, nie záväzok; historicky citlivé záznamy majú byť append-only.
+`CommercialObservation`: embedded observation record, nie záväzok; historicky citlivé záznamy majú byť append-only.
 
 `Catalog Entry`: plný lifecycle, nemazať po schválení.
 
 `Derived Result`: nesmie meniť autoritatívne dáta; má byť reprodukovateľný a auditovateľný.
 
-## 12. Identity rules
+`Decision`: samostatný budúci objekt s plným auditom, ktorý spája dôkazy, odvodené výsledky a engineer approval.
 
-### 12.1 Prefixy odporúčané na zavedenie
+## 13. Identity rules
+
+### 13.1 Prefixy odporúčané na zavedenie
 
 Tieto prefixy treba zaviesť v `EOS-003` pred alebo počas schvaľovania Phase 0.2B:
 
@@ -1367,7 +1506,7 @@ Tieto prefixy treba zaviesť v `EOS-003` pred alebo počas schvaľovania Phase 0
 - `PRP-xxxxxx` pre Property Catalog Entry,
 - `UNT-xxxxxx` pre Unit Catalog Entry.
 
-### 12.2 Prefixy zatiaľ ponechané ako návrh
+### 13.2 Prefixy zatiaľ ponechané ako návrh
 
 Tieto prefixy sú užitočné, ale nemusia byť zavedené okamžite:
 
@@ -1376,17 +1515,18 @@ Tieto prefixy sú užitočné, ale nemusia byť zavedené okamžite:
 - `REL-xxxxxx` pre Relationship object,
 - `EVT-xxxxxx` pre všeobecný Event object.
 
-### 12.3 Pravidlá
+### 13.3 Pravidlá
 
 - Vnorené value objects nemajú vlastné stabilné ID.
 - ID katalógovej položky nie je ID konkrétneho vnoreného použitia.
 - Job-owned entity majú používať hierarchické ID podľa ADR-0008.
 - `DocumentRecord` používa ID dokumentu, ktorý eviduje.
 - `SourceLink` nemá byť samostatná entita; je to väzba na `SourceReference`.
+- `Decision` bude potrebovať vlastný prefix, ak sa v `0.2B.1` potvrdí ako ukladaný objekt.
 
 Tento RFC nemení `EOS-003`. Navrhuje iba ďalší governance krok.
 
-## 13. Immutability and history
+## 14. Immutability and history
 
 Immutable po schválení majú byť:
 
@@ -1416,6 +1556,7 @@ Append-only majú byť:
 - historická dostupnosť,
 - obchodné pozorovania použité pri rozhodnutí,
 - snapshoty vstupov odvodeného výsledku.
+- rozhodnutia, ktoré už ovplyvnili autoritatívny záznam alebo quotation/manufacturing výstup.
 
 Fyzicky odstránené môžu byť iba:
 
@@ -1435,8 +1576,9 @@ Audit trail sa zachováva cez:
 - `updatedBy`,
 - `sourceLinks`,
 - append-only udalosti alebo korekčné záznamy.
+- samostatné `Decision` záznamy tam, kde nejde iba o technickú opravu, ale o prijatie alebo odmietnutie významu.
 
-## 14. Derived Results
+## 15. Derived Results
 
 `Derived Result` je kategória pre budúce výpočty, odhady, porovnania, odporúčania a AI návrhy.
 
@@ -1457,14 +1599,15 @@ Pravidlá:
 - Musí odlíšiť vypočítaný výsledok od schválenej znalosti.
 - Nesmie automaticky meniť autoritatívne dáta.
 - Ak sa použije ako podklad rozhodnutia, musí byť auditovateľný.
+- Ak je prijatý engineerom, výsledkom nemá byť tichá zmena dát, ale samostatný `Decision`.
 
-## 15. Rozhodovacia tabuľka
+## 16. Rozhodovacia tabuľka
 
 | Object | Category | Stable ID | Own lifecycle | Aggregate root | Source links | Versioned | Immutable | Owned by | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `Material` | Entity | `MAT-xxxx` | Yes | Yes | Yes | Yes | No | Self | Znalostný objekt materiálu. |
 | `StockMaterial` | Entity | `POL-xxxx` | Yes | Yes | Yes | Yes | No | Self | Forma alebo dostupný polotovar. |
-| `PropertyRecord` | Value Object | No | No | No | Yes | Via parent | After approval | Parent entity | Má `verificationStatus`. |
+| `PropertyRecord` | Embedded Claim-like Value Object | No | No | No | Yes | Via parent | After approval | Parent entity | Má `verificationStatus`. |
 | `Quantity` | Value Object | No | No | No | Via parent | Via parent | Yes | Parent object | Jedna hodnota s `unitId`. |
 | `Condition` | Value Object | No | No | No | Optional | Via parent | Yes | Parent object | Používa `evaluationMode`. |
 | `Observation` | Entity / Event-like Evidence | `OBS-xxxxxx` | Yes | Yes | Yes | Yes | Append-only | Self or Job context | Neprepisuje vlastnosti automaticky. |
@@ -1476,17 +1619,19 @@ Pravidlá:
 | `Job` | Entity | `JOB-yyyy-xxxx` | Yes | Yes | Yes | Yes | No | Self | Zákazkový agregát. |
 | `JobOperation` | Job-owned Entity | `JOB-yyyy-xxxx-OP-xxx` | Yes | No | Yes | Yes | No | `Job` | Operácia zákazky. |
 | `TimeRecord` | Job-owned Entity | `JOB-yyyy-xxxx-OP-xxx-TM-xxx` | Yes | No | Yes | Yes | Append-only preferred | `JobOperation` | Časový záznam. |
-| `AvailabilityRecord` | Value Object / Event-like | No | No | No | Yes | Via parent | Append-only preferred | Parent entity | Časovo závislá dostupnosť. |
-| `CommercialObservation` | Value Object / Event-like | No | No | No | Yes | Via parent | Append-only preferred | Parent entity | Nie je cena ani záväzok. |
+| `AvailabilityRecord` | Embedded Observation Record | No | No | No | Yes | Via parent | Append-only preferred | Parent entity | Časovo závislá dostupnosť. |
+| `CommercialObservation` | Embedded Observation Record | No | No | No | Yes | Via parent | Append-only preferred | Parent entity | Nie je cena ani záväzok. |
 | `Classification` | Value Object | No | No | No | Optional | Via parent | Yes | Parent entity | Budúci `CLS-xxxxxx` katalóg možný. |
 | Unit Catalog Entry | Catalog Entry | `UNT-xxxxxx` | Yes | Yes | Yes | Yes | No | Unit Catalog | Autoritatívna jednotka. |
 | Property Catalog Entry | Catalog Entry | `PRP-xxxxxx` | Yes | Yes | Yes | Yes | No | Property Catalog | Autoritatívny význam vlastnosti. |
 | `DocumentRecord` | Document Object | Document ID | Yes | Yes | Optional | Yes | No | Self | Eviduje dokument, nie jeho obsah. |
+| `Snapshot` | Snapshot | Later | Append-only | Maybe | Input links | Replaced by new snapshot | Yes | Calculation or decision context | Zmrazený obraz vstupov. |
 | `Derived Result` | Derived Result | Later | Yes if stored | Maybe | Input links | Yes | Reproducible snapshot | Calculation context | Nie je zdrojová znalosť. |
+| `Decision` | Decision | Later | Yes | Maybe | Yes | Yes | Append-only preferred | Engineering Knowledge Layer | Engineer approval nad dôkazmi alebo výsledkami. |
 
-## 16. Alternatívy
+## 17. Alternatívy
 
-### 16.1 Všetko ako entity
+### 17.1 Všetko ako entity
 
 Výhoda: každá vec má vlastné ID a samostatný audit.
 
@@ -1494,7 +1639,7 @@ Nevýhoda: vysoká komplexita, veľa malých záznamov, ťažkopádna práca pre
 
 Riziko: z `Quantity`, `Condition` alebo `Designation` by sa stali zbytočne ťažké objekty.
 
-### 16.2 Všetko ako vnorené objects
+### 17.2 Všetko ako vnorené objects
 
 Výhoda: jednoduché JSON súbory a rýchlejší začiatok.
 
@@ -1502,7 +1647,7 @@ Nevýhoda: slabá citovateľnosť, slabá história, ťažké zdieľanie zdrojov
 
 Riziko: `SourceReference`, `Observation` a katalógy by stratili autoritatívnosť.
 
-### 16.3 Hybridný DDD model
+### 17.3 Hybridný DDD model
 
 Výhoda: entity majú jasnú identitu, value objects zostávajú jednoduché, katalógy riadia význam a agregáty chránia integritu.
 
@@ -1512,7 +1657,7 @@ Riziko: bez dokumentovaných pravidiel môže vzniknúť nekonzistentné použí
 
 Odporúčanie: zvoliť hybridný DDD model.
 
-### 16.4 Jednoduchý relačný model bez taxonómie
+### 17.4 Jednoduchý relačný model bez taxonómie
 
 Výhoda: blízke budúcej databázovej implementácii.
 
@@ -1520,7 +1665,15 @@ Nevýhoda: predčasne rieši tabuľky namiesto významu znalostí.
 
 Riziko: systém by migroval do databázy bez jasného modelu identity, lifecycle a vlastníctva.
 
-## 17. Dopad na RFC-0001
+### 17.5 Hybridný DDD model s Engineering Knowledge Layer
+
+Výhoda: zachováva jasné entity a value objects, ale dopĺňa medzivrstvu pre znalostné primitíva, evidence, decisions, katalógy a porovnateľnosť.
+
+Nevýhoda: vyžaduje jeden stabilizačný krok navyše pred entitnými schémami.
+
+Odporúčanie: táto alternatíva nahrádza jednoduchý hybridný DDD model ako preferovaný smer.
+
+## 18. Dopad na RFC-0001
 
 RFC-0002 potvrdzuje tieto rozhodnutia RFC-0001:
 
@@ -1538,7 +1691,9 @@ RFC-0002 spresňuje:
 - `MeasurementQuality` je preferovaný názov pred `ValueQuality`,
 - `Classification` má zostať value object v 0.2B s možnosťou budúceho katalógu,
 - `AvailabilityRecord` a `CommercialObservation` sú value objects s event-like správaním,
-- katalógové položky majú byť samostatné catalog entries.
+- `AvailabilityRecord` a `CommercialObservation` majú byť presnejšie chápané ako embedded observation records,
+- katalógové položky majú byť samostatné catalog entries,
+- `Decision` dopĺňa chýbajúci schvaľovací krok medzi pozorovaním, odvodeným výsledkom a autoritatívnou zmenou.
 
 Môže sa neskôr zmeniť:
 
@@ -1546,10 +1701,11 @@ Môže sa neskôr zmeniť:
 - či `Classification Catalog` vznikne v 0.2B alebo neskôr,
 - či vznikne samostatný `Relationship` object,
 - či vznikne všeobecný `Event` model.
+- či `Decision` dostane vlastný prefix v `EOS-003`.
 
 Odporúčanie: RFC-0001 môže po posúdení RFC-0002 prejsť z `Review` do `Accepted`, ak bude prijaté, že RFC-0002 spresňuje taxonómiu bez popretia jadra RFC-0001.
 
-## 18. Governance
+## 19. Governance
 
 Odporúča sa zaviesť prefix:
 
@@ -1573,24 +1729,28 @@ Navrhované pravidlo:
 
 1. Schváliť alebo upraviť RFC-0002.
 2. Aktualizovať `EOS-003` o `RFC-xxxx` a schválené nové prefixy.
-3. Podľa rozsahu vytvoriť ADR pre taxonómiu objektov alebo pre RFC proces.
-4. Až potom začať implementáciu Phase 0.2B kontraktov.
+3. Rozhodnúť, či `Decision` dostane vlastný prefix.
+4. Podľa rozsahu vytvoriť ADR pre taxonómiu objektov alebo pre RFC proces.
+5. Až potom začať implementáciu Phase 0.2B kontraktov.
 
 Tento RFC nemení `EOS-003` a nevytvára ADR.
 
-## 19. Otvorené otázky
+## 20. Otvorené otázky
 
-- Má byť `Observation` globálna entita alebo job-owned entita?
+- Má byť `Observation` vždy globálna entita s `observationScope`, alebo sa povolí aj job-local embedded observation bez `OBS-xxxxxx`?
 - Má `Measurement` vzniknúť ako subtype `Observation`, alebo ako samostatná entita?
 - Kedy presne zaviesť Property Catalog a Unit Catalog?
 - Má mať `Classification Catalog` vlastný prefix `CLS-xxxxxx` už v 0.2B?
 - Má mať `Condition Type Catalog` prefix `CND-xxxxxx` už v 0.2B?
 - Kedy je potrebný samostatný `Relationship` object?
 - Má `Derived Result` dostať vlastný prefix alebo ostať výstupom konkrétneho kalkulačného modulu?
+- Má `Decision` dostať vlastný prefix a patriť do `0.2B.1`?
+- Má sa catalog hierarchy zaviesť ako samostatný governance dokument alebo iba ako súčasť knowledge core kontraktov?
 - Ktorý dokument alebo ADR definitívne zavedie RFC lifecycle?
 
-## 20. Change History
+## 21. Change History
 
 | Date | Version | Revision | Author | Change |
 | --- | --- | --- | --- | --- |
 | 2026-07-14 | 0.1 | 0 | Chief Engineering Knowledge Architect + Codex | Initial RFC draft for engineering object taxonomy |
+| 2026-07-14 | 0.1 | 1 | Codex | Architecture review revision: doplnenie Engineering Knowledge Layer, `Observation.observationScope`, `Decision`, aggregate root pravidla, embedded observation records, catalog hierarchy a odporúčaného fázovania `0.2B.1` / `0.2B.2` / `0.2C` |
