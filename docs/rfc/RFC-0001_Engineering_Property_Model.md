@@ -3,7 +3,7 @@
 **Project:** EOS - Engineering Operating System  
 **RFC ID:** RFC-0001  
 **Version:** 0.1  
-**Revision:** 1  
+**Revision:** 2  
 **Status:** Review  
 **Author:** Chief Engineering Knowledge Architect + Codex  
 **Last update:** 2026-07-14  
@@ -136,11 +136,13 @@ Podmienky platnosti: mimo `ValueRange`.
 
 Riziko duplicity: nízke, ak sa rozsahy nebudú ukladať paralelne do `Quantity`.
 
-### 4.3 `MeasurementQuality` alebo `ValueQuality`
+### 4.3 `MeasurementQuality`
 
 Účel: reprezentovať kvalitu hodnoty alebo merania bez zamieňania s hodnotou samotnou.
 
-Odporúčanie: začať ako vnorený value object. Názov `MeasurementQuality` je presnejší pre merania a skúšky. Názov `ValueQuality` je všeobecnejší pre vlastnosti, ktoré nemusia pochádzať z merania. Pred implementáciou schémy treba vybrať jeden názov.
+Odporúčanie: začať ako vnorený value object s názvom `MeasurementQuality`.
+
+`MeasurementQuality` je jediný preferovaný názov. Názov `ValueQuality` sa nemá používať v autoritatívnych dokumentoch ani budúcich schémach.
 
 Nepovinné polia:
 
@@ -167,7 +169,7 @@ Riziko duplicity: stredné, ak sa tolerancia, neistota a presnosť budú mieša�
 
 Účel: reprezentovať jednu vlastnosť, jej typ hodnoty, hodnotu, podmienky platnosti, kvalitu hodnoty a zdroje.
 
-Odporúčanie: začať ako generický vnorený value object s možnosťou budúcej špecializácie.
+Odporúčanie: začať ako generický embedded claim-like value object s možnosťou budúcej špecializácie.
 
 Povinné polia:
 
@@ -200,6 +202,8 @@ Pravidlá:
 - Ak je potrebný zobrazovací názov, môže existovať iba nepovinné pole `cachedDisplayName`.
 - `cachedDisplayName` je odvodená alebo pomocná hodnota a nesmie sa používať na identifikáciu, spájanie ani porovnávanie vlastností.
 - Autoritatívne názvy, definície, povolené hodnoty a doménové pravidlá majú patriť do budúceho Property Catalog.
+- `PropertyRecord` konceptuálne nesie alebo podporuje `propertyId`, hodnotu, `condition` alebo `conditions`, `verificationStatus` a `sourceLinks`.
+- `PropertyRecord` nemá vlastnú globálnu identitu konkrétneho vnoreného záznamu.
 
 Väzba na `sourceLinks`: povinná pri `Review` alebo `Approved`, ak vlastnosť obsahuje overiteľné technické, výrobné, dodávateľské alebo obchodné tvrdenie.
 
@@ -211,7 +215,7 @@ Kvalita hodnoty: cez `measurementQuality`.
 
 Podmienky platnosti: cez pole `conditions`.
 
-Životný cyklus: `PropertyRecord` ostáva vnorený value object bez plného record lifecycle. Má však vlastný `verificationStatus` a `sourceLinks`, pretože overenie jednotlivej vlastnosti nemusí byť totožné so stavom celej rodičovskej entity.
+Životný cyklus: `PropertyRecord` ostáva embedded claim-like value object bez plného record lifecycle. Má však vlastný `verificationStatus` a `sourceLinks`, pretože overenie jednotlivej vlastnosti nemusí byť totožné so stavom celej rodičovskej entity.
 
 Riziko duplicity: vysoké, ak nebude existovať riadený katalóg `propertyId`.
 
@@ -363,7 +367,9 @@ Budúca použiteľnosť: vysoká pre `Machine` a `ManufacturingProcess`.
 
 Účel: popísať dostupnosť objektu, kapacity, dokumentu, polotovaru alebo dodávateľského stavu v čase.
 
-Odporúčanie: vnorený value object na začiatku; samostatná entita až pri potrebe histórie, plánovania alebo viacerých zdrojov.
+Odporúčanie: embedded observation record na začiatku; samostatná entita až pri potrebe histórie, plánovania alebo viacerých zdrojov.
+
+`AvailabilityRecord` nepatrí do prvého minimálneho scope `0.2B.1`, pokiaľ samostatné rozhodnutie neurčí inak.
 
 Povinné polia:
 
@@ -394,7 +400,7 @@ Väzba na `sourceLinks`: potrebná, ak dostupnosť pochádza z dodávateľského
 
 Jednotky: cez `quantity`.
 
-Životný cyklus: môže mať vlastný stav v budúcnosti, ak sa z dostupnosti stane samostatná entita.
+Životný cyklus: môže mať vlastný stav v budúcnosti, ak sa z dostupnosti stane samostatná entita. Po schválení sa časovo citlivé dostupnostné pozorovanie nesmie ticho prepisovať.
 
 Riziko duplicity: vysoké, ak sa dostupnosť začne ukladať do viacerých entít bez historického modelu.
 
@@ -404,7 +410,9 @@ Budúca použiteľnosť: vysoká pre `StockMaterial`, `Supplier`, `Machine` a pl
 
 Účel: zaznamenať obchodné pozorovanie bez toho, aby sa miešalo s technickou vlastnosťou, cenou, ponukou alebo právnym záväzkom.
 
-Odporúčanie: vnorený value object, nie technická vlastnosť.
+Odporúčanie: embedded observation record, nie technická vlastnosť.
+
+`CommercialObservation` nepatrí do prvého minimálneho scope `0.2B.1`, pokiaľ samostatné rozhodnutie neurčí inak.
 
 Povinné polia:
 
@@ -434,7 +442,7 @@ Väzba na `sourceLinks`: potrebná, ak ide o overiteľné obchodné tvrdenie.
 
 Intervaly: časová platnosť cez `observedAt` a `validUntil`.
 
-Životný cyklus: riadi ho rodičovská entita.
+Životný cyklus: riadi ho rodičovská entita. Po schválení sa časovo citlivé obchodné pozorovanie nesmie ticho prepisovať.
 
 Riziko duplicity: stredné, ak sa obchodné poznámky budú zapisovať aj do technických entít.
 
@@ -442,9 +450,9 @@ Budúca použiteľnosť: vysoká pre `Supplier`, `StockMaterial` a budúce quota
 
 ### 4.11 `Observation`
 
-Účel: zachytiť konkrétne pozorovanie, meranie, skúšku alebo udalosť z reálnej výroby.
+Účel: zachytiť konkrétne pozorovanie, meranie, skúšku alebo udalosť s dôkazovým významom.
 
-Odporúčanie: navrhnúť ako samostatný koncept s možnosťou samostatnej entity. Schéma sa v tomto RFC nevytvára.
+Odporúčanie: navrhnúť ako first-class evidence entity. Schéma sa v tomto RFC nevytvára.
 
 Navrhovaný ID formát:
 
@@ -454,6 +462,7 @@ Navrhované polia:
 
 - `id`
 - `observationType`
+- `observationScope`
 - `observedAt`
 - `observedBy`
 - `relatedEntityIds`
@@ -474,8 +483,12 @@ Pravidlá:
 - `Observation` môže byť dôkazom pre vytvorenie alebo aktualizáciu `PropertyRecord`.
 - Viac `Observation` záznamov môže podporovať jednu vlastnosť.
 - Jednotlivé meranie nesmie automaticky prepísať všeobecnú materiálovú vlastnosť.
+- `Observation` musí mať `observationScope`, ktorý určuje kontext pozorovania.
+- Konceptuálne povolené hodnoty scope sú `GLOBAL`, `JOB`, `PROJECT` a `EXPERIMENT`. Tento RFC ešte nevytvára JSON enum.
 - `jobId` sa použije, ak pozorovanie pochádza zo zákazky alebo výrobnej udalosti.
 - Ak pozorovanie obsahuje číselnú hodnotu, jednotka má byť cez `quantity.unitId` alebo `valueRange.unitId`.
+- `Observation` alebo `Derived Result` nikdy automaticky nemení autoritatívny `PropertyRecord`.
+- Prijatie, odmietnutie alebo povýšenie tvrdenia musí prejsť cez `Decision` alebo ekvivalentný explicitne schválený governance mechanizmus.
 
 Väzba na `sourceLinks`: povinná pri overiteľných pozorovaniach v stave `Review` alebo `Approved`.
 
@@ -643,6 +656,7 @@ Príklad `Observation`:
 {
   "id": "OBS-000001",
   "observationType": "sampleObservation",
+  "observationScope": "JOB",
   "observedAt": "2026-07-14T10:00:00Z",
   "observedBy": "example-user",
   "relatedEntityIds": ["MAT-0001"],
@@ -678,25 +692,16 @@ Tieto príklady sú zámerne netechnické a nesmú sa používať ako inžiniers
 
 ## 11. Migračné dôsledky
 
-Ak sa návrh prijme, Phase 0.2B by mala najprv vytvoriť spoločné value object schémy a až potom entitné schémy.
+Ak sa návrh prijme, ďalšia práca má byť rozdelená na `0.2B.1 Knowledge Core Contracts`, `0.2B.2 Knowledge Catalogs` a `0.2C Knowledge Entities`.
 
 Odporúčaný poradovník:
 
-1. doplniť návrh identifikátorov pre `PRP-xxxxxx`, `UNT-xxxxxx`, `OBS-xxxxxx` a `RFC-xxxx`,
-2. `quantity.schema.json`,
-3. `value-range.schema.json`,
-4. `measurement-quality.schema.json` alebo ekvivalent po rozhodnutí názvu,
-5. `designation.schema.json`,
-6. `classification.schema.json`,
-7. `condition.schema.json`,
-8. `property-record.schema.json`,
-9. `observation.schema.json`,
-10. `capability.schema.json`,
-11. `availability-record.schema.json`,
-12. `commercial-observation.schema.json`,
-13. návrh Property Catalog,
-14. návrh Unit Catalog,
-15. až potom entity `Material`, `StockMaterial`, `Machine` a `ManufacturingProcess`.
+1. doplniť governance návrh identifikátorov pre `PRP-xxxxxx`, `UNT-xxxxxx`, `OBS-xxxxxx` a `RFC-xxxx`,
+2. `0.2B.1 Knowledge Core Contracts`: `Quantity`, `ValueRange`, `MeasurementQuality`, `Condition`, `Classification`, `PropertyRecord` a `Observation`,
+3. `0.2B.2 Knowledge Catalogs`: Property Catalog, Unit Catalog, Condition Type Catalog a Classification Catalog podľa schváleného rozsahu,
+4. `0.2C Knowledge Entities`: entity `Material`, `StockMaterial`, `Machine`, `ManufacturingProcess`, `Supplier` a ďalšie doménové entity.
+
+`AvailabilityRecord` a `CommercialObservation` nepatria do prvého minimálneho scope `0.2B.1`, pokiaľ samostatné rozhodnutie neurčí inak.
 
 Toto RFC uvedené kroky iba odporúča. Neimplementuje ich.
 
@@ -715,7 +720,7 @@ Nemá obsahovať:
 - `resolution`,
 - `precision`.
 
-Rozsah patrí do `ValueRange`. Kvalita hodnoty alebo merania patrí do `MeasurementQuality` alebo `ValueQuality`.
+Rozsah patrí do `ValueRange`. Kvalita hodnoty alebo merania patrí do `MeasurementQuality`.
 
 ### 12.2 ValueRange
 
@@ -723,19 +728,21 @@ Rozsah patrí do `ValueRange`. Kvalita hodnoty alebo merania patrí do `Measurem
 
 Jednoduché intervaly sa nemajú ukladať do `Quantity`, aby sa nezamieňal význam jednej hodnoty a rozsahu.
 
-### 12.3 MeasurementQuality alebo ValueQuality
+### 12.3 MeasurementQuality
 
 Tolerancia, neistota, presnosť a rozlíšenie nesmú byť synonymá.
 
-EOS má pri implementácii zvoliť názov objektu a definovať, či je zameraný primárne na meranie (`MeasurementQuality`) alebo všeobecnú kvalitu hodnoty (`ValueQuality`).
+EOS používa názov `MeasurementQuality`. Názov `ValueQuality` nie je povolený ako autoritatívny názov objektu.
 
 ### 12.4 PropertyRecord
 
-Začať generickým `PropertyRecord`.
+Začať generickým `PropertyRecord` ako embedded claim-like value object.
 
 `propertyId` je autoritatívny identifikátor vo formáte `PRP-xxxxxx`.
 
 `propertyName` sa nemá používať. Ak je potrebný zobrazovací text, má ísť o `cachedDisplayName` bez autoritatívneho významu.
+
+`PropertyRecord` konceptuálne obsahuje alebo podporuje `propertyId`, hodnotu, podmienku alebo podmienky, `verificationStatus` a `sourceLinks`.
 
 Špecializované modely zavádzať až po tom, čo sa objavia konkrétne opakované vzory.
 
@@ -822,6 +829,10 @@ Tým sa zachová jednoduchosť vnoreného value objectu, ale umožní sa odlíš
 
 Pozorovanie, meranie alebo skúška môže podporiť vlastnosť, ale nemá ju automaticky nahradiť.
 
+`Observation` má byť first-class evidence entity so stabilným `OBS-xxxxxx` a s poľom `observationScope`. Kontext pozorovania sa má riešiť scope hodnotou, nie vytváraním samostatných typov pre každý kontext.
+
+`Observation` alebo `Derived Result` nikdy automaticky nemení autoritatívny `PropertyRecord`. Prijatie, odmietnutie alebo povýšenie tvrdenia musí prejsť cez `Decision` alebo ekvivalentný explicitne schválený governance mechanizmus.
+
 ## 13. RFC proces
 
 Odporúča sa zaviesť nový prefix:
@@ -850,10 +861,10 @@ Toto RFC zatiaľ nemení `EOS-003`. Presný ďalší governance krok je samostat
 
 - Kedy zaviesť autoritatívny Property Catalog?
 - Má byť Unit Catalog súčasťou 0.2B alebo samostatnej nasledujúcej fázy?
-- Má sa objekt volať `MeasurementQuality` alebo `ValueQuality`?
 - Má byť `Classification` dlhodobo iba value object, alebo má vzniknúť samostatný Classification Catalog?
 - Ako presne validovať kompatibilitu podmienok pri porovnávaní hodnôt?
-- Kedy sa `Capability`, `AvailabilityRecord` a `Observation` majú stať samostatnými entitami?
+- Kedy sa `Capability` má stať samostatnou entitou?
+- Má byť `Decision` v `0.2B.1` iba konceptuálnou závislosťou, alebo samostatným stored kontraktom?
 - Ako oddeliť obchodné pozorovania od budúcich cenových alebo quotation modulov?
 - Ktorý governance dokument presne zavedie lifecycle pre RFC?
 
@@ -863,11 +874,13 @@ Odporúča sa pre Phase 0.2B najprv vytvoriť spoločné value object schémy pr
 
 Najdôležitejšie rozhodnutia:
 
-- oddeliť `Quantity`, `ValueRange` a `MeasurementQuality` alebo `ValueQuality`,
+- oddeliť `Quantity`, `ValueRange` a `MeasurementQuality`,
 - používať autoritatívne `propertyId` vo formáte `PRP-xxxxxx`,
 - používať autoritatívne `unitId` vo formáte `UNT-xxxxxx`,
 - zaviesť koncept `Observation` s prefixom `OBS-xxxxxx`,
-- ponechať `PropertyRecord` ako vnorený value object s vlastným `verificationStatus` a `sourceLinks`,
+- ponechať `PropertyRecord` ako embedded claim-like value object s vlastným `verificationStatus` a `sourceLinks`,
+- zaviesť `observationScope` pre `Observation`,
+- nepovýšiť `Observation` ani `Derived Result` na autoritatívny `PropertyRecord` bez `Decision` alebo ekvivalentného schváleného governance mechanizmu,
 - nepoužívať názvy vlastností ani text jednotiek ako základ porovnateľnosti.
 
 ## 16. Väzby
@@ -888,3 +901,4 @@ Súvisiace dokumenty:
 | --- | --- | --- | --- | --- |
 | 2026-07-14 | 0.1 | 0 | Chief Engineering Knowledge Architect + Codex | Initial RFC draft |
 | 2026-07-14 | 0.1 | 1 | Codex | Prepracovanie návrhu pre Review: oddelenie hodnoty, rozsahu a kvality merania; návrh identifikátorov `PRP-xxxxxx`, `UNT-xxxxxx`, `OBS-xxxxxx`; doplnenie Unit Catalog, Property Catalog, Observation, Classification a pravidiel porovnateľnosti |
+| 2026-07-25 | 0.1 | 2 | Codex | Architecture Closure revision: uzavretie názvu `MeasurementQuality`, spresnenie `PropertyRecord` ako embedded claim-like value object, doplnenie `Observation.observationScope`, rozhodovacej hranice cez `Decision`, embedded observation records a fázovania `0.2B.1` / `0.2B.2` / `0.2C` |

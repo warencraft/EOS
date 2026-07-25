@@ -3,7 +3,7 @@
 **Project:** EOS - Engineering Operating System  
 **RFC ID:** RFC-0002  
 **Version:** 0.1  
-**Revision:** 1  
+**Revision:** 2  
 **Status:** Review  
 **Author:** Chief Engineering Knowledge Architect + Codex  
 **Last update:** 2026-07-14  
@@ -55,11 +55,13 @@ Odporúčané vrstvy EOS:
 
 Pred implementáciou plných knowledge entities sa odporúča rozdeliť nasledujúcu prácu takto:
 
-1. `0.2B.1 Knowledge Core Contracts` - základné value objects, observation/evidence pravidlá, decision model, snapshot a derived result kontrakty.
-2. `0.2B.2 Knowledge Catalogs` - Property Catalog, Unit Catalog, Condition Type Catalog a prípadne Classification Catalog.
+1. `0.2B.1 Knowledge Core Contracts` - základné value objects, `PropertyRecord`, first-class `Observation`, source/evidence pravidlá a konceptuálna decision boundary.
+2. `0.2B.2 Knowledge Catalogs` - Property Catalog, Unit Catalog, Condition Type Catalog a Classification Catalog podľa schváleného rozsahu.
 3. `0.2C Knowledge Entities` - `Material`, `StockMaterial`, `Machine`, `ManufacturingProcess`, `Supplier`, `Job` a ďalšie entity.
 
 Toto fázovanie znižuje riziko, že entitné schémy vzniknú skôr než spoločné znalostné primitíva.
+
+`Decision`, `Snapshot` a `Derived Result` sú pre `0.2B.1` architektonicky dôležité pojmy, ale ich samostatné stored kontrakty nemusia patriť do minimálneho prvého scope. Minimálny rozsah má zachovať decision boundary bez predčasného modelovania celého rozhodovacieho a výpočtového auditu.
 
 ## 3. Základné kategórie objektov
 
@@ -693,6 +695,8 @@ Lifecycle owner: `Observation` sám. Kontext vzniku sa nemá riešiť rozdelení
 
 Aggregate root: odporúčanie je áno, ak má `OBS-xxxxxx` globálne ID a môže podporovať viac tvrdení.
 
+Rozlíšenie identity: first-class `Observation` má stabilné `OBS-xxxxxx`, vlastný lifecycle a môže byť referencovaná viacerými objektmi. Embedded observation record, napríklad `AvailabilityRecord` alebo `CommercialObservation`, je vlastnený rodičovskou entitou, nemá vlastné globálne `OBS` ID a nemá sa označovať ako plnohodnotná `Observation` entity.
+
 Môže vlastniť:
 
 - hodnotu pozorovania,
@@ -720,12 +724,12 @@ Používané value objects:
 
 Archivácia, nahradenie, supersede: áno, ale odporúčané správanie je append-only s korekciou alebo novým pozorovaním.
 
-Odporúčané hodnoty `observationScope`:
+Odporúčané konceptuálne hodnoty `observationScope`:
 
-- `global` - pozorovanie má všeobecný dôkazový význam mimo jednej zákazky,
-- `job` - pozorovanie vzniklo v konkrétnej zákazke a primárne slúži jej auditu,
-- `project` - pozorovanie vzniklo v širšom internom projekte alebo programe,
-- `experiment` - pozorovanie vzniklo v skúške, experimente alebo overovacej aktivite.
+- `GLOBAL` - pozorovanie má všeobecný dôkazový význam mimo jednej zákazky,
+- `JOB` - pozorovanie vzniklo v konkrétnej zákazke a primárne slúži jej auditu,
+- `PROJECT` - pozorovanie vzniklo v širšom internom projekte alebo programe,
+- `EXPERIMENT` - pozorovanie vzniklo v skúške, experimente alebo overovacej aktivite.
 
 Tento model je preferovaný pred dvoma samostatnými typmi `Observation`, pretože zachováva jednotný evidence model a zároveň umožňuje rozlíšiť kontext vzniku.
 
@@ -978,7 +982,7 @@ Pravidlá:
 - Engineer approval musí byť auditovateľný.
 - Rozhodnutie môže viesť k vytvoreniu alebo zmene autoritatívneho záznamu, ale táto zmena musí zostať samostatne verzovaná.
 
-`Decision` sa zatiaľ neimplementuje v tomto RFC, ale má byť súčasťou návrhu `0.2B.1 Knowledge Core Contracts`.
+Návrh pre minimálny rozsah: `Decision` je v `0.2B.1` konceptuálna závislosť a boundary pravidlo, nie povinný samostatný stored kontrakt. Samostatný kontrakt `Decision` má vzniknúť až po samostatnom governance rozhodnutí alebo vtedy, keď prvé kontrakty potrebujú ukladať prijatie, odmietnutie alebo povýšenie tvrdenia ako auditovateľný objekt.
 
 ## 8. Events
 
@@ -995,7 +999,7 @@ Pravidlá:
 | `Purchase` | budúca obchodná alebo skladová udalosť | Nie je súčasť 0.2B. |
 | `HeatTreatment` | budúca výrobná udalosť alebo procesný záznam | Nie je súčasť 0.2B. |
 | `Nonconformance` | budúca kvalitatívna entita/event | Nie je súčasť 0.2B. |
-| `Decision` | schvaľovací event-like objekt | Patrí do `0.2B.1` ako návrh kontraktu. |
+| `Decision` | schvaľovací event-like objekt | V `0.2B.1` je boundary koncept; samostatný stored kontrakt je odložený, ak nebude výslovne schválený. |
 
 ### 8.2 Pravidlá
 
@@ -1055,6 +1059,13 @@ Knowledge Catalog obsahuje položky, ktoré definujú interný EOS význam použ
 
 Spoločný model katalógovej položky môže zostať jednotný, ale pravidlá správy, schvaľovania a zmeny sa majú líšiť podľa toho, či ide o Reference Catalog alebo Knowledge Catalog.
 
+Fázovanie katalógov:
+
+- Knowledge Core Contracts patria do `0.2B.1`.
+- Property Catalog a Unit Catalog patria do `0.2B.2`.
+- Classification Catalog a Condition Type Catalog patria do `0.2B.2`.
+- Konkrétne Knowledge Entities patria do `0.2C`.
+
 ### 9.1 Property Catalog
 
 Typ: samostatný autoritatívny katalóg.
@@ -1071,7 +1082,7 @@ Deprecated položka: nemazať po schválení; označiť `Deprecated` a doplniť 
 
 Aliasy: povolené ako neautoritatívne lookup hodnoty.
 
-Fáza: navrhnúť pre 0.2B, implementovať až po schválení.
+Fáza: plný Property Catalog patrí do `0.2B.2`. Stabilné `PRP-xxxxxx` ID je potrebné pripraviť pred `0.2B.1`.
 
 ### 9.2 Unit Catalog
 
@@ -1089,7 +1100,7 @@ Deprecated položka: ponechať kvôli historickým záznamom, doplniť odporúč
 
 Aliasy: áno, ale neautoritatívne.
 
-Fáza: odporúčané riešiť skoro, ale samostatne od prvých entity schém.
+Fáza: plný Unit Catalog patrí do `0.2B.2`. Stabilné `UNT-xxxxxx` ID je potrebné pripraviť pred `0.2B.1`.
 
 ### 9.3 Condition Type Catalog
 
@@ -1107,7 +1118,7 @@ Deprecated položka: označiť a ponechať.
 
 Aliasy: áno, najmä pre migráciu voľných textov.
 
-Fáza: neskôr než základné value object schémy, ale pred masovým ukladaním dát.
+Fáza: `0.2B.2`. V `0.2B.1` môže `Condition` existovať ako value-object kontrakt alebo odkaz bez autoritatívnej katalógovej entity.
 
 ### 9.4 Classification Catalog
 
@@ -1125,7 +1136,7 @@ Deprecated položka: ponechať s platnosťou a náhradou.
 
 Aliasy: áno, ale viazané na konkrétny klasifikačný systém.
 
-Fáza: neskoršia fáza, v 0.2B stačí value object.
+Fáza: `0.2B.2`, ak sa potvrdí potreba. V `0.2B.1` môže `Classification` existovať ako value-object kontrakt alebo odkaz bez autoritatívnej katalógovej entity.
 
 ### 9.5 Process Type Catalog
 
@@ -1421,7 +1432,7 @@ Samostatný `Relationship` object sa zatiaľ neimplementuje. Môže vzniknúť n
 
 Grafová databáza nie je súčasťou tohto návrhu.
 
-Odporúčanie: `Relationship` má byť v budúcnosti first-class object, ale nie v 0.2B. Pre `0.2B.1` a `0.2B.2` stačia explicitné ID referencie. First-class `Relationship` má vzniknúť až vtedy, keď vzťahy začnú niesť vlastné zdroje, časovú platnosť, audit alebo graph export význam.
+Odporúčanie: `Relationship` má byť v budúcnosti first-class object, ale nie v 0.2B. Pre `0.2B.1` a `0.2B.2` stačia explicitné ID referencie. First-class `Relationship` má vzniknúť až vtedy, keď vzťah nesie vlastnú identitu, vlastné `sourceLinks`, `verificationStatus`, časovú platnosť, audit alebo lifecycle, vlastné vlastnosti alebo význam pre graph export.
 
 ## 12. Lifecycle rules
 
@@ -1678,7 +1689,7 @@ Odporúčanie: táto alternatíva nahrádza jednoduchý hybridný DDD model ako 
 RFC-0002 potvrdzuje tieto rozhodnutia RFC-0001:
 
 - `Quantity`, `ValueRange` a `MeasurementQuality` majú byť oddelené,
-- `PropertyRecord` má byť value object s `verificationStatus`,
+- `PropertyRecord` má byť embedded claim-like value object s `verificationStatus`,
 - `Observation` má byť oddelený koncept od `PropertyRecord`,
 - `propertyId` má používať budúci `PRP-xxxxxx`,
 - `unitId` má používať budúci `UNT-xxxxxx`,
@@ -1687,18 +1698,18 @@ RFC-0002 potvrdzuje tieto rozhodnutia RFC-0001:
 
 RFC-0002 spresňuje:
 
-- `Observation` má byť samostatná entita a event-like evidence object,
+- first-class `Observation` má byť samostatná entita a event-like evidence object,
 - `MeasurementQuality` je preferovaný názov pred `ValueQuality`,
-- `Classification` má zostať value object v 0.2B s možnosťou budúceho katalógu,
-- `AvailabilityRecord` a `CommercialObservation` sú value objects s event-like správaním,
+- `Classification` môže v `0.2B.1` zostať value-object kontrakt alebo odkaz s katalógovou entitou odloženou do `0.2B.2`,
 - `AvailabilityRecord` a `CommercialObservation` majú byť presnejšie chápané ako embedded observation records,
+- `AvailabilityRecord` a `CommercialObservation` nepatria do prvého minimálneho scope `0.2B.1`, pokiaľ samostatné rozhodnutie neurčí inak,
 - katalógové položky majú byť samostatné catalog entries,
-- `Decision` dopĺňa chýbajúci schvaľovací krok medzi pozorovaním, odvodeným výsledkom a autoritatívnou zmenou.
+- `Decision` dopĺňa chýbajúcu boundary medzi pozorovaním, odvodeným výsledkom a autoritatívnou zmenou, ale jeho stored kontrakt môže byť odložený.
 
 Môže sa neskôr zmeniť:
 
-- či `Observation` bude globálna entita alebo job-owned entita,
-- či `Classification Catalog` vznikne v 0.2B alebo neskôr,
+- či `Observation` bude vždy first-class entita s `OBS-xxxxxx`, alebo sa povolí aj job-local embedded observation record bez globálnej identity,
+- či `Classification Catalog` vznikne v `0.2B.2` alebo neskôr,
 - či vznikne samostatný `Relationship` object,
 - či vznikne všeobecný `Event` model.
 - či `Decision` dostane vlastný prefix v `EOS-003`.
@@ -1729,7 +1740,7 @@ Navrhované pravidlo:
 
 1. Schváliť alebo upraviť RFC-0002.
 2. Aktualizovať `EOS-003` o `RFC-xxxx` a schválené nové prefixy.
-3. Rozhodnúť, či `Decision` dostane vlastný prefix.
+3. Rozhodnúť, či `Decision` dostane vlastný prefix, iba ak sa stane samostatným stored kontraktom.
 4. Podľa rozsahu vytvoriť ADR pre taxonómiu objektov alebo pre RFC proces.
 5. Až potom začať implementáciu Phase 0.2B kontraktov.
 
@@ -1737,14 +1748,14 @@ Tento RFC nemení `EOS-003` a nevytvára ADR.
 
 ## 20. Otvorené otázky
 
-- Má byť `Observation` vždy globálna entita s `observationScope`, alebo sa povolí aj job-local embedded observation bez `OBS-xxxxxx`?
+- Má byť `Observation` vždy first-class entita s `observationScope`, alebo sa povolí aj job-local embedded observation record bez `OBS-xxxxxx`?
 - Má `Measurement` vzniknúť ako subtype `Observation`, alebo ako samostatná entita?
 - Kedy presne zaviesť Property Catalog a Unit Catalog?
-- Má mať `Classification Catalog` vlastný prefix `CLS-xxxxxx` už v 0.2B?
-- Má mať `Condition Type Catalog` prefix `CND-xxxxxx` už v 0.2B?
+- Má mať `Classification Catalog` vlastný prefix `CLS-xxxxxx` pred `0.2B.2`?
+- Má mať `Condition Type Catalog` prefix `CND-xxxxxx` pred `0.2B.2`?
 - Kedy je potrebný samostatný `Relationship` object?
 - Má `Derived Result` dostať vlastný prefix alebo ostať výstupom konkrétneho kalkulačného modulu?
-- Má `Decision` dostať vlastný prefix a patriť do `0.2B.1`?
+- Má `Decision` dostať vlastný prefix a samostatný stored kontrakt, alebo zostane v `0.2B.1` iba boundary konceptom?
 - Má sa catalog hierarchy zaviesť ako samostatný governance dokument alebo iba ako súčasť knowledge core kontraktov?
 - Ktorý dokument alebo ADR definitívne zavedie RFC lifecycle?
 
@@ -1754,3 +1765,4 @@ Tento RFC nemení `EOS-003` a nevytvára ADR.
 | --- | --- | --- | --- | --- |
 | 2026-07-14 | 0.1 | 0 | Chief Engineering Knowledge Architect + Codex | Initial RFC draft for engineering object taxonomy |
 | 2026-07-14 | 0.1 | 1 | Codex | Architecture review revision: doplnenie Engineering Knowledge Layer, `Observation.observationScope`, `Decision`, aggregate root pravidla, embedded observation records, catalog hierarchy a odporúčaného fázovania `0.2B.1` / `0.2B.2` / `0.2C` |
+| 2026-07-25 | 0.1 | 2 | Codex | Architecture Closure revision: spresnenie minimálneho scope `0.2B.1`, rozlíšenie first-class `Observation` a embedded observation records, ponechanie `Decision` ako boundary konceptu, fázovanie katalógov do `0.2B.2` a zosúladenie prahu pre first-class `Relationship` |

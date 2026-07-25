@@ -3,8 +3,8 @@
 **Project:** EOS - Engineering Operating System  
 **RFC ID:** RFC-0003  
 **Version:** 0.1  
-**Revision:** 0  
-**Status:** Draft  
+**Revision:** 1  
+**Status:** Review  
 **Author:** Chief Engineering Knowledge Architect + Codex  
 **Last update:** 2026-07-14  
 **Document basis:** Internal architecture proposal  
@@ -52,7 +52,7 @@ Tento RFC:
 - Not allowed usage: Nepoužíva sa ako synonymum pre ľubovoľný diagram alebo internú štruktúru jedného súboru.
 - Examples: `EOS-001` definuje systémovú architektúru.
 - Counterexamples: Nazvať zoznam polí v JSON objekte architektúrou.
-- Related concepts: `Governance`, `Knowledge Layer`, `ADR`, `RFC`.
+- Related concepts: `Governance`, `Engineering Knowledge Layer`, `ADR`, `RFC`.
 - Future implementation notes: Architektonické rozhodnutia majú byť zachytené cez ADR alebo Accepted RFC.
 
 ### G-0002 Engineering Knowledge
@@ -64,18 +64,18 @@ Tento RFC:
 - Not allowed usage: Nepoužíva sa pre samotný výpočtový kód, UI alebo neoverený voľný text.
 - Examples: Zdrojovaná vlastnosť materiálu je engineering knowledge.
 - Counterexamples: Dočasná poznámka bez zdroja vydávaná za fakt.
-- Related concepts: `Knowledge Layer`, `Knowledge Entity`, `SourceLink`, `Decision`.
+- Related concepts: `Engineering Knowledge Layer`, `Knowledge Entity`, `SourceLink`, `Decision`.
 - Future implementation notes: Znalosti musia byť oddelené od kalkulačného kódu.
 
-### G-0003 Knowledge Layer
+### G-0003 Engineering Knowledge Layer
 
 - Identifier: `G-0003`
-- Preferred term: `Knowledge Layer`
+- Preferred term: `Engineering Knowledge Layer`
 - Definition: Vrstva EOS medzi governance pravidlami a konkrétnymi knowledge entities, ktorá definuje spoločné znalostné primitíva, evidence, rozhodnutia a katalógy.
-- Allowed usage: Používa sa pre pravidlá ako `PropertyRecord`, `Observation`, `Decision`, `Derived Result`, katalógy a porovnateľnosť.
+- Allowed usage: Používa sa pre pravidlá ako `PropertyRecord`, `Observation`, `Decision`, `Derived Result`, katalógy a porovnateľnosť. Skrátený výraz `Knowledge Layer` je povolený iba ako informatívny alias v próze.
 - Not allowed usage: Nepoužíva sa ako názov pre databázový server alebo konkrétnu entitu.
-- Examples: Unit Catalog patrí do Knowledge Layer.
-- Counterexamples: REST endpoint pre materiály nie je Knowledge Layer.
+- Examples: Unit Catalog patrí do Engineering Knowledge Layer.
+- Counterexamples: REST endpoint pre materiály nie je Engineering Knowledge Layer.
 - Related concepts: `Engineering Knowledge`, `Knowledge Entity`, `Catalog`, `Decision`.
 - Future implementation notes: Má byť stabilizovaná pred plnými knowledge entity kontraktmi.
 
@@ -180,7 +180,7 @@ Tento RFC:
 - Identifier: `G-0012`
 - Preferred term: `Relationship`
 - Definition: Významová väzba medzi objektmi.
-- Allowed usage: Zatiaľ ako ID referencia; neskôr ako first-class object, ak väzba potrebuje vlastné zdroje, platnosť alebo audit.
+- Allowed usage: Zatiaľ ako ID referencia; neskôr ako first-class object, ak väzba potrebuje vlastnú identitu, vlastné `sourceLinks`, `verificationStatus`, časovú platnosť, audit alebo lifecycle, vlastné vlastnosti alebo význam pre graph export.
 - Not allowed usage: Nepoužíva sa ako náhrada za aggregate ownership.
 - Examples: `materialId` v `StockMaterial` vyjadruje relationship.
 - Counterexamples: Vnorený `Quantity` nie je relationship.
@@ -215,13 +215,13 @@ Tento RFC:
 
 - Identifier: `G-0015`
 - Preferred term: `Observation`
-- Definition: Konkrétne pozorovanie, meranie, skúška alebo zistenie s dôkazovým významom.
-- Allowed usage: Používa sa pre záznamy s `OBS-xxxxxx` a `observationScope`.
+- Definition: First-class evidence entity pre konkrétne pozorovanie, meranie, skúšku alebo zistenie s dôkazovým významom.
+- Allowed usage: Používa sa pre záznamy so stabilným `OBS-xxxxxx` a povinným konceptom `observationScope`.
 - Not allowed usage: Nepoužíva sa ako všeobecná autoritatívna vlastnosť.
 - Examples: Meranie v zákazke môže byť observation.
 - Counterexamples: Schválená všeobecná materiálová vlastnosť nie je observation.
 - Related concepts: `Evidence`, `Measurement`, `Decision`, `PropertyRecord`.
-- Future implementation notes: Jedna observation nesmie automaticky meniť property record.
+- Future implementation notes: Jedna observation nesmie automaticky meniť property record; prijatie tvrdenia musí prejsť cez `Decision` alebo ekvivalentný schválený governance mechanizmus.
 
 ### G-0016 Evidence
 
@@ -293,7 +293,7 @@ Tento RFC:
 - Examples: Podmienka platnosti vlastnosti.
 - Counterexamples: Poznámka bez jasného vzťahu k platnosti.
 - Related concepts: `PropertyRecord`, `Capability`, `Condition Type Catalog`.
-- Future implementation notes: Typy podmienok majú byť riadené katalógom.
+- Future implementation notes: V `0.2B.1` môže existovať ako value-object kontrakt alebo odkaz. Autoritatívny Condition Type Catalog patrí do `0.2B.2`.
 
 ### G-0022 Capability
 
@@ -323,13 +323,13 @@ Tento RFC:
 
 - Identifier: `G-0024`
 - Preferred term: `PropertyRecord`
-- Definition: Vnorený claim-like value object, ktorý zapisuje hodnotu konkrétnej property v rodičovskej entite.
-- Allowed usage: Používa sa pre vlastnosti materiálov, strojov, procesov a pozorovaní.
+- Definition: Embedded claim-like value object, ktorý zapisuje tvrdenie o konkrétnej property v rodičovskej entite.
+- Allowed usage: Používa sa pre vlastnosti materiálov, strojov, procesov a pozorovaní; konceptuálne nesie `propertyId`, hodnotu, podmienky, `verificationStatus` a `sourceLinks`.
 - Not allowed usage: Nepoužíva sa ako samostatná entita s vlastným ID.
 - Examples: `PropertyRecord` s `propertyId`, `quantity` a `sourceLinks`.
 - Counterexamples: Samostatný súbor iba pre jednu vnorenú vlastnosť.
 - Related concepts: `Property`, `Quantity`, `SourceLink`, `VerificationStatus`.
-- Future implementation notes: Potrebuje stabilnú cestu pre citovanie polí.
+- Future implementation notes: Potrebuje stabilnú cestu pre citovanie polí. Nemá vlastnú globálnu identitu konkrétneho záznamu.
 
 ### G-0025 Property Catalog
 
@@ -396,8 +396,8 @@ Tento RFC:
 - Identifier: `G-0030`
 - Preferred term: `MeasurementQuality`
 - Definition: Value object opisujúci toleranciu, neistotu, rozlíšenie, presnosť alebo metódu súvisiacu s hodnotou alebo meraním.
-- Allowed usage: Používa sa na oddelenie kvality merania od hodnoty samotnej.
-- Not allowed usage: Nepoužíva sa ako náhrada za `Quantity`.
+- Allowed usage: Používa sa na oddelenie kvality hodnoty alebo merania od hodnoty samotnej. `MeasurementQuality` je jediný preferovaný názov.
+- Not allowed usage: Nepoužíva sa ako náhrada za `Quantity`. Názov `ValueQuality` sa nesmie používať v autoritatívnych dokumentoch ani budúcich schémach.
 - Examples: Neistota merania uvedená mimo číselnej hodnoty.
 - Counterexamples: Tolerancia uložená priamo do `Quantity`.
 - Related concepts: `Measurement`, `Quantity`, `Observation`.
@@ -409,11 +409,11 @@ Tento RFC:
 - Preferred term: `CommercialObservation`
 - Definition: Embedded observation record pre obchodné zistenie bez právneho alebo cenového záväzku.
 - Allowed usage: Používa sa pre časovo označené obchodné pozorovania s confidence a zdrojmi.
-- Not allowed usage: Nepoužíva sa ako cena, ponuka alebo právny záväzok.
+- Not allowed usage: Nepoužíva sa ako cena, ponuka, právny záväzok ani súčasť minimálneho scope `0.2B.1`, pokiaľ samostatné rozhodnutie neurčí inak.
 - Examples: Pozorovanie dodávateľského stavu.
 - Counterexamples: Finálna cenová ponuka.
 - Related concepts: `Supplier`, `Decision`, `AvailabilityRecord`.
-- Future implementation notes: Môže byť vstupom pre quotation decision.
+- Future implementation notes: Môže byť vstupom pre quotation decision. Po schválení sa nesmie ticho prepisovať.
 
 ### G-0032 AvailabilityRecord
 
@@ -421,23 +421,23 @@ Tento RFC:
 - Preferred term: `AvailabilityRecord`
 - Definition: Embedded observation record opisujúci dostupnosť objektu v čase.
 - Allowed usage: Používa sa s `observedAt`, `validUntil`, `relatedEntityId` a `sourceLinks`.
-- Not allowed usage: Nepoužíva sa ako trvalá vlastnosť materiálu alebo polotovaru.
+- Not allowed usage: Nepoužíva sa ako trvalá vlastnosť materiálu alebo polotovaru ani ako súčasť minimálneho scope `0.2B.1`, pokiaľ samostatné rozhodnutie neurčí inak.
 - Examples: Časovo označená dostupnosť skladovej formy.
 - Counterexamples: Dostupnosť bez dátumu vydávaná za fakt.
 - Related concepts: `Observation`, `StockMaterial`, `CommercialObservation`.
-- Future implementation notes: Historická dostupnosť má byť append-only.
+- Future implementation notes: Historická dostupnosť má byť append-only. Po schválení sa nesmie ticho prepisovať.
 
 ### G-0033 Decision
 
 - Identifier: `G-0033`
 - Preferred term: `Decision`
 - Definition: Auditovateľný záznam o prijatí, odmietnutí alebo podmienenom prijatí evidence alebo derived result engineerom alebo schváleným procesom.
-- Allowed usage: Používa sa ako most medzi dôkazmi a autoritatívnou zmenou.
+- Allowed usage: Používa sa ako most medzi dôkazmi, odvodenými výsledkami a autoritatívnou zmenou.
 - Not allowed usage: Nepoužíva sa pre samotný výpočet alebo samotné pozorovanie.
 - Examples: Engineer approval nad observation a derived result.
 - Counterexamples: Automatický AI návrh bez schválenia.
 - Related concepts: `Evidence`, `Derived Result`, `Recommendation`.
-- Future implementation notes: Pravdepodobne potrebuje vlastný prefix v budúcom RFC.
+- Future implementation notes: V `0.2B.1` môže zostať konceptuálnou závislosťou bez samostatného stored kontraktu. Ak sa stane ukladaným objektom, potrebuje vlastný prefix.
 
 ### G-0034 Derived Result
 
@@ -445,11 +445,11 @@ Tento RFC:
 - Preferred term: `Derived Result`
 - Definition: Výsledok odvodený z explicitných vstupov výpočtom, porovnaním, pravidlom alebo AI modelom.
 - Allowed usage: Používa sa pre odhady, porovnania, odporúčania a AI návrhy.
-- Not allowed usage: Nepoužíva sa ako zdrojová znalosť alebo schválený fakt.
+- Not allowed usage: Nepoužíva sa ako zdrojová znalosť, schválený fakt ani automatická zmena autoritatívneho `PropertyRecord`.
 - Examples: Odhad vytvorený z validovaných vstupov.
 - Counterexamples: Hodnota materiálu bez zdroja vydávaná za derived result.
 - Related concepts: `Calculation`, `Recommendation`, `Decision`.
-- Future implementation notes: Musí niesť vstupy a verziu logiky.
+- Future implementation notes: Musí niesť vstupy a verziu logiky. Pre audit odvodenia môže potrebovať `Snapshot`.
 
 ### G-0035 Calculation
 
@@ -672,7 +672,7 @@ Tento RFC:
 - Identifier: `G-0053`
 - Preferred term: `VerificationStatus`
 - Definition: Stav overenia konkrétneho tvrdenia, väzby alebo vnoreného objektu.
-- Allowed usage: Používa sa pri `PropertyRecord`, `SourceLink`, `Observation` alebo `Capability`.
+- Allowed usage: Používa sa pri `PropertyRecord`, `SourceLink`, `Observation` alebo `Capability`. `VerificationStatus` je preferovaný programový názov; `Verification Status` je iba informatívny prose alias.
 - Not allowed usage: Nepoužíva sa ako lifecycle celej entity.
 - Examples: Stav overenia vlastnosti.
 - Counterexamples: `Approved` dokumentu používané ako verification status poľa.
@@ -787,6 +787,234 @@ Tento RFC:
 - Related concepts: `Deprecated`, `Lifecycle`, `Revision`.
 - Future implementation notes: Archived objekty majú zostať čitateľné, ale nie aktívne upravované.
 
+### G-0063 Knowledge Core
+
+- Identifier: `G-0063`
+- Preferred term: `Knowledge Core`
+- Definition: Minimálna množina spoločných znalostných kontraktov potrebných pred konkrétnymi knowledge entities.
+- Allowed usage: Používa sa pre `Quantity`, `ValueRange`, `MeasurementQuality`, `Condition`, `Classification`, `PropertyRecord`, `Observation` a súvisiace evidence pravidlá vo fáze `0.2B.1`.
+- Not allowed usage: Nepoužíva sa ako synonymum pre všetky katalógy alebo všetky knowledge entities.
+- Examples: `PropertyRecord` patrí do Knowledge Core.
+- Counterexamples: `Material` nie je Knowledge Core contract.
+- Related concepts: `Engineering Knowledge Layer`, `Knowledge Catalog`, `Knowledge Entity`.
+- Future implementation notes: Knowledge Core má vzniknúť pred katalógmi a doménovými entitami.
+
+### G-0064 Claim
+
+- Identifier: `G-0064`
+- Preferred term: `Claim`
+- Definition: Overiteľné tvrdenie o objekte, vlastnosti, stave, zdroji alebo interpretácii.
+- Allowed usage: Používa sa ako abstraktný pojem pre tvrdenia nesené cez `PropertyRecord`, `Observation`, `SourceLink` alebo `Decision`.
+- Not allowed usage: Nepoužíva sa ako samostatný dátový objekt, kým nebude schválený kontrakt.
+- Examples: Tvrdenie, že určitý `PropertyRecord` má hodnotu podporenú zdrojom.
+- Counterexamples: Voľná poznámka bez overiteľného obsahu.
+- Related concepts: `Embedded Claim`, `Evidence`, `VerificationStatus`, `SourceLink`.
+- Future implementation notes: Claim môže byť neskôr explicitnejší validačný koncept, ale nie je samostatnou entitou v `0.2B.1`.
+
+### G-0065 Embedded Claim
+
+- Identifier: `G-0065`
+- Preferred term: `Embedded Claim`
+- Definition: Vnorené tvrdenie vlastnené rodičovskou entitou bez vlastnej globálnej identity.
+- Allowed usage: Používa sa pre claim-like value objects ako `PropertyRecord`.
+- Not allowed usage: Nepoužíva sa pre first-class entity s vlastným ID, lifecycle a auditnou históriou.
+- Examples: `PropertyRecord` v entite `Material`.
+- Counterexamples: `Observation` so stabilným `OBS-xxxxxx`.
+- Related concepts: `PropertyRecord`, `Claim`, `Value Object`, `SourceLink`.
+- Future implementation notes: Embedded claim sa reviduje cez rodičovskú entitu.
+
+### G-0066 Embedded Observation Record
+
+- Identifier: `G-0066`
+- Preferred term: `Embedded Observation Record`
+- Definition: Vnorený časovo alebo kontextovo citlivý záznam pozorovania vlastnený rodičovskou entitou.
+- Allowed usage: Používa sa pre `AvailabilityRecord` a `CommercialObservation`.
+- Not allowed usage: Nepoužíva sa ako plnohodnotná `Observation` entity so stabilným `OBS-xxxxxx`.
+- Examples: Časovo označený záznam dostupnosti v `StockMaterial`.
+- Counterexamples: Samostatný záznam pozorovania s globálnym ID.
+- Related concepts: `Observation`, `AvailabilityRecord`, `CommercialObservation`, `Append-only`.
+- Future implementation notes: Po schválení sa má meniť novým záznamom alebo revíziou rodiča, nie tichým prepisom.
+
+### G-0067 Observation Scope
+
+- Identifier: `G-0067`
+- Preferred term: `Observation Scope`
+- Definition: Kontext, v ktorom pozorovanie vzniklo a v ktorom má byť interpretované.
+- Allowed usage: Konceptuálne povolené hodnoty sú `GLOBAL`, `JOB`, `PROJECT` a `EXPERIMENT`.
+- Not allowed usage: Nepoužíva sa na rozdelenie `Observation` na nesúvisiace typy entít.
+- Examples: Job-specific meranie má `JOB` scope.
+- Counterexamples: Vytvorenie samostatného typu `JobObservation` iba pre kontext.
+- Related concepts: `Observation`, `Evidence`, `Job`, `Project`.
+- Future implementation notes: Zatiaľ nejde o JSON enum; presný kontrakt vznikne až vo fáze schém.
+
+### G-0068 Aggregate Boundary
+
+- Identifier: `G-0068`
+- Preferred term: `Aggregate Boundary`
+- Definition: Hranica vlastníctva, integrity a zmien okolo jedného aggregate root.
+- Allowed usage: Používa sa pri rozhodovaní, ktoré objekty sú vnorené a ktoré sú referencované cez stabilné ID.
+- Not allowed usage: Nepoužíva sa ako synonymum pre priečinok, tabuľku alebo modul.
+- Examples: `Material` môže vlastniť svoje `PropertyRecord`, ale nie inú `Observation` aggregate root.
+- Counterexamples: Vnorenie celej entity `Supplier` do entity `Material`.
+- Related concepts: `Aggregate`, `Aggregate Root`, `Transaction Boundary`, `Referential Integrity`.
+- Future implementation notes: Aggregate boundaries majú byť premietnuté do aplikačnej validácie a API.
+
+### G-0069 Transaction Boundary
+
+- Identifier: `G-0069`
+- Preferred term: `Transaction Boundary`
+- Definition: Hranica, v ktorej sa zmena musí uložiť konzistentne ako jedna logická operácia.
+- Allowed usage: Používa sa pri návrhu aggregate root operácií a budúcej databázovej vrstvy.
+- Not allowed usage: Nepoužíva sa na vynútenie priameho zápisu cez viac aggregate roots bez explicitnej koordinácie.
+- Examples: Zmena vnoreného `PropertyRecord` patrí do transakcie rodičovskej entity.
+- Counterexamples: Jedna neauditovaná transakcia meniaca `Material`, `Supplier` a `Observation` bez rozhodnutia.
+- Related concepts: `Aggregate Boundary`, `Aggregate Root`, `Lifecycle`.
+- Future implementation notes: Presné databázové pravidlá patria do budúcej persistence fázy.
+
+### G-0070 Referential Integrity
+
+- Identifier: `G-0070`
+- Preferred term: `Referential Integrity`
+- Definition: Pravidlo, že ID referencia musí smerovať na existujúci a použiteľný cieľ podľa lifecycle a typu objektu.
+- Allowed usage: Používa sa pre väzby ako `sourceReferenceId`, `propertyId`, `unitId` alebo `observationId`.
+- Not allowed usage: Nepoužíva sa ako náhrada za source verification alebo technickú správnosť tvrdenia.
+- Examples: `SourceLink.sourceReferenceId` musí odkazovať na existujúci `SourceReference`.
+- Counterexamples: Platný formát ID bez existujúceho cieľa.
+- Related concepts: `Identifier`, `SourceLink`, `Catalog Entry`, `Application Validation`.
+- Future implementation notes: Bude kontrolovaná aplikačnou validačnou vrstvou, nie iba JSON Schema.
+
+### G-0071 Source Classification
+
+- Identifier: `G-0071`
+- Preferred term: `Source Classification`
+- Definition: Riadená klasifikácia pôvodu alebo sily zdroja podporujúceho technické tvrdenie.
+- Allowed usage: Používa sa v `SourceLink.sourceClass` alebo pri technických tvrdeniach.
+- Not allowed usage: Nesmie sa zamieňať s `Document basis` alebo governance pôvodom dokumentu.
+- Examples: Zdrojová trieda pri tvrdení podporenom externou normatívnou referenciou.
+- Counterexamples: Hlavička governance dokumentu označená source classification.
+- Related concepts: `SourceReference`, `SourceLink`, `NormReference`, `Evidence`.
+- Future implementation notes: Hodnoty tried musia zostať zosúladené s governance pravidlami pre zdroje.
+
+### G-0072 Authoritative Data
+
+- Identifier: `G-0072`
+- Preferred term: `Authoritative Data`
+- Definition: Dáta prijaté EOS ako riadený zdroj pravdy pre daný význam a rozsah.
+- Allowed usage: Používa sa pre schválené alebo inak autoritatívne záznamy s identitou, zdrojmi a lifecycle.
+- Not allowed usage: Nepoužíva sa pre draft, odvodený výsledok, odporúčanie alebo neoverené pozorovanie.
+- Examples: Schválený katalógový význam vlastnosti.
+- Counterexamples: Výstup AI modelu bez engineer approval.
+- Related concepts: `Decision`, `Derived Data`, `VerificationStatus`, `Lifecycle`.
+- Future implementation notes: Povýšenie na authoritative data musí byť explicitné.
+
+### G-0073 Derived Data
+
+- Identifier: `G-0073`
+- Preferred term: `Derived Data`
+- Definition: Dáta odvodené zo vstupov výpočtom, pravidlom, porovnaním alebo modelom.
+- Allowed usage: Používa sa pre `Derived Result`, recommendation a engine výstupy.
+- Not allowed usage: Nepoužíva sa ako autoritatívny zdroj bez samostatného schválenia.
+- Examples: Výsledok kalkulačného pravidla nad explicitnými vstupmi.
+- Counterexamples: Hodnota bez zdroja vydávaná za databázovú znalosť.
+- Related concepts: `Derived Result`, `Calculation`, `Snapshot`, `Decision`.
+- Future implementation notes: Derived data potrebuje audit vstupov a verziu logiky.
+
+### G-0074 Append-only
+
+- Identifier: `G-0074`
+- Preferred term: `Append-only`
+- Definition: Pravidlo, že historicky významné záznamy sa po schválení nemenia tichým prepisom, ale novým záznamom alebo novou revíziou.
+- Allowed usage: Používa sa pri `Observation`, embedded observation records, `Decision` a historických záznamoch.
+- Not allowed usage: Nepoužíva sa ako zákaz opravy Draft záznamov pred review.
+- Examples: Nová dostupnosť sa pridá ako nový `AvailabilityRecord`.
+- Counterexamples: Prepísanie historického obchodného pozorovania bez auditu.
+- Related concepts: `Immutable`, `Lifecycle`, `Revision`, `Audit`.
+- Future implementation notes: Presná technická enforcement vrstva vznikne neskôr.
+
+### G-0075 Immutable
+
+- Identifier: `G-0075`
+- Preferred term: `Immutable`
+- Definition: Stav alebo vlastnosť záznamu, ktorého obsah sa po vzniku alebo schválení nemení.
+- Allowed usage: Používa sa pre snapshoty, rozhodnutia a historické evidence podľa schválených pravidiel.
+- Not allowed usage: Nepoužíva sa pre živé pracovné Draft záznamy bez potreby auditu.
+- Examples: `Snapshot` použitý pri rozhodnutí je immutable.
+- Counterexamples: Priebežne upravovaný pracovný návrh.
+- Related concepts: `Append-only`, `Snapshot`, `Decision`, `Revision`.
+- Future implementation notes: Immutable záznamy môžu mať náhradníka, nie tichú zmenu obsahu.
+
+### G-0076 Snapshot
+
+- Identifier: `G-0076`
+- Preferred term: `Snapshot`
+- Definition: Zmrazený, auditovateľný obraz vstupného stavu použitý pri výpočte, rozhodnutí alebo audite.
+- Allowed usage: Používa sa ako dôkaz toho, z akých vstupov vznikol derived result alebo decision.
+- Not allowed usage: Nepoužíva sa ako živá referencia na aktuálny stav entity.
+- Examples: Snapshot vstupov použitých pre konkrétny derived result.
+- Counterexamples: Odkaz na aktuálny `Material`, ktorý sa môže medzičasom zmeniť.
+- Related concepts: `Derived Result`, `Decision`, `Calculation`, `Immutable`.
+- Future implementation notes: Samostatný prefix a lifecycle snapshotu zostávajú otvorené.
+
+### G-0077 Reference Catalog
+
+- Identifier: `G-0077`
+- Preferred term: `Reference Catalog`
+- Definition: Katalóg položiek reprezentujúcich externý, všeobecný alebo technicky referenčný význam.
+- Allowed usage: Používa sa napríklad pre Unit Catalog alebo Classification Catalog.
+- Not allowed usage: Nepoužíva sa pre interné EOS rozhodovacie významy špecifické pre knowledge model.
+- Examples: Unit Catalog ako katalóg jednotiek.
+- Counterexamples: Property Catalog ako interný význam vlastnosti.
+- Related concepts: `Catalog`, `Catalog Entry`, `Unit Catalog`, `Knowledge Catalog`.
+- Future implementation notes: Môže zdieľať technickú schému s knowledge catalog, ale má odlišné governance pravidlá.
+
+### G-0078 Knowledge Catalog
+
+- Identifier: `G-0078`
+- Preferred term: `Knowledge Catalog`
+- Definition: Katalóg položiek definujúcich interný EOS význam používaný pri znalostných tvrdeniach alebo rozhodovaní.
+- Allowed usage: Používa sa napríklad pre Property Catalog a Condition Type Catalog.
+- Not allowed usage: Nepoužíva sa pre externú normu alebo jednotku iba referenčného charakteru.
+- Examples: Property Catalog ako autorita pre `propertyId`.
+- Counterexamples: Normová referencia evidovaná ako knowledge catalog.
+- Related concepts: `Reference Catalog`, `Property Catalog`, `Catalog Entry`, `Engineering Knowledge Layer`.
+- Future implementation notes: Rozdelenie governance pravidiel je potrebné pred `0.2B.2`.
+
+### G-0079 Property Catalog Entry
+
+- Identifier: `G-0079`
+- Preferred term: `Property Catalog Entry`
+- Definition: Katalógová položka definujúca autoritatívny význam jedného `propertyId`.
+- Allowed usage: Používa sa pre identifikátory `PRP-xxxxxx`.
+- Not allowed usage: Nepoužíva sa pre konkrétnu hodnotu vlastnosti v entite.
+- Examples: Položka definujúca význam property používanej v `PropertyRecord`.
+- Counterexamples: `PropertyRecord` s hodnotou uložený ako catalog entry.
+- Related concepts: `Property`, `Property Catalog`, `PropertyRecord`, `Identifier`.
+- Future implementation notes: Plný Property Catalog patrí do `0.2B.2`, hoci stabilné `PRP` ID je potrebné už pred `0.2B.1`.
+
+### G-0080 Unit Catalog Entry
+
+- Identifier: `G-0080`
+- Preferred term: `Unit Catalog Entry`
+- Definition: Katalógová položka definujúca autoritatívnu jednotku používanú cez `unitId`.
+- Allowed usage: Používa sa pre identifikátory `UNT-xxxxxx`.
+- Not allowed usage: Nepoužíva sa ako voľný text jednotky v schválenom zázname.
+- Examples: Položka Unit Catalog použitá v `Quantity.unitId`.
+- Counterexamples: `rawUnitText` v Draft zázname.
+- Related concepts: `Unit`, `Unit Catalog`, `Quantity`, `Identifier`.
+- Future implementation notes: Plný Unit Catalog patrí do `0.2B.2`, hoci stabilné `UNT` ID je potrebné už pred `0.2B.1`.
+
+### G-0081 Classification
+
+- Identifier: `G-0081`
+- Preferred term: `Classification`
+- Definition: Value object alebo budúci katalógový odkaz vyjadrujúci zaradenie objektu podľa riadeného klasifikačného významu.
+- Allowed usage: V `0.2B.1` môže existovať ako value-object kontrakt alebo odkaz. Autoritatívny Classification Catalog patrí do `0.2B.2`.
+- Not allowed usage: Nepoužíva sa ako voľný tag bez významu, zdroja alebo riadeného typu, ak má byť autoritatívny.
+- Examples: Klasifikácia objektu podľa budúcej katalógovej položky.
+- Counterexamples: Nezdrojovaný ľubovoľný label vydávaný za klasifikáciu.
+- Related concepts: `Reference Catalog`, `Catalog Entry`, `Condition`, `PropertyRecord`.
+- Future implementation notes: Prefix `CLS-xxxxxx` má byť riešený pred `0.2B.2`, nie v tejto revízii.
+
 ## 5. Terminology Rules
 
 1. Každý autoritatívny pojem má jeden preferovaný názov.
@@ -831,19 +1059,20 @@ Odporúčané pravidlá:
 Tieto pojmy alebo oblasti ešte potrebujú samostatné RFC alebo ADR:
 
 - `EngineeringConcept` - či má vzniknúť sémantická vrstva nad Property Catalog.
-- `Decision` - či dostane vlastný prefix a plný kontrakt v `0.2B.1`.
-- `Relationship` - kedy sa stane first-class object.
+- `Decision` - či dostane vlastný prefix a plný stored kontrakt v `0.2B.1`, alebo zostane iba konceptuálnou závislosťou.
+- `Relationship` - kedy sa stane first-class object podľa prahu definovaného v tomto slovníku.
 - `Measurement` - či bude subtype `Observation` alebo samostatná entita.
 - `Inspection` - či bude subtype `Observation` alebo samostatná entita.
-- `Snapshot` - či dostane vlastný prefix a samostatný lifecycle.
+- `Snapshot` - či dostane vlastný prefix a samostatný lifecycle; jeho základný význam je už definovaný v tomto slovníku.
 - `Derived Result` - či bude univerzálny objekt alebo rodina engine-specific výstupov.
 - `Recommendation` - ako odlíšiť AI návrh, pravidlový návrh a engineer-approved decision.
 - `VerificationStatus` - presný enum hodnôt.
-- `Catalog hierarchy` - presné pravidlá pre Reference Catalog a Knowledge Catalog.
+- `Catalog hierarchy` - presné governance pravidlá pre Reference Catalog a Knowledge Catalog pred `0.2B.2`.
 - `Approved` - či sa má používať iba pri dátových entitách alebo aj pri niektorých dokumentoch vedľa `Accepted`.
 
 ## 9. Change History
 
 | Date | Version | Revision | Author | Change |
 | --- | --- | --- | --- | --- |
+| 2026-07-25 | 0.1 | 1 | Codex | Doplnenie chýbajúcich core pojmov, zjednotenie názvu Engineering Knowledge Layer, uzavretie názvu MeasurementQuality a spresnenie Observation, PropertyRecord, Decision, Snapshot, Relationship, Source Classification a katalógových pojmov pre prípravu Architecture Closure |
 | 2026-07-14 | 0.1 | 0 | Chief Engineering Knowledge Architect + Codex | Initial glossary draft |
