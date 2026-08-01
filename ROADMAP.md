@@ -32,7 +32,7 @@ Predbežný cieľ:
 - pripraviť pravidlá validácie,
 - vytvoriť testy štruktúry bez technických hodnôt.
 
-Stav: Next.
+Stav: In progress.
 
 ## Fáza 0.2A - Foundation Data Contracts
 
@@ -66,7 +66,39 @@ Cieľ:
 - pripraviť regresné testy pre štandardné JSON Schema schopnosti,
 - zdokumentovať runtime dependency postup.
 
-Stav: Draft.
+Stav: Completed / Approved.
+
+## Míľnik 0.2B.0 - Governance Finalization
+
+Cieľ:
+
+- uzavrieť architektonickú fázu EOS,
+- doplniť required prefixy do `EOS-003`,
+- prijať RFC-0001, RFC-0002 a RFC-0003,
+- zmeniť Architecture Readiness Verdict na `READY`,
+- zmraziť architektúru pred implementáciou Knowledge Core Contracts.
+
+Stav: Completed / Approved.
+
+## Míľnik 0.2B.1 - Knowledge Core Contracts
+
+Cieľ:
+
+- vytvoriť schémy pre minimálne knowledge core kontrakty schválené architektúrou,
+- zachovať oddelenie JSON Schema validácie a EOS aplikačnej validácie,
+- neprekročiť schválený scope bez ADR alebo RFC.
+
+Predbežný scope:
+
+- `Quantity`,
+- `ValueRange`,
+- `MeasurementQuality`,
+- `Condition`,
+- `Classification`,
+- `PropertyRecord`,
+- `Observation`.
+
+Stav: Next.
 
 ## Fáza 0.3 - Prvé prázdne záznamové šablóny
 

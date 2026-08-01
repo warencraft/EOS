@@ -3,10 +3,10 @@
 **Project:** EOS - Engineering Operating System  
 **RFC ID:** RFC-0001  
 **Version:** 0.1  
-**Revision:** 2  
-**Status:** Review  
+**Revision:** 3  
+**Status:** Accepted  
 **Author:** Chief Engineering Knowledge Architect + Codex  
-**Last update:** 2026-07-14  
+**Last update:** 2026-08-01  
 **Document basis:** Internal architecture proposal  
 
 ---
@@ -859,6 +859,8 @@ Toto RFC zatiaľ nemení `EOS-003`. Presný ďalší governance krok je samostat
 
 ## 14. Otvorené otázky
 
+Tieto otázky neblokujú prijatie RFC pre minimálny scope `0.2B.1`. Položky týkajúce sa RFC lifecycle, Engineering Knowledge Layer, `Observation` a potrebných prefixov sú uzavreté cez ADR-0014, ADR-0015, ADR-0016 a `EOS-003` Revision 2.
+
 - Kedy zaviesť autoritatívny Property Catalog?
 - Má byť Unit Catalog súčasťou 0.2B alebo samostatnej nasledujúcej fázy?
 - Má byť `Classification` dlhodobo iba value object, alebo má vzniknúť samostatný Classification Catalog?
@@ -866,7 +868,7 @@ Toto RFC zatiaľ nemení `EOS-003`. Presný ďalší governance krok je samostat
 - Kedy sa `Capability` má stať samostatnou entitou?
 - Má byť `Decision` v `0.2B.1` iba konceptuálnou závislosťou, alebo samostatným stored kontraktom?
 - Ako oddeliť obchodné pozorovania od budúcich cenových alebo quotation modulov?
-- Ktorý governance dokument presne zavedie lifecycle pre RFC?
+- Kedy sa uložený `Decision` contract, ak bude potrebný, zavedie samostatnou fázou?
 
 ## 15. Odporúčanie
 
@@ -894,6 +896,9 @@ Súvisiace dokumenty:
 - `adr/ADR-0006_Treat_source_references_as_first_class_entities.md`
 - `adr/ADR-0007_Separate_schema_version_from_record_version_and_revision.md`
 - `adr/ADR-0013_Use_a_standards_compliant_JSON_Schema_validator.md`
+- `adr/ADR-0014_Establish_RFC_governance_lifecycle.md`
+- `adr/ADR-0015_Establish_engineering_knowledge_layer.md`
+- `adr/ADR-0016_Treat_observation_as_first_class_evidence_entity.md`
 
 ## 17. Change History
 
@@ -902,3 +907,4 @@ Súvisiace dokumenty:
 | 2026-07-14 | 0.1 | 0 | Chief Engineering Knowledge Architect + Codex | Initial RFC draft |
 | 2026-07-14 | 0.1 | 1 | Codex | Prepracovanie návrhu pre Review: oddelenie hodnoty, rozsahu a kvality merania; návrh identifikátorov `PRP-xxxxxx`, `UNT-xxxxxx`, `OBS-xxxxxx`; doplnenie Unit Catalog, Property Catalog, Observation, Classification a pravidiel porovnateľnosti |
 | 2026-07-25 | 0.1 | 2 | Codex | Architecture Closure revision: uzavretie názvu `MeasurementQuality`, spresnenie `PropertyRecord` ako embedded claim-like value object, doplnenie `Observation.observationScope`, rozhodovacej hranice cez `Decision`, embedded observation records a fázovania `0.2B.1` / `0.2B.2` / `0.2C` |
+| 2026-08-01 | 0.1 | 3 | Codex | Phase 0.2B.0: prijatie RFC po splnení ARR podmienok, prijatí ADR-0014 až ADR-0016 a doplnení required prefixov v `EOS-003` Revision 2 |

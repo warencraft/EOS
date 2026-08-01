@@ -2,14 +2,22 @@
 
 ## Otvorené položky
 
-- Rozhodnúť, aký presný rozsah bude mať fáza 0.2.
-- Navrhnúť prvú verziu JSON schém pre entity z `EOS-004`.
+- Začať `Phase 0.2B.1 - Knowledge Core Contracts`.
+- Navrhnúť prvú verziu JSON schém pre schválený minimálny scope `0.2B.1`: `Quantity`, `ValueRange`, `MeasurementQuality`, `Condition`, `Classification`, `PropertyRecord` a `Observation`.
 - Navrhnúť samostatnú schému `DocumentRecord`, ktorá oddelí verziu riadeného dokumentu od `schemaVersion`, `recordVersion` a `revision` registračného záznamu.
 - Navrhnúť aplikačnú validačnú vrstvu pre významové pravidlá `sourceLinks`, ktoré nevie plne overiť samotná JSON Schema.
-- Definovať pravidlá validácie ID.
+- Definovať pravidlá validácie nových ID formátov z `EOS-003` Revision 2.
 - Definovať minimálnu štruktúru záznamu zákazky.
 - Rozhodnúť, kedy sa začnú používať testy dátových kontraktov.
 - Pripraviť šablóny dokumentov `FRM`.
+
+## Dokončené položky
+
+- Rozhodnutý presný minimálny scope `0.2B.1`.
+- Uzavretá architektonická fáza EOS.
+- Prijaté RFC-0001, RFC-0002 a RFC-0003.
+- Doplnené required prefixy v `EOS-003` Revision 2.
+- Architecture Readiness Verdict zmenený na `READY`.
 
 ## Odložené položky
 
@@ -18,3 +26,6 @@
 - Import alebo čítanie výkresov.
 - Databázový server.
 - Automatické odhady času alebo ceny.
+- Stored `Decision` contract.
+- First-class `Relationship` object.
+- Všeobecný `Event` object.

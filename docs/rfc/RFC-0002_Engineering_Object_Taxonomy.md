@@ -3,10 +3,10 @@
 **Project:** EOS - Engineering Operating System  
 **RFC ID:** RFC-0002  
 **Version:** 0.1  
-**Revision:** 2  
-**Status:** Review  
+**Revision:** 3  
+**Status:** Accepted  
 **Author:** Chief Engineering Knowledge Architect + Codex  
-**Last update:** 2026-07-14  
+**Last update:** 2026-08-01  
 **Document basis:** Internal architecture proposal  
 
 ---
@@ -1718,6 +1718,15 @@ Odporúčanie: RFC-0001 môže po posúdení RFC-0002 prejsť z `Review` do `Acc
 
 ## 19. Governance
 
+Governance podmienky blokujúce prijatie tohto RFC boli uzavreté v míľniku `Phase 0.2B.0 - Governance Finalization`.
+
+Autoritatívne rozhodnutia:
+
+- RFC lifecycle je prijatý cez ADR-0014.
+- Engineering Knowledge Layer je prijatá cez ADR-0015.
+- `Observation` ako first-class evidence entity je prijatá cez ADR-0016.
+- Required prefixy pre `0.2B.1` sú doplnené v `EOS-003` Revision 2.
+
 Odporúča sa zaviesť prefix:
 
 - `RFC-xxxx`
@@ -1736,28 +1745,25 @@ Navrhované pravidlo:
 - ADR zaznamenáva prijaté architektonické rozhodnutie,
 - implementácia musí odkazovať na `Accepted` RFC alebo `Accepted` ADR.
 
-Ďalší governance krok:
+Zostávajúci governance krok pred implementáciou:
 
-1. Schváliť alebo upraviť RFC-0002.
-2. Aktualizovať `EOS-003` o `RFC-xxxx` a schválené nové prefixy.
-3. Rozhodnúť, či `Decision` dostane vlastný prefix, iba ak sa stane samostatným stored kontraktom.
-4. Podľa rozsahu vytvoriť ADR pre taxonómiu objektov alebo pre RFC proces.
-5. Až potom začať implementáciu Phase 0.2B kontraktov.
+1. začať implementáciu `Phase 0.2B.1 - Knowledge Core Contracts` až po formálnom ukončení tohto míľnika,
+2. ponechať `Decision` ako boundary koncept, kým samostatný stored contract nebude schválený,
+3. nepoužívať `REL-xxxxxx` ani `EVT-xxxxxx`, kým ich stav nebude zmenený z `Deferred`.
 
 Tento RFC nemení `EOS-003` a nevytvára ADR.
 
 ## 20. Otvorené otázky
 
-- Má byť `Observation` vždy first-class entita s `observationScope`, alebo sa povolí aj job-local embedded observation record bez `OBS-xxxxxx`?
+Tieto otázky neblokujú prijatie RFC pre minimálny scope `0.2B.1`. Otázky priamo blokujúce Architecture Readiness boli uzavreté cez ADR-0014, ADR-0015, ADR-0016 a `EOS-003` Revision 2.
+
 - Má `Measurement` vzniknúť ako subtype `Observation`, alebo ako samostatná entita?
 - Kedy presne zaviesť Property Catalog a Unit Catalog?
-- Má mať `Classification Catalog` vlastný prefix `CLS-xxxxxx` pred `0.2B.2`?
-- Má mať `Condition Type Catalog` prefix `CND-xxxxxx` pred `0.2B.2`?
 - Kedy je potrebný samostatný `Relationship` object?
 - Má `Derived Result` dostať vlastný prefix alebo ostať výstupom konkrétneho kalkulačného modulu?
-- Má `Decision` dostať vlastný prefix a samostatný stored kontrakt, alebo zostane v `0.2B.1` iba boundary konceptom?
+- Kedy má `Decision` dostať samostatný stored contract, ak sa ukáže potreba po `0.2B.1`?
 - Má sa catalog hierarchy zaviesť ako samostatný governance dokument alebo iba ako súčasť knowledge core kontraktov?
-- Ktorý dokument alebo ADR definitívne zavedie RFC lifecycle?
+- Aké presné governance pravidlá budú platiť pre `CLS-xxxxxx` a `CND-xxxxxx` pri implementácii katalógov v `0.2B.2`?
 
 ## 21. Change History
 
@@ -1766,3 +1772,4 @@ Tento RFC nemení `EOS-003` a nevytvára ADR.
 | 2026-07-14 | 0.1 | 0 | Chief Engineering Knowledge Architect + Codex | Initial RFC draft for engineering object taxonomy |
 | 2026-07-14 | 0.1 | 1 | Codex | Architecture review revision: doplnenie Engineering Knowledge Layer, `Observation.observationScope`, `Decision`, aggregate root pravidla, embedded observation records, catalog hierarchy a odporúčaného fázovania `0.2B.1` / `0.2B.2` / `0.2C` |
 | 2026-07-25 | 0.1 | 2 | Codex | Architecture Closure revision: spresnenie minimálneho scope `0.2B.1`, rozlíšenie first-class `Observation` a embedded observation records, ponechanie `Decision` ako boundary konceptu, fázovanie katalógov do `0.2B.2` a zosúladenie prahu pre first-class `Relationship` |
+| 2026-08-01 | 0.1 | 3 | Codex | Phase 0.2B.0: prijatie RFC po splnení ARR podmienok, prijatí ADR-0014 až ADR-0016 a doplnení required prefixov v `EOS-003` Revision 2 |

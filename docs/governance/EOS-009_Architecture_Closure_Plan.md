@@ -3,194 +3,137 @@
 **Project:** EOS - Engineering Operating System  
 **Document ID:** EOS-009  
 **Version:** 0.1  
-**Revision:** 0  
-**Status:** Draft  
+**Revision:** 1  
+**Status:** Approved  
 **Author:** Codex  
-**Last updated:** 2026-07-25  
-**Document basis:** Internal governance proposal  
+**Last updated:** 2026-08-01  
+**Document basis:** Internal governance decision  
 
 ## 1. Purpose
 
-Tento dokument navrhuje plán formálneho uzatvorenia architektonickej prípravy pred `Phase 0.2B.1 Knowledge Core Contracts`.
+Tento dokument uzatvára architektonickú prípravu pred `Phase 0.2B.1 - Knowledge Core Contracts`.
 
-Cieľom je previesť findings z `RFC-0001-0003_Cross_Consistency_Review.md` do riadeného governance postupu bez začatia implementácie `0.2B.1`, bez tvorby JSON schém a bez prijatia nových ADR v tejto úlohe.
+Pôvodný closure plán bol splnený v míľniku `Phase 0.2B.0 - Governance Finalization`. Dokument teraz zaznamenáva konečný closure stav, nie návrh ďalších architektonických dokumentov.
 
 ## 2. Scope
 
 Dokument pokrýva:
 
-- ktoré CRC findings boli zapracované revíziou RFC-0001, RFC-0002 a RFC-0003,
-- ktoré findings zostávajú deferred,
-- ktoré ADR kandidáty treba pripraviť pred prijatím RFC,
-- ktoré prefixy bude potrebné doplniť do `EOS-003`,
-- odporúčané poradie akceptácie RFC,
-- vstupné kritériá pre `0.2B.1`,
-- výstupné kritériá Architecture Closure.
+- uzavretie Architecture Readiness Review blockerov,
+- prijatie required ADR,
+- doplnenie required identifikátorov do `EOS-003`,
+- prijatie RFC-0001, RFC-0002 a RFC-0003,
+- architecture freeze po ukončení architektonickej fázy,
+- vstupné pravidlá pre `0.2B.1`.
 
 Dokument nepokrýva:
 
 - JSON schémy,
-- zmeny existujúcich schém,
+- nové ADR,
+- nové RFC,
 - implementáciu validačnej alebo aplikačnej logiky,
-- prijatie RFC do stavu `Accepted`,
-- zmenu `EOS-003`,
-- vytvorenie ADR.
+- databázu,
+- API,
+- UI,
+- calculation engine.
 
-## 3. Preconditions
+## 3. Closure State
 
-Pred formálnym uzatvorením architektúry musia platiť tieto podmienky:
+| Area | Closure state | Evidence |
+| --- | --- | --- |
+| RFC Governance Lifecycle | Closed | ADR-0014 Accepted |
+| Engineering Knowledge Layer | Closed | ADR-0015 Accepted |
+| Observation as First-Class Evidence Entity | Closed | ADR-0016 Accepted |
+| Identifier governance | Closed for `0.2B.1` | `EOS-003` Revision 2 |
+| RFC-0001 | Accepted | Revision 3 |
+| RFC-0002 | Accepted | Revision 3 |
+| RFC-0003 | Accepted | Revision 2 |
+| JSON schemas | Unchanged | 10 foundation schemas |
+| Knowledge Core Contracts | Not implemented | no new knowledge-core schemas |
+| Merge | Not performed | branch remains `feature/phase-0.2b-knowledge-contracts` |
 
-- aktuálna vetva je `feature/phase-0.2b-knowledge-contracts`,
-- RFC-0001, RFC-0002 a RFC-0003 existujú,
-- `RFC-0001-0003_Cross_Consistency_Review.md` existuje,
-- `EOS-008_Architecture_Baseline.md` existuje v stave Draft,
-- počet JSON schém ostáva 10,
-- počet ADR súborov ostáva 14,
-- nové knowledge-core JSON schémy ešte neexistujú,
-- Phase 0.2B.1 ešte nebola implementovaná.
-
-## 4. Findings Addressed By The Coordinated Revision
+## 4. Findings Closure
 
 | Finding | Closure state | Resolution |
 | --- | --- | --- |
-| `CRC-0001` | Closed | `MeasurementQuality` je jediný preferovaný názov; `ValueQuality` je zakázané autoritatívne použitie |
-| `CRC-0002` | Closed | `Observation Scope` je definovaný a `Observation` používa koncept `observationScope` |
-| `CRC-0003` | Closed | `PropertyRecord` je definovaný ako embedded claim-like value object |
+| `CRC-0001` | Closed | `MeasurementQuality` je jediný preferovaný názov; `ValueQuality` nie je autoritatívny názov |
+| `CRC-0002` | Closed | `Observation Scope` je definovaný a first-class `Observation` používa koncept `observationScope` |
+| `CRC-0003` | Closed | `PropertyRecord` je embedded claim-like value object |
+| `CRC-0004` | Closed for `0.2B.1` | Embedded observation records sú odlíšené od first-class `Observation`; `AvailabilityRecord` a `CommercialObservation` sú mimo minimálneho scope |
 | `CRC-0005` | Closed | Fázovanie je zosúladené na `0.2B.1`, `0.2B.2` a `0.2C` |
-| `CRC-0006` | Closed | RFC-0003 dopĺňa chýbajúce glossary pojmy potrebné pre architektonické uzatvorenie |
-| `CRC-0007` | Closed for architecture closure | `Decision` je boundary koncept pre `0.2B.1`; stored kontrakt je odložený bez samostatného rozhodnutia |
-| `CRC-0008` | Closed for architecture closure | `Snapshot` je definovaný ako zmrazený auditovateľný obraz vstupov; stored kontrakt zostáva deferred |
-| `CRC-0011` | Closed | Preferovaný názov vrstvy je `Engineering Knowledge Layer`; `Knowledge Layer` je iba informatívny alias |
-| `CRC-0012` | Closed | `Source Classification` je definovaná a odlíšená od `Document basis` |
-| `CRC-0013` | Closed | Prah pre first-class `Relationship` je definovaný |
-| `CRC-0014` | Closed | `Condition` a `Classification` môžu byť v `0.2B.1` value-object kontrakty alebo odkazy; katalógové entity patria do `0.2B.2` |
+| `CRC-0006` | Closed | RFC-0003 je prijatý ako autoritatívny glossary vstup |
+| `CRC-0007` | Closed for `0.2B.1` | `Decision` zostáva boundary koncept; `DEC-xxxxxx` je Candidate |
+| `CRC-0008` | Closed for `0.2B.1` | `Snapshot` je definovaný auditový pojem bez stored contract v prvom scope |
+| `CRC-0009` | Closed | RFC lifecycle je prijatý cez ADR-0014 |
+| `CRC-0010` | Closed | Required prefixy sú doplnené v `EOS-003` Revision 2 |
+| `CRC-0011` | Closed | Preferovaný názov vrstvy je `Engineering Knowledge Layer` |
+| `CRC-0012` | Closed | `Source Classification` je odlíšená od `Document basis` |
+| `CRC-0013` | Closed | Prah pre first-class `Relationship` je definovaný; `REL-xxxxxx` je Deferred |
+| `CRC-0014` | Closed | `Condition` a `Classification` môžu byť v `0.2B.1` ľahké kontrakty alebo odkazy; katalógy patria do `0.2B.2` |
 
-## 5. Findings Deferred
+## 5. Identifier Governance
 
-| Finding | Deferred state | Reason |
-| --- | --- | --- |
-| `CRC-0004` | Partially closed | Terminológia embedded observation records je zapracovaná; `AvailabilityRecord` a `CommercialObservation` sú mimo minimálneho scope `0.2B.1` |
-| `CRC-0009` | Deferred | RFC lifecycle vyžaduje samostatný governance krok alebo ADR; tento dokument ho iba navrhuje |
-| `CRC-0010` | Deferred | Prefixy musia byť doplnené do `EOS-003` v samostatnej governance úlohe |
+`EOS-003` Revision 2 schvaľuje alebo rezervuje prefixy potrebné pre ďalšiu prácu:
 
-## 6. Required ADRs Before RFC Acceptance
+- `RFC-xxxx` - Active,
+- `OBS-xxxxxx` - Active,
+- `PRP-xxxxxx` - Active,
+- `UNT-xxxxxx` - Active,
+- `CLS-xxxxxx` - Active,
+- `CND-xxxxxx` - Active,
+- `DEC-xxxxxx` - Candidate,
+- `REL-xxxxxx` - Deferred,
+- `EVT-xxxxxx` - Deferred.
 
-### 6.1 Establish RFC Governance Lifecycle
+`DEC-xxxxxx` zostáva Candidate, pretože samostatný stored `Decision` contract nie je súčasťou minimálneho scope `0.2B.1`.
 
-**Need:** Required.
+`REL-xxxxxx` a `EVT-xxxxxx` zostávajú Deferred a nesmú sa použiť v schémach `0.2B.1` bez nového ADR, RFC alebo aktualizácie `EOS-003`.
 
-**Reason:** RFC dokumenty už používajú stavy `Draft`, `Review`, `Accepted`, `Rejected` a `Superseded`, ale ich lifecycle ešte nie je formálne prijatý governance rozhodnutím.
+## 6. RFC Acceptance
 
-**Scope:** Stavový model RFC, pravidlá pre prechod do `Accepted`, vzťah RFC a ADR, pravidlá pre supersede a zodpovednosť za schválenie.
+RFC-0001, RFC-0002 a RFC-0003 sú prijaté ako architektonický vstup pre `Phase 0.2B.1 - Knowledge Core Contracts`.
 
-**Alternatives considered:**
+Prijatie znamená:
 
-- ponechať RFC lifecycle iba v texte RFC,
-- doplniť ho priamo do `EOS-002`,
-- vytvoriť samostatné ADR a neskôr aktualizovať governance dokumenty.
+- môžu sa použiť ako autoritatívny vstup pre knowledge core JSON kontrakty,
+- ich význam sa nesmie meniť tichou editáciou,
+- zmena prijatého významu vyžaduje nový RFC, novú revíziu s návratom do review alebo ADR podľa povahy zmeny,
+- implementácia nesmie meniť architektúru cez technickú skratku.
 
-**Blocks RFC acceptance:** Yes.
+## 7. Architecture Freeze
 
-**Blocks start of 0.2B.1:** Yes, ak sa má `0.2B.1` opierať o Accepted RFC.
+Architektonická fáza EOS je po míľniku `Phase 0.2B.0 - Governance Finalization` zmrazená.
 
-### 6.2 Establish Engineering Knowledge Layer
+Po tomto míľniku nevznikajú nové veľké architektonické dokumenty, pokiaľ sa neobjaví nový architektonický problém.
 
-**Need:** Required.
+Architektúra sa odteraz mení iba:
 
-**Reason:** Engineering Knowledge Layer je nová architektonická vrstva medzi governance pravidlami a konkrétnymi knowledge entities. Bez rozhodnutia by budúce kontrakty mohli miešať všeobecné knowledge pravidlá s doménovými entitami.
+- prijatým ADR,
+- novým alebo revidovaným RFC,
+- aktualizáciou governance dokumentu podľa existujúcich pravidiel.
 
-**Scope:** Názov vrstvy, zodpovednosť vrstvy, povolené závislosti a hranice voči Knowledge Core Contracts, Knowledge Catalogs a Knowledge Entities.
+Bežná implementácia, JSON schéma, API, UI, databázová vrstva, import, export ani engine nesmú meniť prijatý architektonický význam.
 
-**Alternatives considered:**
+## 8. Entry Criteria For Phase 0.2B.1
 
-- ponechať pravidlá priamo v entity RFC,
-- zlúčiť vrstvu s Governance Layer,
-- zaviesť samostatnú Engineering Knowledge Layer.
+`Phase 0.2B.1 - Knowledge Core Contracts` môže začať po dokončení tohto míľnika.
 
-**Blocks RFC acceptance:** Yes, pre RFC-0002 a RFC-0003.
+Splnené vstupné podmienky:
 
-**Blocks start of 0.2B.1:** Yes.
-
-### 6.3 Treat Observation As First-Class Evidence Entity
-
-**Need:** Required.
-
-**Reason:** `Observation` je jadrová evidence entita s dopadom na ID, lifecycle, audit, sourceLinks a povýšenie tvrdení. Musí byť jasne odlíšená od embedded observation records.
-
-**Scope:** First-class `Observation` so stabilným `OBS-xxxxxx`, `observationScope`, append-only orientácia, evidence úloha a zákaz automatickej zmeny autoritatívnych `PropertyRecord`.
-
-**Alternatives considered:**
-
-- modelovať všetky pozorovania iba ako vnorené records,
-- vytvoriť samostatné typy pre job/project/experiment observations,
-- použiť jednotnú first-class `Observation` so scope a odlíšiť embedded observation records.
-
-**Blocks RFC acceptance:** Yes, pre RFC-0001 a RFC-0002.
-
-**Blocks start of 0.2B.1:** Yes, ak je `Observation` v minimálnom scope.
-
-### 6.4 ADRs Not Required Before 0.2B.1
-
-Samostatný ADR pre Hybrid DDD Taxonomy sa zatiaľ neodporúča vytvárať, pokiaľ ďalšie review nepreukáže reálny konflikt medzi entity/value object/aggregate modelom a schválenou architektúrou.
-
-Samostatný ADR pre Reference Catalog vs Knowledge Catalog sa odporúča odložiť minimálne do prípravy `0.2B.2`, pokiaľ nebude potrebný na prijatie RFC-0002.
-
-## 7. Required EOS-003 Identifier Updates
-
-`EOS-003` sa v tejto úlohe nemení. Pred implementáciou schém však musí vzniknúť samostatná governance aktualizácia alebo ADR s nadväznou zmenou `EOS-003`.
-
-### Required Before 0.2B.1
-
-- `RFC-xxxx` pre RFC dokumenty,
-- `OBS-xxxxxx` pre first-class `Observation`,
-- `PRP-xxxxxx` pre Property Catalog Entry alebo stabilný property identifier,
-- `UNT-xxxxxx` pre Unit Catalog Entry alebo stabilný unit identifier.
-
-### Potentially Required Before 0.2B.1
-
-- `DEC-xxxxxx` ako kandidátsky prefix pre `Decision`, iba ak `Decision` dostane samostatný stored kontrakt.
-
-`DEC-xxxxxx` nie je týmto dokumentom prijatý ako autoritatívny prefix.
-
-### Required Before 0.2B.2
-
-- `CLS-xxxxxx` pre Classification Catalog Entry,
-- `CND-xxxxxx` pre Condition Type Catalog Entry.
-
-### Deferred
-
-- `REL-xxxxxx` pre first-class Relationship,
-- `EVT-xxxxxx` pre všeobecný Event object.
-
-## 8. RFC Acceptance Sequence
-
-Odporúčané poradie:
-
-1. Pripraviť ADR pre RFC Governance Lifecycle.
-2. Pripraviť ADR pre Engineering Knowledge Layer.
-3. Pripraviť ADR pre Observation as First-Class Evidence Entity.
-4. Aktualizovať `EOS-003` o prefixy required before `0.2B.1`.
-5. Skontrolovať, že RFC-0001 Revision 2, RFC-0002 Revision 2 a RFC-0003 Revision 1 sú vzájomne konzistentné.
-6. Presunúť RFC-0003 z `Review` do `Accepted`, ak slovník už neobsahuje blokujúce otázky pre `0.2B.1`.
-7. Presunúť RFC-0001 z `Review` do `Accepted`.
-8. Presunúť RFC-0002 z `Review` do `Accepted`.
-9. Až potom začať `Phase 0.2B.1 Knowledge Core Contracts`.
-
-RFC nemajú byť označené `Accepted` v tejto úlohe.
-
-## 9. Entry Criteria For Phase 0.2B.1
-
-Pred začatím `0.2B.1` musia byť splnené:
-
-- RFC-0001, RFC-0002 a RFC-0003 sú `Accepted` alebo výslovne schválené ako vstup pre implementáciu,
-- required ADR z časti 6 sú prijaté alebo výslovne odložené s dôvodom,
+- ADR-0014 je Accepted,
+- ADR-0015 je Accepted,
+- ADR-0016 je Accepted,
 - `EOS-003` obsahuje required prefixy pre `0.2B.1`,
-- `MeasurementQuality`, `Observation Scope`, `PropertyRecord`, `Claim`, `Embedded Claim`, `Source Classification`, `Snapshot` a `Relationship` sú terminologicky stabilné,
-- je rozhodnuté, či `Decision` je stored kontrakt alebo iba boundary koncept,
-- počet existujúcich JSON schém je pred začiatkom implementácie známy a zmeny sú kontrolované,
-- validačné testy prechádzajú.
+- RFC-0001, RFC-0002 a RFC-0003 sú Accepted,
+- `Decision` je explicitne ponechaný ako boundary koncept bez stored contract v minimálnom scope,
+- `Relationship` a všeobecný `Event` sú Deferred,
+- validačné testy prechádzajú,
+- počet foundation schemas zostáva 10,
+- knowledge-core JSON schémy ešte nevznikli.
 
-Odporúčaný minimálny scope `0.2B.1`:
+## 9. Approved Minimum Scope For 0.2B.1
+
+Minimálny scope `0.2B.1`:
 
 - `Quantity`,
 - `ValueRange`,
@@ -198,13 +141,10 @@ Odporúčaný minimálny scope `0.2B.1`:
 - `Condition`,
 - `Classification`,
 - `PropertyRecord`,
-- `Observation`.
+- `Observation`,
+- súvisiace evidence a source-link pravidlá.
 
-`Decision` sa odporúča ponechať ako boundary koncept bez samostatného stored kontraktu v prvom scope, pokiaľ governance nerozhodne inak.
-
-`Snapshot` sa odporúča ponechať ako definovaný auditový pojem bez samostatného stored kontraktu v prvom scope, pokiaľ sa v `0.2B.1` neimplementuje `Derived Result`.
-
-Do `0.2B.1` zatiaľ nepatria:
+Mimo `0.2B.1` zostávajú:
 
 - `AvailabilityRecord`,
 - `CommercialObservation`,
@@ -212,36 +152,30 @@ Do `0.2B.1` zatiaľ nepatria:
 - Unit Catalog,
 - Classification Catalog,
 - Condition Type Catalog,
+- stored `Decision`,
 - `Relationship`,
+- všeobecný `Event`,
 - `Material`,
 - `Machine`,
 - `Supplier`,
 - `StockMaterial`,
-- `ManufacturingProcess`.
+- `ManufacturingProcess`,
+- quotation engine,
+- manufacturing engine,
+- AI layer,
+- databázový server,
+- UI.
 
-## 10. Exit Criteria For Architecture Closure
+## 10. Risks After Closure
 
-Architecture Closure môže byť uzavretá, keď:
+- Implementácia môže neúmyselne rozšíriť scope `0.2B.1`; také rozšírenie musí byť odmietnuté alebo riadené cez ADR/RFC.
+- `DEC-xxxxxx` môže byť predčasne použitý ako plný záznam; kým nevznikne stored contract, zostáva iba Candidate.
+- Katalógové prefixy sú schválené, ale samotné katalógy ešte nie sú implementované; schémy `0.2B.1` nesmú predstierať plný katalógový obsah.
+- `REL-xxxxxx` a `EVT-xxxxxx` sú pomenované, ale Deferred; nesmú sa stať implicitnou súčasťou knowledge core.
 
-- RFC-0001, RFC-0002 a RFC-0003 majú schválený cieľový stav,
-- všetky Critical a High findings z cross-consistency review sú uzavreté alebo formálne odložené,
-- required ADR sú prijaté alebo odložené s explicitným dôvodom,
-- required prefixy pre `0.2B.1` sú schválené v governance,
-- `EOS-008` alebo jeho nástupca zodpovedá finálnemu stavu,
-- nie je otvorený terminologický konflikt blokujúci JSON kontrakty,
-- testy validácie prechádzajú,
-- Phase `0.2B.1` je stále nezačatá až do formálneho schválenia vstupu.
-
-## 11. Risks
-
-- Ak sa `EOS-003` neaktualizuje pred schémami, ID prefixy sa môžu dostať do kontraktov bez autoritatívnej opory.
-- Ak sa `Decision` začne implementovať bez ADR alebo samostatného RFC, môže vzniknúť nejasná aggregate boundary.
-- Ak sa katalógy posunú príliš ďaleko, `PropertyRecord.propertyId` a `Quantity.unitId` budú mať stabilný formát bez autoritatívneho významu.
-- Ak sa `Observation` a embedded observation records zmiešajú, vznikne konflikt lifecycle a audit pravidiel.
-- Ak sa `Relationship` vytvorí príliš skoro, model sa môže zbytočne skomplikovať pred graph DB potrebou.
-
-## 12. Change History
+## 11. Change History
 
 | Date | Version | Revision | Author | Summary |
 | --- | --- | --- | --- | --- |
 | 2026-07-25 | 0.1 | 0 | Codex | Initial architecture closure plan for preparing RFC-0001, RFC-0002 and RFC-0003 for governance acceptance before Phase 0.2B.1 |
+| 2026-08-01 | 0.1 | 1 | Codex | Phase 0.2B.0: uzavretie Architecture Closure, prijatie required ADR a RFC, doplnenie prefix governance v `EOS-003` a vyhlásenie Architecture Freeze |

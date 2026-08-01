@@ -3,10 +3,10 @@
 **Project:** EOS - Engineering Operating System  
 **RFC ID:** RFC-0003  
 **Version:** 0.1  
-**Revision:** 1  
-**Status:** Review  
+**Revision:** 2  
+**Status:** Accepted  
 **Author:** Chief Engineering Knowledge Architect + Codex  
-**Last update:** 2026-07-14  
+**Last update:** 2026-08-01  
 **Document basis:** Internal architecture proposal  
 
 ---
@@ -1056,10 +1056,10 @@ Odporúčané pravidlá:
 
 ## 8. Open Questions
 
-Tieto pojmy alebo oblasti ešte potrebujú samostatné RFC alebo ADR:
+Tieto pojmy alebo oblasti ešte môžu potrebovať samostatné RFC alebo ADR. Neblokujú prijatie slovníka pre minimálny scope `0.2B.1`, pretože RFC lifecycle, Engineering Knowledge Layer, first-class `Observation` a required prefixy boli uzavreté cez ADR-0014, ADR-0015, ADR-0016 a `EOS-003` Revision 2.
 
 - `EngineeringConcept` - či má vzniknúť sémantická vrstva nad Property Catalog.
-- `Decision` - či dostane vlastný prefix a plný stored kontrakt v `0.2B.1`, alebo zostane iba konceptuálnou závislosťou.
+- `Decision` - kedy dostane plný stored contract, ak sa po `0.2B.1` ukáže potreba.
 - `Relationship` - kedy sa stane first-class object podľa prahu definovaného v tomto slovníku.
 - `Measurement` - či bude subtype `Observation` alebo samostatná entita.
 - `Inspection` - či bude subtype `Observation` alebo samostatná entita.
@@ -1074,5 +1074,6 @@ Tieto pojmy alebo oblasti ešte potrebujú samostatné RFC alebo ADR:
 
 | Date | Version | Revision | Author | Change |
 | --- | --- | --- | --- | --- |
-| 2026-07-25 | 0.1 | 1 | Codex | Doplnenie chýbajúcich core pojmov, zjednotenie názvu Engineering Knowledge Layer, uzavretie názvu MeasurementQuality a spresnenie Observation, PropertyRecord, Decision, Snapshot, Relationship, Source Classification a katalógových pojmov pre prípravu Architecture Closure |
 | 2026-07-14 | 0.1 | 0 | Chief Engineering Knowledge Architect + Codex | Initial glossary draft |
+| 2026-07-25 | 0.1 | 1 | Codex | Doplnenie chýbajúcich core pojmov, zjednotenie názvu Engineering Knowledge Layer, uzavretie názvu MeasurementQuality a spresnenie Observation, PropertyRecord, Decision, Snapshot, Relationship, Source Classification a katalógových pojmov pre prípravu Architecture Closure |
+| 2026-08-01 | 0.1 | 2 | Codex | Phase 0.2B.0: prijatie slovníka po splnení ARR podmienok, prijatí ADR-0014 až ADR-0016 a doplnení required prefixov v `EOS-003` Revision 2 |

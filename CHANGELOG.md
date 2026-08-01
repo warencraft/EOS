@@ -2,9 +2,36 @@
 
 Všetky významné zmeny projektu EOS sa zaznamenávajú v tomto súbore.
 
+## 0.2B.0 - 2026-08-01
+
+Status: Completed / Approved
+
+### Added
+
+- Architecture Phase Complete záznam pre uzavretie architektonickej fázy.
+- Architecture Freeze pravidlo: nové veľké architektonické dokumenty nevznikajú bez nového architektonického problému.
+
+### Changed
+
+- `EOS-003` doplnený o prefix governance pre `RFC`, `OBS`, `PRP`, `UNT`, `CLS`, `CND`, `DEC`, `REL` a `EVT`.
+- `DEC-xxxxxx` označený ako `Candidate`.
+- `REL-xxxxxx` a `EVT-xxxxxx` označené ako `Deferred`.
+- RFC-0001, RFC-0002 a RFC-0003 prijaté ako `Accepted`.
+- `EOS-009` aktualizovaný na closure stav po splnení governance podmienok.
+- `EOS-010` aktualizovaný na Architecture Readiness Verdict `READY`.
+- `ROADMAP.md` a `BACKLOG.md` nastavené na ďalší míľnik `Phase 0.2B.1 - Knowledge Core Contracts`.
+
+### Not Added
+
+- Nevznikli nové JSON schémy.
+- Nevznikli nové ADR.
+- Nevznikli nové RFC.
+- Nebola začatá implementácia Knowledge Core Contracts.
+- Nebol pridaný API, databázový server, calculation engine ani UI.
+
 ## 0.2A.2 - 2026-07-14
 
-Status: Draft
+Status: Completed / Approved
 
 ### Added
 
