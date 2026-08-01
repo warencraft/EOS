@@ -10,7 +10,8 @@
     "sourceReference": { "$ref": "https://eos.local/schemas/source-reference.schema.json" },
     "normReference": { "$ref": "https://eos.local/schemas/norm-reference.schema.json" },
     "documentRecord": { "$ref": "https://eos.local/schemas/document-record.schema.json" },
-    "quantity": { "$ref": "https://eos.local/schemas/knowledge-core/quantity.schema.json" }
+    "quantity": { "$ref": "https://eos.local/schemas/knowledge-core/quantity.schema.json" },
+    "valueRange": { "$ref": "https://eos.local/schemas/knowledge-core/value-range.schema.json" }
   },
   "properties": {
     "sourceReferences": {
@@ -28,6 +29,10 @@
     "quantities": {
       "type": "array",
       "items": { "$ref": "#/$defs/quantity" }
+    },
+    "valueRanges": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/valueRange" }
     }
   },
   "additionalProperties": false

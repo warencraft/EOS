@@ -1,5 +1,32 @@
 # tests
 
+## Míľnik 0.2B.1.2 - ValueRange Contract
+
+Testy pre `ValueRange` používajú iba `unittest` a existujúcu validačnú vrstvu.
+
+Platné a neplatné fixture sú v rovnakých Knowledge Core priečinkoch ako `Quantity`:
+
+- `tests/fixtures/valid/knowledge-core/`
+- `tests/fixtures/invalid/knowledge-core/`
+
+Pokrytie zahŕňa:
+
+- uzavretý, otvorený a polootvorený rozsah,
+- jednostranne ohraničené rozsahy,
+- rovnaké hranice,
+- zápornú až kladnú fiktívnu hodnotu,
+- voliteľné `notes`,
+- chýbajúci `unitId`,
+- chýbajúce obe hranice,
+- obrátené hranice cez aplikačnú validáciu,
+- inkluzivitu bez príslušnej hranice,
+- nesprávne typy hraníc,
+- neplatný `UNT` identifikátor,
+- `additionalProperties: false`,
+- zákaz entity metadát, `sourceLinks`, `tolerance` a `uncertainty`,
+- rozlíšenie `schema_validation` a `application_validation`,
+- dostupnosť `ValueRange` cez centrálny schema index.
+
 ## Míľnik 0.2B.1.1 - Quantity Contract
 
 Testy pre `Quantity` používajú iba `unittest` a existujúcu validačnú vrstvu.

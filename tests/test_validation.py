@@ -18,6 +18,7 @@ NORM_SCHEMA = "https://eos.local/schemas/norm-reference.schema.json"
 DOCUMENT_SCHEMA = "https://eos.local/schemas/document-record.schema.json"
 INDEX_SCHEMA = "https://eos.local/schemas/index.schema.json"
 QUANTITY_SCHEMA = "https://eos.local/schemas/knowledge-core/quantity.schema.json"
+VALUE_RANGE_SCHEMA = "https://eos.local/schemas/knowledge-core/value-range.schema.json"
 
 
 def load_fixture(name: str) -> dict:
@@ -373,6 +374,142 @@ class ValidationTests(unittest.TestCase):
                 result = self.validator.validate({"value": value, "unitId": "UNT-000001"}, QUANTITY_SCHEMA)
                 self.assertFalse(result.ok)
                 self.assertTrue(any(error.path == "$.value" for error in result.errors))
+
+    def test_value_range_schema_definition_is_valid(self) -> None:
+        result = self.validator.validate_schema_definition(VALUE_RANGE_SCHEMA)
+        self.assertTrue(result.ok, [f"{e.schemaPath}: {e.message}" for e in result.errors])
+
+    def test_valid_value_range_fixtures_pass(self) -> None:
+        files = sorted(VALID_KNOWLEDGE_CORE_FIXTURES.glob("value-range-*-valid.json"))
+        self.assertGreaterEqual(len(files), 8)
+        for path in files:
+            with self.subTest(path=path.name):
+                result = self.validator.validate_json_file(path, VALUE_RANGE_SCHEMA)
+                self.assertTrue(result.ok, [f"{e.path}: {e.message}" for e in result.errors])
+
+    def test_invalid_value_range_fixtures_fail(self) -> None:
+        files = sorted(INVALID_KNOWLEDGE_CORE_FIXTURES.glob("value-range-*-invalid.json"))
+        self.assertGreaterEqual(len(files), 20)
+        for path in files:
+            with self.subTest(path=path.name):
+                result = self.validator.validate_json_file(path, VALUE_RANGE_SCHEMA)
+                self.assertFalse(result.ok, path.name)
+
+    def test_value_range_requires_at_least_one_boundary_structurally(self) -> None:
+        record = load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / "value-range-no-boundaries-invalid.json")
+        result = self.validator.validate(record, VALUE_RANGE_SCHEMA)
+        self.assertFalse(result.ok)
+        self.assertTrue(any(error.category == "schema_validation" and error.path == "$" for error in result.errors))
+
+    def test_value_range_unit_id_uses_central_unt_identifier(self) -> None:
+        schema = self.validator.registry.by_id[VALUE_RANGE_SCHEMA]
+        self.assertEqual(
+            schema["properties"]["unitId"]["$ref"],
+            "https://eos.local/schemas/common/identifiers.schema.json#/$defs/UNT",
+        )
+        result = self.validator.validate({"minValue": 1, "unitId": "UNT-000101"}, VALUE_RANGE_SCHEMA)
+        self.assertTrue(result.ok, [f"{e.path}: {e.message}" for e in result.errors])
+
+    def test_value_range_rejects_unknown_additional_field_with_precise_path(self) -> None:
+        record = load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / "value-range-unknown-field-invalid.json")
+        result = self.validator.validate(record, VALUE_RANGE_SCHEMA)
+        self.assertFalse(result.ok)
+        self.assertTrue(any(error.path == "$.unexpected" for error in result.errors))
+
+    def test_value_range_rejects_entity_metadata_fields(self) -> None:
+        metadata_fields = {
+            "id": "RNG-000001",
+            "schemaVersion": "0.1.0",
+            "recordVersion": 1,
+            "revision": 0,
+            "status": "Draft"
+        }
+        for field, value in metadata_fields.items():
+            with self.subTest(field=field):
+                record = {"minValue": 1, "maxValue": 5, "unitId": "UNT-000101", field: value}
+                result = self.validator.validate(record, VALUE_RANGE_SCHEMA)
+                self.assertFalse(result.ok)
+                self.assertTrue(any(error.path == f"$.{field}" for error in result.errors))
+
+    def test_value_range_rejects_source_links(self) -> None:
+        record = load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / "value-range-source-links-invalid.json")
+        result = self.validator.validate(record, VALUE_RANGE_SCHEMA)
+        self.assertFalse(result.ok)
+        self.assertTrue(any(error.path == "$.sourceLinks" for error in result.errors))
+
+    def test_value_range_reversed_bounds_are_application_validation(self) -> None:
+        record = load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / "value-range-reversed-bounds-invalid.json")
+        result = self.validator.validate(record, VALUE_RANGE_SCHEMA)
+        self.assertFalse(result.ok)
+        self.assertTrue(
+            any(
+                error.category == "application_validation"
+                and error.errorCode == "application_validation.value_range_reversed_bounds"
+                and error.path == "$.minValue"
+                for error in result.errors
+            )
+        )
+
+    def test_value_range_inclusivity_without_boundary_is_application_validation(self) -> None:
+        cases = [
+            (
+                "value-range-lower-inclusive-without-min-invalid.json",
+                "application_validation.value_range_lower_inclusive_without_min",
+                "$.lowerInclusive",
+            ),
+            (
+                "value-range-upper-inclusive-without-max-invalid.json",
+                "application_validation.value_range_upper_inclusive_without_max",
+                "$.upperInclusive",
+            ),
+        ]
+        for filename, error_code, path in cases:
+            with self.subTest(filename=filename):
+                record = load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / filename)
+                result = self.validator.validate(record, VALUE_RANGE_SCHEMA)
+                self.assertFalse(result.ok)
+                self.assertTrue(
+                    any(
+                        error.category == "application_validation"
+                        and error.errorCode == error_code
+                        and error.path == path
+                        for error in result.errors
+                    )
+                )
+
+    def test_value_range_equal_boundaries_are_valid(self) -> None:
+        record = load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "value-range-equal-boundaries-valid.json")
+        self.assertValid(record, VALUE_RANGE_SCHEMA)
+
+    def test_value_range_single_sided_ranges_are_valid(self) -> None:
+        for filename in [
+            "value-range-lower-bounded-valid.json",
+            "value-range-upper-bounded-valid.json",
+        ]:
+            with self.subTest(filename=filename):
+                record = load_json(VALID_KNOWLEDGE_CORE_FIXTURES / filename)
+                self.assertValid(record, VALUE_RANGE_SCHEMA)
+
+    def test_value_range_schema_and_application_errors_are_distinguishable(self) -> None:
+        record = {
+            "minValue": 5,
+            "maxValue": 1,
+            "unitId": "bad"
+        }
+        result = self.validator.validate(record, VALUE_RANGE_SCHEMA)
+        self.assertFalse(result.ok)
+        categories = {error.category for error in result.errors}
+        self.assertIn("schema_validation", categories)
+        self.assertIn("application_validation", categories)
+
+    def test_schema_index_resolves_value_range(self) -> None:
+        record = {
+            "valueRanges": [
+                load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "value-range-closed-valid.json")
+            ]
+        }
+        result = self.validator.validate(record, INDEX_SCHEMA)
+        self.assertTrue(result.ok, [f"{e.path}: {e.message}" for e in result.errors])
 
 
 if __name__ == "__main__":

@@ -1,5 +1,17 @@
 # ROADMAP
 
+## Míľnik 0.2B.1.2 - ValueRange Contract
+
+Cieľ:
+
+- zaviesť druhý minimálny Knowledge Core Contract pre value object `ValueRange`,
+- definovať `minValue`, `maxValue`, `unitId`, `lowerInclusive`, `upperInclusive` a voliteľné `notes`,
+- použiť centrálny formát `UNT-xxxxxx`,
+- oddeliť štrukturálne pravidlá od aplikačného pravidla `minValue <= maxValue`,
+- nepridávať Unit Catalog, konkrétne jednotky ani strojárske hodnoty.
+
+Stav: Review.
+
 ## Míľnik 0.2B.1.1 - Quantity Contract
 
 Cieľ:

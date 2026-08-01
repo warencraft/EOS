@@ -1,5 +1,23 @@
 # schemas
 
+## Míľnik 0.2B.1.2 - ValueRange Contract
+
+Druhý Knowledge Core Contract je `ValueRange`:
+
+- schéma: `knowledge-core/value-range.schema.json`,
+- schema id: `https://eos.local/schemas/knowledge-core/value-range.schema.json`,
+- discovery: `index.schema.json#/$defs/valueRange`,
+- typ: value object vlastnený rodičovským objektom,
+- lifecycle: nemá vlastné `id`, `status`, `revision`, `schemaVersion`, `recordVersion`, `sourceLinks` ani `verificationStatus`.
+
+`ValueRange` používa povinné `unitId` a aspoň jednu hranicu z `minValue` alebo `maxValue`. Voliteľné `lowerInclusive` a `upperInclusive` určujú otvorenosť hraníc; ak sú vynechané, sémantická predvolená hodnota je `true`, ale schéma nedopĺňa hodnoty do dát.
+
+`unitId` používa centrálny identifikátor `UNT-xxxxxx` zo `common/identifiers.schema.json#/$defs/UNT`. Unit Catalog záznamy ani konkrétne jednotky zatiaľ nie sú implementované.
+
+`ValueRange` reprezentuje interval. `Quantity` reprezentuje jednu skalárnu hodnotu. `ValueRange` preto v tejto fáze nevkladá dve `Quantity` hranice a udržiava jednu spoločnú jednotku na úrovni rozsahu.
+
+Štrukturálna validácia kontroluje povinné polia, typy, centrálny `UNT` formát, aspoň jednu hranicu, väzbu inkluzivity na existenciu hranice a `additionalProperties: false`. EOS aplikačná validácia kontroluje `minValue <= maxValue` a opakuje významové pravidlá pre inkluzivitu bez hranice.
+
 ## Míľnik 0.2B.1.1 - Quantity Contract
 
 Prvý Knowledge Core Contract je `Quantity`:

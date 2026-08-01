@@ -214,7 +214,12 @@ class EosValidator:
             )
             return result
 
-        self._validate_application_rules(instance, result, has_verifiable_claims=has_verifiable_claims)
+        self._validate_application_rules(
+            instance,
+            result,
+            schema_id=schema_id,
+            has_verifiable_claims=has_verifiable_claims,
+        )
         return result
 
     def validate_schema_syntax(self) -> ValidationResult:
@@ -310,11 +315,13 @@ class EosValidator:
         instance: Any,
         result: ValidationResult,
         *,
+        schema_id: str,
         has_verifiable_claims: bool,
     ) -> None:
         if not isinstance(instance, dict):
             return
         self._validate_finite_numbers(instance, result)
+        self._validate_value_range_rules(instance, result, schema_id=schema_id)
         self._validate_source_links_rule(instance, result, has_verifiable_claims=has_verifiable_claims)
         self._validate_source_link_ids(instance, result)
         self._validate_hierarchical_ids(instance, result)
@@ -336,6 +343,47 @@ class EosValidator:
         elif isinstance(instance, list):
             for index, value in enumerate(instance):
                 self._validate_finite_numbers(value, result, f"{path}[{index}]")
+
+    def _validate_value_range_rules(
+        self,
+        instance: dict[str, Any],
+        result: ValidationResult,
+        *,
+        schema_id: str,
+    ) -> None:
+        if schema_id != "https://eos.local/schemas/knowledge-core/value-range.schema.json":
+            return
+
+        min_value = instance.get("minValue")
+        max_value = instance.get("maxValue")
+        if isinstance(min_value, (int, float)) and not isinstance(min_value, bool):
+            if isinstance(max_value, (int, float)) and not isinstance(max_value, bool):
+                if min_value > max_value:
+                    result.add(
+                        errorCode="application_validation.value_range_reversed_bounds",
+                        category="application_validation",
+                        message="ValueRange minValue must be less than or equal to maxValue.",
+                        instancePath="$.minValue",
+                        recordId=self._record_id(instance),
+                    )
+
+        if "lowerInclusive" in instance and "minValue" not in instance:
+            result.add(
+                errorCode="application_validation.value_range_lower_inclusive_without_min",
+                category="application_validation",
+                message="ValueRange lowerInclusive is meaningful only when minValue exists.",
+                instancePath="$.lowerInclusive",
+                recordId=self._record_id(instance),
+            )
+
+        if "upperInclusive" in instance and "maxValue" not in instance:
+            result.add(
+                errorCode="application_validation.value_range_upper_inclusive_without_max",
+                category="application_validation",
+                message="ValueRange upperInclusive is meaningful only when maxValue exists.",
+                instancePath="$.upperInclusive",
+                recordId=self._record_id(instance),
+            )
 
     def _validate_source_links_rule(
         self,

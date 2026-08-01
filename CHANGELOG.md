@@ -1,5 +1,29 @@
 # CHANGELOG
 
+## 0.2B.1.2 - 2026-08-01
+
+Status: Review
+
+### Added
+
+- `CDR-0002_ValueRange_Contract.md` ako contract review dokument pre druhý Knowledge Core Contract.
+- `schemas/knowledge-core/value-range.schema.json` pre value object `ValueRange`.
+- Discovery záznam pre `ValueRange` v `schemas/index.schema.json`.
+- Platné a neplatné fixture záznamy pre `ValueRange`.
+- `unittest` pokrytie pre štrukturálne pravidlá, aplikačné pravidlá, centrálny `UNT` `$ref`, schema index a regresiu `Quantity`.
+
+### Changed
+
+- EOS aplikačná validačná vrstva doplnená o pravidlá `ValueRange`: obrátené hranice a inkluzivita bez príslušnej hranice.
+- Dokumentácia schém, testov a skriptov opisuje `ValueRange`, jeho vzťah ku `Quantity`, štrukturálnu a aplikačnú validáciu a sémantickú predvolenú inkluzivitu.
+
+### Not Added
+
+- Nevznikol Unit Catalog ani konkrétne jednotky.
+- Nevznikli `MeasurementQuality`, `Condition`, `Classification`, `PropertyRecord` ani `Observation`.
+- Nevznikli konkrétne strojárske hodnoty, konverzné faktory, kalkulačky, API, databázový server ani UI.
+- Nevznikol nový ADR ani RFC.
+
 ## 0.2B.1.1 - 2026-08-01
 
 Status: Review

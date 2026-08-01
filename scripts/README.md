@@ -1,5 +1,14 @@
 # scripts
 
+## Míľnik 0.2B.1.2 - ValueRange Contract
+
+Pre `ValueRange` zostáva validácia rozdelená na dve vrstvy:
+
+- JSON Schema kontroluje štruktúru, typy, `unitId`, aspoň jednu hranicu, väzbu inkluzivity na hranicu a neznáme polia.
+- EOS aplikačná validácia kontroluje významové pravidlá `minValue <= maxValue`, `lowerInclusive` bez `minValue` a `upperInclusive` bez `maxValue`.
+
+Validačná vrstva nevykonáva prevody jednotiek, nekontroluje existenciu Unit Catalog položky a nezavádza konkrétne jednotky ani technické hodnoty.
+
 ## Míľnik 0.2B.1.1 - Quantity Contract
 
 Validačná vrstva ostáva rozdelená na štandardnú JSON Schema validáciu cez `jsonschema` a EOS aplikačné pravidlá.
