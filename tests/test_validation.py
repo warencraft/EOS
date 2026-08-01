@@ -19,6 +19,7 @@ DOCUMENT_SCHEMA = "https://eos.local/schemas/document-record.schema.json"
 INDEX_SCHEMA = "https://eos.local/schemas/index.schema.json"
 QUANTITY_SCHEMA = "https://eos.local/schemas/knowledge-core/quantity.schema.json"
 VALUE_RANGE_SCHEMA = "https://eos.local/schemas/knowledge-core/value-range.schema.json"
+MEASUREMENT_QUALITY_SCHEMA = "https://eos.local/schemas/knowledge-core/measurement-quality.schema.json"
 
 
 def load_fixture(name: str) -> dict:
@@ -506,6 +507,154 @@ class ValidationTests(unittest.TestCase):
         record = {
             "valueRanges": [
                 load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "value-range-closed-valid.json")
+            ]
+        }
+        result = self.validator.validate(record, INDEX_SCHEMA)
+        self.assertTrue(result.ok, [f"{e.path}: {e.message}" for e in result.errors])
+
+    def test_measurement_quality_schema_definition_is_valid(self) -> None:
+        result = self.validator.validate_schema_definition(MEASUREMENT_QUALITY_SCHEMA)
+        self.assertTrue(result.ok, [f"{e.schemaPath}: {e.message}" for e in result.errors])
+
+    def test_valid_measurement_quality_fixtures_pass(self) -> None:
+        files = sorted(VALID_KNOWLEDGE_CORE_FIXTURES.glob("measurement-quality-*-valid.json"))
+        self.assertGreaterEqual(len(files), 10)
+        for path in files:
+            with self.subTest(path=path.name):
+                result = self.validator.validate_json_file(path, MEASUREMENT_QUALITY_SCHEMA)
+                self.assertTrue(result.ok, [f"{e.path}: {e.message}" for e in result.errors])
+
+    def test_invalid_measurement_quality_fixtures_fail(self) -> None:
+        files = sorted(INVALID_KNOWLEDGE_CORE_FIXTURES.glob("measurement-quality-*-invalid.json"))
+        self.assertGreaterEqual(len(files), 29)
+        for path in files:
+            with self.subTest(path=path.name):
+                result = self.validator.validate_json_file(path, MEASUREMENT_QUALITY_SCHEMA)
+                self.assertFalse(result.ok, path.name)
+
+    def test_measurement_quality_quantity_ref_resolves(self) -> None:
+        schema = self.validator.registry.by_id[MEASUREMENT_QUALITY_SCHEMA]
+        self.assertEqual(
+            schema["properties"]["uncertainty"]["$ref"],
+            "https://eos.local/schemas/knowledge-core/quantity.schema.json",
+        )
+        self.assertEqual(
+            schema["properties"]["resolution"]["$ref"],
+            "https://eos.local/schemas/knowledge-core/quantity.schema.json",
+        )
+
+    def test_measurement_quality_notes_only_and_empty_object_fail(self) -> None:
+        for filename in [
+            "measurement-quality-empty-object-invalid.json",
+            "measurement-quality-notes-only-invalid.json",
+        ]:
+            with self.subTest(filename=filename):
+                record = load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / filename)
+                result = self.validator.validate(record, MEASUREMENT_QUALITY_SCHEMA)
+                self.assertFalse(result.ok)
+                self.assertTrue(any(error.category == "schema_validation" for error in result.errors))
+
+    def test_measurement_quality_confidence_level_boundaries(self) -> None:
+        for confidence_level in [0, 1]:
+            with self.subTest(confidence_level=confidence_level):
+                result = self.validator.validate({"confidenceLevel": confidence_level}, MEASUREMENT_QUALITY_SCHEMA)
+                self.assertTrue(result.ok, [f"{e.path}: {e.message}" for e in result.errors])
+
+        for confidence_level in [-0.1, 1.1]:
+            with self.subTest(confidence_level=confidence_level):
+                result = self.validator.validate({"confidenceLevel": confidence_level}, MEASUREMENT_QUALITY_SCHEMA)
+                self.assertFalse(result.ok)
+                self.assertTrue(any(error.path == "$.confidenceLevel" for error in result.errors))
+
+    def test_measurement_quality_negative_uncertainty_is_application_validation(self) -> None:
+        record = load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / "measurement-quality-negative-uncertainty-invalid.json")
+        result = self.validator.validate(record, MEASUREMENT_QUALITY_SCHEMA)
+        self.assertFalse(result.ok)
+        self.assertTrue(
+            any(
+                error.category == "application_validation"
+                and error.errorCode == "application_validation.measurement_quality_negative_uncertainty"
+                and error.path == "$.uncertainty.value"
+                for error in result.errors
+            )
+        )
+
+    def test_measurement_quality_zero_uncertainty_passes(self) -> None:
+        record = load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "measurement-quality-zero-uncertainty-valid.json")
+        self.assertValid(record, MEASUREMENT_QUALITY_SCHEMA)
+
+    def test_measurement_quality_nonpositive_resolution_is_application_validation(self) -> None:
+        cases = [
+            "measurement-quality-zero-resolution-invalid.json",
+            "measurement-quality-negative-resolution-invalid.json",
+        ]
+        for filename in cases:
+            with self.subTest(filename=filename):
+                record = load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / filename)
+                result = self.validator.validate(record, MEASUREMENT_QUALITY_SCHEMA)
+                self.assertFalse(result.ok)
+                self.assertTrue(
+                    any(
+                        error.category == "application_validation"
+                        and error.errorCode == "application_validation.measurement_quality_nonpositive_resolution"
+                        and error.path == "$.resolution.value"
+                        for error in result.errors
+                    )
+                )
+
+    def test_measurement_quality_tolerance_and_deferred_fields_fail(self) -> None:
+        cases = [
+            ("measurement-quality-tolerance-field-invalid.json", "$.tolerance"),
+            ("measurement-quality-upper-tolerance-field-invalid.json", "$.upperTolerance"),
+            ("measurement-quality-lower-tolerance-field-invalid.json", "$.lowerTolerance"),
+            ("measurement-quality-accuracy-field-invalid.json", "$.accuracy"),
+            ("measurement-quality-repeatability-field-invalid.json", "$.repeatability"),
+            ("measurement-quality-reproducibility-field-invalid.json", "$.reproducibility"),
+        ]
+        for filename, path in cases:
+            with self.subTest(filename=filename):
+                record = load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / filename)
+                result = self.validator.validate(record, MEASUREMENT_QUALITY_SCHEMA)
+                self.assertFalse(result.ok)
+                self.assertTrue(any(error.path == path for error in result.errors))
+
+    def test_measurement_quality_metadata_source_and_status_fields_fail(self) -> None:
+        cases = [
+            ("measurement-quality-entity-metadata-invalid.json", "$.id"),
+            ("measurement-quality-lifecycle-field-invalid.json", "$.status"),
+            ("measurement-quality-source-links-invalid.json", "$.sourceLinks"),
+            ("measurement-quality-verification-status-invalid.json", "$.verificationStatus"),
+        ]
+        for filename, path in cases:
+            with self.subTest(filename=filename):
+                record = load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / filename)
+                result = self.validator.validate(record, MEASUREMENT_QUALITY_SCHEMA)
+                self.assertFalse(result.ok)
+                self.assertTrue(any(error.path == path for error in result.errors))
+
+    def test_measurement_quality_nested_error_path_identifies_quantity_value(self) -> None:
+        record = load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / "measurement-quality-invalid-nested-quantity-invalid.json")
+        result = self.validator.validate(record, MEASUREMENT_QUALITY_SCHEMA)
+        self.assertFalse(result.ok)
+        self.assertTrue(any(error.path == "$.uncertainty.value" for error in result.errors))
+
+    def test_measurement_quality_schema_and_application_errors_are_distinguishable(self) -> None:
+        record = {
+            "uncertainty": {
+                "value": -1,
+                "unitId": "bad"
+            }
+        }
+        result = self.validator.validate(record, MEASUREMENT_QUALITY_SCHEMA)
+        self.assertFalse(result.ok)
+        categories = {error.category for error in result.errors}
+        self.assertIn("schema_validation", categories)
+        self.assertIn("application_validation", categories)
+
+    def test_schema_index_resolves_measurement_quality(self) -> None:
+        record = {
+            "measurementQualities": [
+                load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "measurement-quality-confidence-only-valid.json")
             ]
         }
         result = self.validator.validate(record, INDEX_SCHEMA)

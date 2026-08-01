@@ -1,5 +1,14 @@
 # scripts
 
+## Míľnik 0.2B.1.3 - MeasurementQuality Contract
+
+Pre `MeasurementQuality` zostáva validácia rozdelená na dve vrstvy:
+
+- JSON Schema kontroluje objekt, známe polia, notes-only pravidlo, vnorené `Quantity` cez `$ref`, `confidenceLevel` v rozsahu 0 až 1 a zákaz neznámych polí.
+- EOS aplikačná validácia kontroluje významové pravidlá `uncertainty.value >= 0` a `resolution.value > 0`.
+
+Validačná vrstva nevykonáva prevody jednotiek, nekontroluje existenciu Unit Catalog položky, nemodeluje tolerancie a nevytvára MeasurementMethod ani Instrument kontrakt.
+
 ## Míľnik 0.2B.1.2 - ValueRange Contract
 
 Pre `ValueRange` zostáva validácia rozdelená na dve vrstvy:

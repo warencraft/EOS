@@ -1,5 +1,29 @@
 # CHANGELOG
 
+## 0.2B.1.3 - 2026-08-01
+
+Status: Review
+
+### Added
+
+- `CDR-0003_MeasurementQuality_Contract.md` ako contract review dokument pre tretí Knowledge Core Contract.
+- `schemas/knowledge-core/measurement-quality.schema.json` pre value object `MeasurementQuality`.
+- Discovery záznam pre `MeasurementQuality` v `schemas/index.schema.json`.
+- Platné a neplatné fixture záznamy pre `MeasurementQuality`.
+- `unittest` pokrytie pre vnorený `Quantity` `$ref`, notes-only rozhodnutie, `confidenceLevel`, aplikačné pravidlá pre neistotu a rozlíšenie, zákaz tolerancií a regresie `Quantity`/`ValueRange`.
+
+### Changed
+
+- EOS aplikačná validačná vrstva doplnená o pravidlá `MeasurementQuality`: `uncertainty.value >= 0` a `resolution.value > 0`.
+- Dokumentácia schém, testov a skriptov opisuje počiatočný scope `MeasurementQuality`, rozdiel voči tolerancii, confidenceLevel reprezentáciu a odložené koncepty.
+
+### Not Added
+
+- Nevznikol tolerance, requirement, Condition, Classification, PropertyRecord ani Observation kontrakt.
+- Nevznikol MeasurementMethod, Instrument, CalibrationRecord, Unit Catalog ani Property Catalog.
+- Nevznikli konkrétne strojárske hodnoty, reálne jednotky, konverzné faktory, kalkulačky, API, databázový server ani UI.
+- Nevznikol nový ADR ani RFC.
+
 ## 0.2B.1.3-prep - 2026-08-01
 
 Status: Completed / Approved

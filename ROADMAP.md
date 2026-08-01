@@ -1,5 +1,18 @@
 # ROADMAP
 
+## Míľnik 0.2B.1.3 - MeasurementQuality Contract
+
+Cieľ:
+
+- zaviesť tretí minimálny Knowledge Core Contract pre value object `MeasurementQuality`,
+- definovať iba `uncertainty`, `resolution`, `confidenceLevel` a voliteľné `notes`,
+- vyžadovať aspoň jedno štruktúrované pole a odmietnuť notes-only objekt,
+- použiť vnorený `Quantity` pre metrologické hodnoty s jednotkou,
+- oddeliť štrukturálne pravidlá od aplikačných pravidiel `uncertainty.value >= 0` a `resolution.value > 0`,
+- nemodelovať výrobnú, konštrukčnú ani akceptačnú toleranciu.
+
+Stav: Review.
+
 ## Míľnik 0.2B.1.3-prep - MeasurementQuality Tolerance Boundary Correction
 
 Cieľ:

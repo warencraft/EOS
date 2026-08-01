@@ -322,6 +322,7 @@ class EosValidator:
             return
         self._validate_finite_numbers(instance, result)
         self._validate_value_range_rules(instance, result, schema_id=schema_id)
+        self._validate_measurement_quality_rules(instance, result, schema_id=schema_id)
         self._validate_source_links_rule(instance, result, has_verifiable_claims=has_verifiable_claims)
         self._validate_source_link_ids(instance, result)
         self._validate_hierarchical_ids(instance, result)
@@ -384,6 +385,44 @@ class EosValidator:
                 instancePath="$.upperInclusive",
                 recordId=self._record_id(instance),
             )
+
+    def _validate_measurement_quality_rules(
+        self,
+        instance: dict[str, Any],
+        result: ValidationResult,
+        *,
+        schema_id: str,
+    ) -> None:
+        if schema_id != "https://eos.local/schemas/knowledge-core/measurement-quality.schema.json":
+            return
+
+        uncertainty_value = self._quantity_value(instance.get("uncertainty"))
+        if uncertainty_value is not None and uncertainty_value < 0:
+            result.add(
+                errorCode="application_validation.measurement_quality_negative_uncertainty",
+                category="application_validation",
+                message="MeasurementQuality uncertainty.value must be greater than or equal to zero.",
+                instancePath="$.uncertainty.value",
+                recordId=self._record_id(instance),
+            )
+
+        resolution_value = self._quantity_value(instance.get("resolution"))
+        if resolution_value is not None and resolution_value <= 0:
+            result.add(
+                errorCode="application_validation.measurement_quality_nonpositive_resolution",
+                category="application_validation",
+                message="MeasurementQuality resolution.value must be greater than zero.",
+                instancePath="$.resolution.value",
+                recordId=self._record_id(instance),
+            )
+
+    def _quantity_value(self, candidate: Any) -> int | float | None:
+        if not isinstance(candidate, dict):
+            return None
+        value = candidate.get("value")
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            return None
+        return value
 
     def _validate_source_links_rule(
         self,

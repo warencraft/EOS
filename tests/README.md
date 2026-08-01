@@ -1,5 +1,29 @@
 # tests
 
+## Míľnik 0.2B.1.3 - MeasurementQuality Contract
+
+Testy pre `MeasurementQuality` používajú iba `unittest` a existujúcu validačnú vrstvu.
+
+Platné a neplatné fixture sú v:
+
+- `tests/fixtures/valid/knowledge-core/`
+- `tests/fixtures/invalid/knowledge-core/`
+
+Pokrytie zahŕňa:
+
+- `uncertainty`, nulovú `uncertainty`, `resolution` a `confidenceLevel`,
+- hranice `confidenceLevel` 0 a 1,
+- kombinácie štruktúrovaných polí a voliteľné `notes`,
+- empty object a notes-only objekt ako neplatné,
+- zápornú neistotu cez aplikačnú validáciu,
+- nulové a záporné rozlíšenie cez aplikačnú validáciu,
+- neplatné vnorené `Quantity`,
+- presné cesty k vnoreným chybám,
+- zákaz metadát, lifecycle polí, `sourceLinks`, `verificationStatus`,
+- zákaz tolerančných polí a odložených polí `accuracy`, `repeatability`, `reproducibility`,
+- rozlíšenie `schema_validation` a `application_validation`,
+- dostupnosť `MeasurementQuality` cez centrálny schema index.
+
 ## Míľnik 0.2B.1.2 - ValueRange Contract
 
 Testy pre `ValueRange` používajú iba `unittest` a existujúcu validačnú vrstvu.

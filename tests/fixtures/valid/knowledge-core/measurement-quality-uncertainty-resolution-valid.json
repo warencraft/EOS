@@ -1,0 +1,10 @@
+{
+  "uncertainty": {
+    "value": 1,
+    "unitId": "UNT-000205"
+  },
+  "resolution": {
+    "value": 0.5,
+    "unitId": "UNT-000205"
+  }
+}

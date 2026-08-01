@@ -11,7 +11,8 @@
     "normReference": { "$ref": "https://eos.local/schemas/norm-reference.schema.json" },
     "documentRecord": { "$ref": "https://eos.local/schemas/document-record.schema.json" },
     "quantity": { "$ref": "https://eos.local/schemas/knowledge-core/quantity.schema.json" },
-    "valueRange": { "$ref": "https://eos.local/schemas/knowledge-core/value-range.schema.json" }
+    "valueRange": { "$ref": "https://eos.local/schemas/knowledge-core/value-range.schema.json" },
+    "measurementQuality": { "$ref": "https://eos.local/schemas/knowledge-core/measurement-quality.schema.json" }
   },
   "properties": {
     "sourceReferences": {
@@ -33,6 +34,10 @@
     "valueRanges": {
       "type": "array",
       "items": { "$ref": "#/$defs/valueRange" }
+    },
+    "measurementQualities": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/measurementQuality" }
     }
   },
   "additionalProperties": false

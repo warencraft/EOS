@@ -1,5 +1,23 @@
 # schemas
 
+## Míľnik 0.2B.1.3 - MeasurementQuality Contract
+
+Tretí Knowledge Core Contract je `MeasurementQuality`:
+
+- schéma: `knowledge-core/measurement-quality.schema.json`,
+- schema id: `https://eos.local/schemas/knowledge-core/measurement-quality.schema.json`,
+- discovery: `index.schema.json#/$defs/measurementQuality`,
+- typ: value object vlastnený rodičovským objektom,
+- lifecycle: nemá vlastné `id`, `status`, `revision`, `schemaVersion`, `recordVersion`, `sourceLinks` ani `verificationStatus`.
+
+Počiatočný scope obsahuje iba `uncertainty`, `resolution`, `confidenceLevel` a `notes`. Aspoň jedno zo štruktúrovaných polí `uncertainty`, `resolution` alebo `confidenceLevel` musí byť prítomné; notes-only objekt je neplatný.
+
+`uncertainty` a `resolution` používajú `$ref` na `Quantity`, takže jednotky sú nesené iba vo vnorených `Quantity` objektoch. `confidenceLevel` je normalizované číslo od 0 do 1 vrátane.
+
+`MeasurementQuality` neobsahuje meranú hodnotu, property význam, podmienky, zdroje ani tolerancie. Výrobná alebo akceptačná tolerancia je requirement a zostáva odložená do budúceho requirement/tolerance kontraktu.
+
+Odložené koncepty pre budúcu stabilizáciu: `accuracy`, `declaredError`, `maximumPermissibleError`, `repeatability`, `reproducibility`, `methodReference`, `instrumentId`, `calibrationReference`, `tolerance`, `upperTolerance`, `lowerTolerance`.
+
 ## Míľnik 0.2B.1.2 - ValueRange Contract
 
 Druhý Knowledge Core Contract je `ValueRange`:
