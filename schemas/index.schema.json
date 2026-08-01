@@ -9,7 +9,8 @@
     "sourceLink": { "$ref": "https://eos.local/schemas/common/source-link.schema.json" },
     "sourceReference": { "$ref": "https://eos.local/schemas/source-reference.schema.json" },
     "normReference": { "$ref": "https://eos.local/schemas/norm-reference.schema.json" },
-    "documentRecord": { "$ref": "https://eos.local/schemas/document-record.schema.json" }
+    "documentRecord": { "$ref": "https://eos.local/schemas/document-record.schema.json" },
+    "quantity": { "$ref": "https://eos.local/schemas/knowledge-core/quantity.schema.json" }
   },
   "properties": {
     "sourceReferences": {
@@ -23,8 +24,11 @@
     "documentRecords": {
       "type": "array",
       "items": { "$ref": "#/$defs/documentRecord" }
+    },
+    "quantities": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/quantity" }
     }
   },
   "additionalProperties": false
 }
-

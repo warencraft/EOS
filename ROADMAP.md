@@ -1,5 +1,16 @@
 # ROADMAP
 
+## Míľnik 0.2B.1.1 - Quantity Contract
+
+Cieľ:
+
+- zaviesť prvý minimálny Knowledge Core Contract pre value object `Quantity`,
+- definovať iba `value`, `unitId` a voliteľné `notes`,
+- použiť centrálny formát `UNT-xxxxxx`,
+- nepridávať Unit Catalog, konkrétne jednotky ani strojárske hodnoty.
+
+Stav: Review.
+
 ## Fáza 0.1 - Architektúra a riadenie projektu
 
 Cieľ:
@@ -98,7 +109,7 @@ Predbežný scope:
 - `PropertyRecord`,
 - `Observation`.
 
-Stav: Next.
+Stav: In progress.
 
 ## Fáza 0.3 - Prvé prázdne záznamové šablóny
 

@@ -1,5 +1,35 @@
 # tests
 
+## Míľnik 0.2B.1.1 - Quantity Contract
+
+Testy pre `Quantity` používajú iba `unittest` a existujúcu validačnú vrstvu.
+
+Platné fixture sú v:
+
+- `tests/fixtures/valid/knowledge-core/`
+
+Neplatné fixture sú v:
+
+- `tests/fixtures/invalid/knowledge-core/`
+
+Pokrytie zahŕňa:
+
+- platné celé číslo,
+- platné desatinné číslo,
+- platnú zápornú hodnotu,
+- platnú nulu,
+- platné voliteľné `notes`,
+- chýbajúce povinné polia,
+- nesprávny typ `value`,
+- neplatný prefix `unitId`,
+- malé písmená v prefixe `unitId`,
+- neúplné nulové doplnenie `unitId`,
+- `additionalProperties: false`,
+- zákaz metadát entity vo value objecte,
+- viac chýb v jednom zázname,
+- presné cesty k chybným poliam,
+- dostupnosť `Quantity` cez centrálny schema index.
+
 Tento priečinok je určený pre budúce testy schém, dátových kontraktov a kalkulačných modulov.
 
 Vo fáze 0.2A obsahuje testy základných dátových kontraktov.

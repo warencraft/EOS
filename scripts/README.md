@@ -1,5 +1,13 @@
 # scripts
 
+## Míľnik 0.2B.1.1 - Quantity Contract
+
+Validačná vrstva ostáva rozdelená na štandardnú JSON Schema validáciu cez `jsonschema` a EOS aplikačné pravidlá.
+
+Pre `Quantity` sa štrukturálne kontrolujú povinné polia, typ `number`, centrálny `UNT-xxxxxx` identifikátor a `additionalProperties: false`.
+
+Aplikačná vrstva genericky odmieta nekonečné a nečíselné numerické hodnoty ako `NaN` a `Infinity`, aby value objecty používali iba konečné numerické hodnoty.
+
 Tento priečinok je určený pre budúce pomocné skripty.
 
 Skripty musia byť účelové, testovateľné a nesmú obsahovať hardcoded strojárske hodnoty.

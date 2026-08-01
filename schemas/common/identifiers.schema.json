@@ -9,6 +9,7 @@
     "STD": { "type": "string", "pattern": "^STD-[0-9]{3}$" },
     "NRM": { "type": "string", "pattern": "^NRM-[0-9]{4}$" },
     "SRC": { "type": "string", "pattern": "^SRC-[0-9]{6}$" },
+    "UNT": { "type": "string", "pattern": "^UNT-[0-9]{6}$" },
     "MAT": { "type": "string", "pattern": "^MAT-[0-9]{4}$" },
     "POL": { "type": "string", "pattern": "^POL-[0-9]{4}$" },
     "TEC": { "type": "string", "pattern": "^TEC-[0-9]{4}$" },

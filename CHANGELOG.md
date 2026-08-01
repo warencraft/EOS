@@ -1,5 +1,31 @@
 # CHANGELOG
 
+## 0.2B.1.1 - 2026-08-01
+
+Status: Review
+
+### Added
+
+- `CDR-0001_Quantity_Contract.md` ako prvý contract review dokument pre Knowledge Core Contract.
+- `schemas/knowledge-core/quantity.schema.json` pre value object `Quantity`.
+- Centrálny identifikátor `UNT-xxxxxx` v `schemas/common/identifiers.schema.json`.
+- Discovery záznam pre `Quantity` v `schemas/index.schema.json`.
+- Platné a neplatné fixture záznamy pre `Quantity`.
+- `unittest` pokrytie pre validáciu `Quantity`, centrálny `UNT` `$ref`, viac chýb naraz, presné cesty k poliam a zákaz entity metadát vo value objecte.
+
+### Changed
+
+- Validačná vrstva genericky odmieta nefinite numerické hodnoty `NaN` a `Infinity`.
+- Mapovanie `additionalProperties` chýb teraz ukazuje konkrétne neočakávané pole.
+- Dokumentácia schém, testov a skriptov opisuje kontrakt `Quantity` a jeho limity.
+
+### Not Added
+
+- Nevznikol Unit Catalog ani konkrétne jednotky.
+- Nevznikli `ValueRange`, `MeasurementQuality`, `Condition`, `PropertyRecord` ani `Observation`.
+- Nevznikli konkrétne strojárske hodnoty, konverzné faktory, kalkulačky, API, databázový server ani UI.
+- Nevznikol nový ADR ani RFC.
+
 Všetky významné zmeny projektu EOS sa zaznamenávajú v tomto súbore.
 
 ## 0.2B.0 - 2026-08-01

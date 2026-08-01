@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 from dataclasses import dataclass, field
 from datetime import date, datetime
@@ -73,6 +74,10 @@ ALLOWED_SCHEMA_KEYWORDS = {
 
 class MissingValidationDependencyError(RuntimeError):
     pass
+
+
+def _reject_json_constant(value: str) -> None:
+    raise ValueError(f"JSON value {value} is not allowed; use finite JSON numbers only")
 
 
 def _load_jsonschema() -> tuple[Any, Any, Any, Any]:
@@ -149,8 +154,8 @@ class EosValidator:
         result = ValidationResult()
         try:
             with instance_path.open("r", encoding="utf-8") as handle:
-                instance = json.load(handle)
-        except json.JSONDecodeError as exc:
+                instance = json.load(handle, parse_constant=_reject_json_constant)
+        except (json.JSONDecodeError, ValueError) as exc:
             result.add(
                 errorCode="json_syntax.invalid_json",
                 category="json_syntax",
@@ -309,10 +314,28 @@ class EosValidator:
     ) -> None:
         if not isinstance(instance, dict):
             return
+        self._validate_finite_numbers(instance, result)
         self._validate_source_links_rule(instance, result, has_verifiable_claims=has_verifiable_claims)
         self._validate_source_link_ids(instance, result)
         self._validate_hierarchical_ids(instance, result)
         self._validate_document_record_versions(instance, result)
+
+    def _validate_finite_numbers(self, instance: Any, result: ValidationResult, path: str = "$") -> None:
+        if isinstance(instance, float) and not math.isfinite(instance):
+            result.add(
+                errorCode="application_validation.non_finite_number",
+                category="application_validation",
+                message="Numeric values must be finite; NaN and Infinity are not allowed.",
+                instancePath=path,
+                recordId=self._record_id(instance),
+            )
+            return
+        if isinstance(instance, dict):
+            for key, value in instance.items():
+                self._validate_finite_numbers(value, result, f"{path}.{key}")
+        elif isinstance(instance, list):
+            for index, value in enumerate(instance):
+                self._validate_finite_numbers(value, result, f"{path}[{index}]")
 
     def _validate_source_links_rule(
         self,
@@ -416,6 +439,10 @@ class EosValidator:
     def _validation_error_instance_path(self, error: Any) -> str:
         if error.validator == "required":
             match = re.search(r"'([^']+)' is a required property", error.message)
+            if match:
+                return f"{self._json_path(error.path)}.{match.group(1)}"
+        if error.validator == "additionalProperties":
+            match = re.search(r"\('([^']+)'.*(?:was|were) unexpected\)", error.message)
             if match:
                 return f"{self._json_path(error.path)}.{match.group(1)}"
         return self._json_path(error.path)

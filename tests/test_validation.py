@@ -9,15 +9,24 @@ from scripts.validation import EosValidator, MissingValidationDependencyError
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "tests" / "fixtures" / "valid"
+VALID_KNOWLEDGE_CORE_FIXTURES = FIXTURES / "knowledge-core"
+INVALID_KNOWLEDGE_CORE_FIXTURES = ROOT / "tests" / "fixtures" / "invalid" / "knowledge-core"
 
 
 SOURCE_SCHEMA = "https://eos.local/schemas/source-reference.schema.json"
 NORM_SCHEMA = "https://eos.local/schemas/norm-reference.schema.json"
 DOCUMENT_SCHEMA = "https://eos.local/schemas/document-record.schema.json"
+INDEX_SCHEMA = "https://eos.local/schemas/index.schema.json"
+QUANTITY_SCHEMA = "https://eos.local/schemas/knowledge-core/quantity.schema.json"
 
 
 def load_fixture(name: str) -> dict:
     with (FIXTURES / name).open("r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def load_json(path: Path) -> dict:
+    with path.open("r", encoding="utf-8") as handle:
         return json.load(handle)
 
 
@@ -283,6 +292,87 @@ class ValidationTests(unittest.TestCase):
         result = self.validator.validate({}, schema_id)
         self.assertFalse(result.ok)
         self.assertTrue(any(error.category == "schema_definition" for error in result.errors))
+
+    def test_quantity_schema_definition_is_valid(self) -> None:
+        result = self.validator.validate_schema_definition(QUANTITY_SCHEMA)
+        self.assertTrue(result.ok, [f"{e.schemaPath}: {e.message}" for e in result.errors])
+
+    def test_valid_quantity_fixtures_pass(self) -> None:
+        files = sorted(VALID_KNOWLEDGE_CORE_FIXTURES.glob("quantity-*-valid.json"))
+        self.assertGreaterEqual(len(files), 5)
+        for path in files:
+            with self.subTest(path=path.name):
+                result = self.validator.validate_json_file(path, QUANTITY_SCHEMA)
+                self.assertTrue(result.ok, [f"{e.path}: {e.message}" for e in result.errors])
+
+    def test_invalid_quantity_fixtures_fail(self) -> None:
+        files = sorted(INVALID_KNOWLEDGE_CORE_FIXTURES.glob("quantity-*-invalid.json"))
+        self.assertGreaterEqual(len(files), 10)
+        for path in files:
+            with self.subTest(path=path.name):
+                result = self.validator.validate_json_file(path, QUANTITY_SCHEMA)
+                self.assertFalse(result.ok, path.name)
+
+    def test_quantity_rejects_unknown_additional_field_with_precise_path(self) -> None:
+        record = load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / "quantity-unknown-field-invalid.json")
+        result = self.validator.validate(record, QUANTITY_SCHEMA)
+        self.assertFalse(result.ok)
+        self.assertTrue(any(error.path == "$.sourceLinks" for error in result.errors))
+
+    def test_quantity_unit_id_uses_central_unt_identifier(self) -> None:
+        schema = self.validator.registry.by_id[QUANTITY_SCHEMA]
+        self.assertEqual(
+            schema["properties"]["unitId"]["$ref"],
+            "https://eos.local/schemas/common/identifiers.schema.json#/$defs/UNT",
+        )
+        result = self.validator.validate({"value": 1, "unitId": "UNT-000001"}, QUANTITY_SCHEMA)
+        self.assertTrue(result.ok, [f"{e.path}: {e.message}" for e in result.errors])
+
+    def test_quantity_rejects_entity_metadata_fields(self) -> None:
+        metadata_fields = {
+            "id": "QTY-000001",
+            "schemaVersion": "0.1.0",
+            "recordVersion": 1,
+            "revision": 0,
+            "status": "Draft",
+            "sourceLinks": []
+        }
+        for field, value in metadata_fields.items():
+            with self.subTest(field=field):
+                record = {"value": 1, "unitId": "UNT-000001", field: value}
+                result = self.validator.validate(record, QUANTITY_SCHEMA)
+                self.assertFalse(result.ok)
+                self.assertTrue(any(error.path == f"$.{field}" for error in result.errors))
+
+    def test_quantity_multiple_errors_are_reported_with_paths(self) -> None:
+        record = {
+            "value": "not a number",
+            "unitId": "bad",
+            "unexpected": True
+        }
+        result = self.validator.validate(record, QUANTITY_SCHEMA)
+        self.assertFalse(result.ok)
+        paths = {error.path for error in result.errors}
+        self.assertIn("$.value", paths)
+        self.assertIn("$.unitId", paths)
+        self.assertIn("$.unexpected", paths)
+        self.assertGreaterEqual(len(result.errors), 3)
+
+    def test_schema_index_resolves_quantity(self) -> None:
+        record = {
+            "quantities": [
+                load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "quantity-integer-valid.json")
+            ]
+        }
+        result = self.validator.validate(record, INDEX_SCHEMA)
+        self.assertTrue(result.ok, [f"{e.path}: {e.message}" for e in result.errors])
+
+    def test_quantity_rejects_non_finite_numbers(self) -> None:
+        for value in [float("nan"), float("inf"), float("-inf")]:
+            with self.subTest(value=value):
+                result = self.validator.validate({"value": value, "unitId": "UNT-000001"}, QUANTITY_SCHEMA)
+                self.assertFalse(result.ok)
+                self.assertTrue(any(error.path == "$.value" for error in result.errors))
 
 
 if __name__ == "__main__":
