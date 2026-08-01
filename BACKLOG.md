@@ -7,6 +7,7 @@
 - Navrhnúť samostatnú schému `DocumentRecord`, ktorá oddelí verziu riadeného dokumentu od `schemaVersion`, `recordVersion` a `revision` registračného záznamu.
 - Navrhnúť aplikačnú validačnú vrstvu pre významové pravidlá `sourceLinks`, ktoré nevie plne overiť samotná JSON Schema.
 - Definovať pravidlá validácie nových ID formátov z `EOS-003` Revision 2.
+- Navrhnúť budúci requirement/tolerance kontrakt pre výrobné, konštrukčné, rozmerové, geometrické a akceptačné tolerancie; finálny názov, prefix a implementácia zatiaľ nie sú prijaté.
 - Definovať minimálnu štruktúru záznamu zákazky.
 - Rozhodnúť, kedy sa začnú používať testy dátových kontraktov.
 - Pripraviť šablóny dokumentov `FRM`.

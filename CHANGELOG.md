@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## 0.2B.1.3-prep - 2026-08-01
+
+Status: Completed / Approved
+
+### Changed
+
+- RFC-0001 zvýšené na Revision 4 a cez zaznamenaný `Accepted -> Review -> Accepted` lifecycle opravená hranica `MeasurementQuality`.
+- RFC-0003 zvýšené na Revision 3 a zosúladené so slovníkovým významom `MeasurementQuality`.
+- Výrobná, konštrukčná, rozmerová, geometrická a akceptačná tolerancia odstránená z `MeasurementQuality`.
+- `MeasurementQuality` ponechané pre metrologické charakteristiky ako neistota merania, rozlíšenie, deklarovaná chybová charakteristika meracieho systému, repeatability, reproducibility a confidence informácia.
+- Budúci requirement/tolerance model explicitne odložený do backlogu.
+- Implementácia `MeasurementQuality` zostáva ďalším kontraktom po tejto korekcii.
+
+### Not Added
+
+- Nevznikla žiadna JSON schéma.
+- Nevznikol tolerance, requirement, MeasurementQuality, Condition, Classification, PropertyRecord ani Observation kontrakt.
+- Nevznikol nový ADR ani RFC.
+
 ## 0.2B.1.2 - 2026-08-01
 
 Status: Review

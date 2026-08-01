@@ -1,5 +1,18 @@
 # ROADMAP
 
+## Míľnik 0.2B.1.3-prep - MeasurementQuality Tolerance Boundary Correction
+
+Cieľ:
+
+- odstrániť produktovú, výrobnú a akceptačnú toleranciu z `MeasurementQuality`,
+- ponechať `MeasurementQuality` pre metrologické kvalitatívne charakteristiky,
+- odložiť tolerance modelling do budúceho requirement/tolerance kontraktu,
+- obnoviť Accepted stav opravených RFC pred implementáciou `MeasurementQuality`.
+
+Stav: Completed / Approved.
+
+Ďalší krok: `Phase 0.2B.1.3 - MeasurementQuality Contract`.
+
 ## Míľnik 0.2B.1.2 - ValueRange Contract
 
 Cieľ:

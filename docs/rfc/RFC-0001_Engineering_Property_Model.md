@@ -3,7 +3,7 @@
 **Project:** EOS - Engineering Operating System  
 **RFC ID:** RFC-0001  
 **Version:** 0.1  
-**Revision:** 3  
+**Revision:** 4  
 **Status:** Accepted  
 **Author:** Chief Engineering Knowledge Architect + Codex  
 **Last update:** 2026-08-01  
@@ -146,24 +146,35 @@ Odporúčanie: začať ako vnorený value object s názvom `MeasurementQuality`.
 
 Nepovinné polia:
 
-- `tolerance`
 - `uncertainty`
 - `resolution`
-- `precision`
+- `declaredErrorCharacteristic`
+- `repeatability`
+- `reproducibility`
+- `confidenceLevel`
 - `methodReference`
 - `notes`
 
 Pravidlá významu:
 
-- `tolerance` vyjadruje technickú požiadavku alebo povolenú odchýlku. Nie je to neistota merania.
 - `uncertainty` vyjadruje neistotu výsledku merania alebo skúšky. Nie je to výrobná tolerancia.
 - `resolution` vyjadruje najmenší rozlíšiteľný krok meradla alebo metódy.
-- `precision` vyjadruje opakovateľnosť alebo presnosť metódy podľa zvoleného významu, ktorý musí byť vysvetlený v `methodReference` alebo `notes`.
+- `declaredErrorCharacteristic` vyjadruje deklarovanú absolútnu chybovú charakteristiku meracieho systému alebo prístroja. Nejde o výrobnú, konštrukčnú ani akceptačnú toleranciu produktu.
+- `repeatability` vyjadruje rozptyl alebo zhodnosť opakovaných meraní pri rovnakých definovaných podmienkach.
+- `reproducibility` vyjadruje rozptyl alebo zhodnosť meraní pri zmenených definovaných podmienkach.
+- `confidenceLevel` vyjadruje normalizovanú úroveň dôvery ako číslo v rozsahu 0 až 1, ak ju podporuje použitá metóda.
 - `methodReference` odkazuje na metódu, postup, interný predpis alebo zdrojový kontext. Ak nejde o samostatnú entitu, môže byť dočasne textové.
+- Názov poľa `accuracy` sa v tomto RFC neprijíma, pretože pojem je v technickej praxi nejednoznačný. Ak bude potrebný, musí byť nahradený presnejšie pomenovaným kontraktom alebo poľom.
+
+Hranica voči toleranciám:
+
+- `MeasurementQuality` nesmie obsahovať `tolerance`, `upperTolerance`, `lowerTolerance`, výrobnú toleranciu, konštrukčnú toleranciu, rozmerovú toleranciu, geometrickú toleranciu, akceptačné limity ani povolenú odchýlku produktu.
+- Produktová alebo výrobná tolerancia je požiadavka, nie kvalita merania.
+- Budúci requirement/tolerance kontrakt môže znovu použiť `Quantity` a `ValueRange`, ale v tejto revízii sa neimplementuje a jeho finálny názov nie je prijatý.
 
 Väzba na `sourceLinks`: cez rodičovský `PropertyRecord` alebo `Observation`, prípadne cez samostatný `SourceLink` na konkrétne pole kvality.
 
-Riziko duplicity: stredné, ak sa tolerancia, neistota a presnosť budú miešať do voľného textu.
+Riziko duplicity: stredné, ak sa neistota, rozlíšenie, deklarovaná chyba meracieho systému, opakovateľnosť alebo reprodukovateľnosť budú miešať do voľného textu.
 
 ### 4.4 `PropertyRecord`
 
@@ -730,9 +741,23 @@ Jednoduché intervaly sa nemajú ukladať do `Quantity`, aby sa nezamieňal výz
 
 ### 12.3 MeasurementQuality
 
-Tolerancia, neistota, presnosť a rozlíšenie nesmú byť synonymá.
+Neistota merania, rozlíšenie, deklarovaná chyba meracieho systému, opakovateľnosť a reprodukovateľnosť nesmú byť synonymá.
+
+Výrobná, konštrukčná, rozmerová, geometrická alebo akceptačná tolerancia nie je `MeasurementQuality`. Je to požiadavka alebo povolený limit produktu a patrí do budúceho requirement/tolerance modelu.
+
+Takýto budúci kontrakt môže znovu použiť `Quantity` alebo `ValueRange`, ale toto RFC neprijíma jeho finálny názov, prefix ani implementáciu.
+
+Názov `accuracy` zostáva odložený ako autoritatívne pole, kým nebude presne odlíšený od deklarovanej chybovej charakteristiky, neistoty, repeatability a reproducibility.
 
 EOS používa názov `MeasurementQuality`. Názov `ValueQuality` nie je povolený ako autoritatívny názov objektu.
+
+Internal consistency review pre Revision 4:
+
+- Critical blockery: žiadne.
+- High blockery: žiadne.
+- `MeasurementQuality` a produktová tolerancia sú oddelené.
+- Korekcia je konzistentná s RFC-0002, RFC-0003 po Revision 3, ADR-0014 a ADR-0015.
+- JSON schémy ani implementačné kontrakty sa v tejto korekcii nemenia.
 
 ### 12.4 PropertyRecord
 
@@ -908,3 +933,4 @@ Súvisiace dokumenty:
 | 2026-07-14 | 0.1 | 1 | Codex | Prepracovanie návrhu pre Review: oddelenie hodnoty, rozsahu a kvality merania; návrh identifikátorov `PRP-xxxxxx`, `UNT-xxxxxx`, `OBS-xxxxxx`; doplnenie Unit Catalog, Property Catalog, Observation, Classification a pravidiel porovnateľnosti |
 | 2026-07-25 | 0.1 | 2 | Codex | Architecture Closure revision: uzavretie názvu `MeasurementQuality`, spresnenie `PropertyRecord` ako embedded claim-like value object, doplnenie `Observation.observationScope`, rozhodovacej hranice cez `Decision`, embedded observation records a fázovania `0.2B.1` / `0.2B.2` / `0.2C` |
 | 2026-08-01 | 0.1 | 3 | Codex | Phase 0.2B.0: prijatie RFC po splnení ARR podmienok, prijatí ADR-0014 až ADR-0016 a doplnení required prefixov v `EOS-003` Revision 2 |
+| 2026-08-01 | 0.1 | 4 | Codex | Accepted RFC vrátený do Review pre korekciu konfliktu `MeasurementQuality.tolerance`; výrobná, konštrukčná a akceptačná tolerancia odstránená z `MeasurementQuality`, budúci requirement/tolerance model odložený; interná kontrola konzistencie splnená a RFC znovu prijaté ako Accepted |

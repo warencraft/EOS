@@ -3,7 +3,7 @@
 **Project:** EOS - Engineering Operating System  
 **RFC ID:** RFC-0003  
 **Version:** 0.1  
-**Revision:** 2  
+**Revision:** 3  
 **Status:** Accepted  
 **Author:** Chief Engineering Knowledge Architect + Codex  
 **Last update:** 2026-08-01  
@@ -395,13 +395,13 @@ Tento RFC:
 
 - Identifier: `G-0030`
 - Preferred term: `MeasurementQuality`
-- Definition: Value object opisujúci toleranciu, neistotu, rozlíšenie, presnosť alebo metódu súvisiacu s hodnotou alebo meraním.
+- Definition: Value object opisujúci neistotu merania, rozlíšenie, deklarovanú chybovú charakteristiku meracieho systému, opakovateľnosť, reprodukovateľnosť, confidence informáciu alebo metódu súvisiacu s meraním.
 - Allowed usage: Používa sa na oddelenie kvality hodnoty alebo merania od hodnoty samotnej. `MeasurementQuality` je jediný preferovaný názov.
-- Not allowed usage: Nepoužíva sa ako náhrada za `Quantity`. Názov `ValueQuality` sa nesmie používať v autoritatívnych dokumentoch ani budúcich schémach.
+- Not allowed usage: Nepoužíva sa ako náhrada za `Quantity`, ako výrobná alebo konštrukčná tolerancia, ako akceptačný limit produktu ani ako požiadavkový model. Názov `ValueQuality` sa nesmie používať v autoritatívnych dokumentoch ani budúcich schémach.
 - Examples: Neistota merania uvedená mimo číselnej hodnoty.
 - Counterexamples: Tolerancia uložená priamo do `Quantity`.
 - Related concepts: `Measurement`, `Quantity`, `Observation`.
-- Future implementation notes: Musí rozlišovať toleranciu, neistotu, precision a resolution.
+- Future implementation notes: Musí rozlišovať neistotu, resolution, deklarovanú chybovú charakteristiku, repeatability a reproducibility. Produktová tolerancia patrí do budúceho requirement/tolerance modelu, nie do `MeasurementQuality`.
 
 ### G-0031 CommercialObservation
 
@@ -1077,3 +1077,4 @@ Tieto pojmy alebo oblasti ešte môžu potrebovať samostatné RFC alebo ADR. Ne
 | 2026-07-14 | 0.1 | 0 | Chief Engineering Knowledge Architect + Codex | Initial glossary draft |
 | 2026-07-25 | 0.1 | 1 | Codex | Doplnenie chýbajúcich core pojmov, zjednotenie názvu Engineering Knowledge Layer, uzavretie názvu MeasurementQuality a spresnenie Observation, PropertyRecord, Decision, Snapshot, Relationship, Source Classification a katalógových pojmov pre prípravu Architecture Closure |
 | 2026-08-01 | 0.1 | 2 | Codex | Phase 0.2B.0: prijatie slovníka po splnení ARR podmienok, prijatí ADR-0014 až ADR-0016 a doplnení required prefixov v `EOS-003` Revision 2 |
+| 2026-08-01 | 0.1 | 3 | Codex | Accepted RFC vrátený do Review pre zosúladenie `MeasurementQuality` s RFC-0001 Revision 4; produktová tolerancia odstránená z definície `MeasurementQuality`, requirement/tolerance model odložený; interná kontrola konzistencie splnená a RFC znovu prijaté ako Accepted |
