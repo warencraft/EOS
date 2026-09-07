@@ -1,5 +1,29 @@
 # CHANGELOG
 
+## 0.2B.1.5 - 2026-09-07
+
+Status: Implemented / Review
+
+### Added
+
+- `schemas/knowledge-core/classification.schema.json` pre embedded reference Value Object s povinným `classificationId` a štrukturálne nepovinnými `sourceLinks` cez existujúci SourceLink `$ref`.
+- Centrálny CLS formát a discovery v schema indexe.
+- 4 platné a 26 neplatných fiktívnych fixtures; 12 nových unittest testov vrátane presných príčin a ciest chýb, multiplicity SourceLink a regresnej kontroly indexu.
+- Konkrétna backlog úloha pre katalógové vynucovanie pôvodu a povinnosti sourceLinks v `0.2B.2`.
+
+### Changed
+
+- CDR-0005 Revision 1 dopĺňa finálny implementačný výsledok; Status zostáva Review.
+- Dokumentácia schém a testov opisuje význam CLS, zdrojové pravidlá a limity validácie.
+- Namiesto pre-design odporúčania neprázdneho sourceLinks sa zachováva existujúca EOS multiplicita: prázdne pole je štrukturálne platné a unikátnosť sa nevyžaduje. Ide o explicitné implementačné spresnenie podľa zadania, nie zrušenie zdrojovej povinnosti.
+
+### Deferred / Not Added
+
+- Povinnosť sourceLinks pre externé klasifikácie podľa RFC-0001 §4.6 zostáva platná; kontrola katalógového pôvodu, existencie, aktívneho stavu, kompatibility a hierarchie je odložená do `0.2B.2`.
+- Validačný kód, závislosti a predchádzajúce Knowledge Core kontrakty sa nemenili.
+- Nevznikol Classification Catalog, reálne CLS položky, nové RFC, ADR ani governance zmeny.
+- Dokončený je iba implementačný rozsah `0.2B.1.5`; celý `0.2B.1` zostáva rozpracovaný a `0.2B.2` nezačala.
+
 ## 0.2B.1.4 - 2026-08-01
 
 Status: Review

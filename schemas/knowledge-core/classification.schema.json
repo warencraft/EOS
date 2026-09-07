@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/schemas/knowledge-core/classification.schema.json",
+  "title": "EOS Classification",
+  "description": "Embedded reference value object assigning one controlled classification to its parent. Catalog existence, meaning, and origin are not validated by this structural contract.",
+  "type": "object",
+  "required": ["classificationId"],
+  "properties": {
+    "classificationId": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/CLS",
+      "description": "Identifier of a future Classification Catalog Entry, not of this embedded instance."
+    },
+    "sourceLinks": {
+      "type": "array",
+      "items": { "$ref": "https://eos.local/schemas/common/source-link.schema.json" },
+      "description": "Structurally optional evidence using the common EOS SourceLink contract. External classifications require provenance semantically; catalog-aware enforcement is deferred to Phase 0.2B.2."
+    }
+  },
+  "additionalProperties": false
+}

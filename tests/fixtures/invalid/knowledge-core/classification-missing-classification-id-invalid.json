@@ -1,0 +1,11 @@
+{
+  "sourceLinks": [
+    {
+      "sourceReferenceId": "SRC-000001",
+      "sourceClass": "N",
+      "supportedField": "classificationId",
+      "usageType": "citation",
+      "verificationStatus": "Draft"
+    }
+  ]
+}

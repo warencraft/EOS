@@ -21,6 +21,7 @@ QUANTITY_SCHEMA = "https://eos.local/schemas/knowledge-core/quantity.schema.json
 VALUE_RANGE_SCHEMA = "https://eos.local/schemas/knowledge-core/value-range.schema.json"
 MEASUREMENT_QUALITY_SCHEMA = "https://eos.local/schemas/knowledge-core/measurement-quality.schema.json"
 CONDITION_SCHEMA = "https://eos.local/schemas/knowledge-core/condition.schema.json"
+CLASSIFICATION_SCHEMA = "https://eos.local/schemas/knowledge-core/classification.schema.json"
 
 
 def load_fixture(name: str) -> dict:
@@ -822,6 +823,159 @@ class ValidationTests(unittest.TestCase):
         categories = {error.category for error in result.errors}
         self.assertIn("schema_validation", categories)
         self.assertNotIn("application_validation", categories)
+
+
+    def test_classification_schema_definition_is_valid(self) -> None:
+        result = self.validator.validate_schema_definition(CLASSIFICATION_SCHEMA)
+        self.assertTrue(result.ok, [f"{e.schemaPath}: {e.message}" for e in result.errors])
+
+    def test_valid_classification_fixtures_pass(self) -> None:
+        files = sorted(VALID_KNOWLEDGE_CORE_FIXTURES.glob("classification-*-valid.json"))
+        self.assertGreaterEqual(len(files), 4)
+        for path in files:
+            with self.subTest(path=path.name):
+                result = self.validator.validate_json_file(path, CLASSIFICATION_SCHEMA)
+                self.assertTrue(result.ok, [f"{e.path}: {e.message}" for e in result.errors])
+
+    def test_invalid_classification_fixtures_fail_for_expected_reason(self) -> None:
+        cases = {
+            "empty-object": ("required", "$.classificationId"),
+            "missing-classification-id": ("required", "$.classificationId"),
+            "invalid-cls-prefix": ("pattern", "$.classificationId"),
+            "lowercase-cls-prefix": ("pattern", "$.classificationId"),
+            "incomplete-cls-padding": ("pattern", "$.classificationId"),
+            "null-classification-id": ("type", "$.classificationId"),
+            "numeric-classification-id": ("type", "$.classificationId"),
+            "unknown-root-field": ("additionalProperties", "$.unexpected"),
+            "id-field": ("additionalProperties", "$.id"),
+            "status-field": ("additionalProperties", "$.status"),
+            "lifecycle-field": ("additionalProperties", "$.lifecycle"),
+            "verification-status-field": ("additionalProperties", "$.verificationStatus"),
+            "evaluation-mode-field": ("additionalProperties", "$.evaluationMode"),
+            "text-value-field": ("additionalProperties", "$.textValue"),
+            "label-field": ("additionalProperties", "$.label"),
+            "code-field": ("additionalProperties", "$.code"),
+            "enum-field": ("additionalProperties", "$.enum"),
+            "value-field": ("additionalProperties", "$.value"),
+            "notes-field": ("additionalProperties", "$.notes"),
+            "malformed-source-links": ("type", "$.sourceLinks[0]"),
+            "invalid-nested-source-link": ("required", "$.sourceLinks[0].verificationStatus"),
+            "null-source-links": ("type", "$.sourceLinks"),
+            "wrong-type-source-links": ("type", "$.sourceLinks"),
+            "array-instead-of-object": ("type", "$"),
+            "invalid-source-reference-id": ("pattern", "$.sourceLinks[0].sourceReferenceId"),
+            "unknown-source-link-field": ("additionalProperties", "$.sourceLinks[0].unexpected"),
+        }
+        expected_names = {f"classification-{name}-invalid.json" for name in cases}
+        files = {path.name for path in INVALID_KNOWLEDGE_CORE_FIXTURES.glob("classification-*-invalid.json")}
+        self.assertEqual(files, expected_names)
+        for name, (keyword, expected_path) in cases.items():
+            with self.subTest(case=name):
+                path = INVALID_KNOWLEDGE_CORE_FIXTURES / f"classification-{name}-invalid.json"
+                result = self.validator.validate_json_file(path, CLASSIFICATION_SCHEMA)
+                self.assertFalse(result.ok)
+                self.assertIn(
+                    ("schema_validation", f"schema_validation.{keyword}", expected_path),
+                    {(e.category, e.errorCode, e.path) for e in result.errors},
+                )
+
+    def test_classification_uses_central_cls_identifier(self) -> None:
+        schema = self.validator.registry.by_id[CLASSIFICATION_SCHEMA]
+        self.assertEqual(
+            schema["properties"]["classificationId"]["$ref"],
+            "https://eos.local/schemas/common/identifiers.schema.json#/$defs/CLS",
+        )
+        for identifier in ["CLS-000000", "CLS-999999"]:
+            with self.subTest(identifier=identifier):
+                self.assertValid({"classificationId": identifier}, CLASSIFICATION_SCHEMA)
+        for identifier in ["CLS-0000001", "CLS-12345", "CLS-abcdef", ["CLS-000001"]]:
+            with self.subTest(identifier=identifier):
+                self.assertInvalid({"classificationId": identifier}, CLASSIFICATION_SCHEMA)
+
+    def test_classification_reuses_common_source_link(self) -> None:
+        schema = self.validator.registry.by_id[CLASSIFICATION_SCHEMA]
+        self.assertEqual(
+            schema["properties"]["sourceLinks"]["items"],
+            {"$ref": "https://eos.local/schemas/common/source-link.schema.json"},
+        )
+        record = load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "classification-one-source-link-valid.json")
+        self.assertValid(record, CLASSIFICATION_SCHEMA)
+        record["sourceLinks"][0]["verificationStatus"] = "not-a-status"
+        result = self.validator.validate(record, CLASSIFICATION_SCHEMA)
+        self.assertIn(
+            ("schema_validation.enum", "$.sourceLinks[0].verificationStatus"),
+            {(e.errorCode, e.path) for e in result.errors},
+        )
+
+    def test_classification_source_links_are_structurally_optional(self) -> None:
+        for record in [
+            {"classificationId": "CLS-000001"},
+            {"classificationId": "CLS-000001", "sourceLinks": []},
+        ]:
+            with self.subTest(record=record):
+                self.assertValid(record, CLASSIFICATION_SCHEMA)
+
+    def test_classification_source_link_multiplicity_matches_common_metadata(self) -> None:
+        record = load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "classification-multiple-source-links-valid.json")
+        self.assertValid(record, CLASSIFICATION_SCHEMA)
+        record["sourceLinks"].append(record["sourceLinks"][0].copy())
+        self.assertValid(record, CLASSIFICATION_SCHEMA)
+
+    def test_classification_rejects_all_excluded_root_fields(self) -> None:
+        fields = [
+            "id", "classificationTypeId", "classificationEntryId", "catalogId",
+            "systemId", "namespace", "code", "value", "textValue", "label",
+            "enum", "fallbackText", "notes", "evaluationMode", "verificationStatus",
+            "status", "revision", "lifecycle", "parentClassificationId",
+            "hierarchyPath", "level", "validFrom", "validUntil", "schemaVersion",
+            "recordVersion", "createdAt", "createdBy", "updatedAt", "updatedBy",
+        ]
+        for field in fields:
+            with self.subTest(field=field):
+                result = self.validator.validate(
+                    {"classificationId": "CLS-000001", field: "fictional"}, CLASSIFICATION_SCHEMA,
+                )
+                self.assertIn(
+                    ("schema_validation.additionalProperties", f"$.{field}"),
+                    {(e.errorCode, e.path) for e in result.errors},
+                )
+
+    def test_classification_index_resolves_multiple_classifications_and_nested_errors(self) -> None:
+        record = {"classifications": [
+            {"classificationId": "CLS-000001"},
+            load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "classification-one-source-link-valid.json"),
+        ]}
+        self.assertValid(record, INDEX_SCHEMA)
+        record["classifications"][1]["sourceLinks"][0]["sourceClass"] = "invalid"
+        result = self.validator.validate(record, INDEX_SCHEMA)
+        self.assertIn(
+            ("schema_validation.enum", "$.classifications[1].sourceLinks[0].sourceClass"),
+            {(e.errorCode, e.path) for e in result.errors},
+        )
+
+    def test_classification_collects_multiple_schema_errors(self) -> None:
+        record = load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "classification-one-source-link-valid.json")
+        record["classificationId"] = "bad"
+        record["sourceLinks"][0]["sourceClass"] = "bad"
+        record["notes"] = "not permitted"
+        result = self.validator.validate(record, CLASSIFICATION_SCHEMA)
+        self.assertEqual(len(result.errors), 3)
+        self.assertEqual({e.category for e in result.errors}, {"schema_validation"})
+        self.assertEqual({e.path for e in result.errors}, {
+            "$.classificationId", "$.sourceLinks[0].sourceClass", "$.notes",
+        })
+
+    def test_classification_does_not_infer_catalog_origin_or_existence(self) -> None:
+        result = self.validator.validate(
+            {"classificationId": "CLS-999999"}, CLASSIFICATION_SCHEMA, has_verifiable_claims=True,
+        )
+        self.assertTrue(result.ok, [f"{e.path}: {e.message}" for e in result.errors])
+
+    def test_classification_preserves_existing_reference_error_category(self) -> None:
+        record = load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / "classification-invalid-source-reference-id-invalid.json")
+        result = self.validator.validate(record, CLASSIFICATION_SCHEMA)
+        self.assertEqual({e.category for e in result.errors}, {"schema_validation", "reference_integrity"})
+        self.assertTrue(all(e.path == "$.sourceLinks[0].sourceReferenceId" for e in result.errors))
 
 
 if __name__ == "__main__":

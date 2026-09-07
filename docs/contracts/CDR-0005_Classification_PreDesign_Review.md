@@ -10,7 +10,7 @@ Review type: Pre-design
 
 Version: 0.1
 
-Revision: 0
+Revision: 1
 
 Status: Review
 
@@ -19,6 +19,8 @@ Document basis: Accepted EOS architecture
 ## 1. Purpose
 
 Posúdiť najmenší bezpečný budúci kontrakt `Classification` pre míľnik `Phase 0.2B.1.5-prep`. Review oddeľuje prijatý význam od odporúčaného serializačného modelu. Tento dokument neprijíma nové architektonické pravidlá ani neimplementuje schému.
+
+Revision 1 zachováva pre-design posúdenie v §1 až §17 a dopĺňa finálne implementačné rozhodnutie a výsledok `Phase 0.2B.1.5` v §19. Pri rozdiele medzi odporúčaním pre-design a výsledným tvarom platí implementačné spresnenie §19. Existujúce CDR používajú Status Review; tento stav sa zachováva bez zavedenia nového lifecycle.
 
 Záver review: jednoduchý vnorený katalógový odkaz je odôvodnený, ale všeobecný zákaz `sourceLinks` by odporoval RFC-0001 §4.6. Odporúčaný minimálny model preto zachováva povinné `classificationId` a podmienené `sourceLinks`.
 
@@ -277,5 +279,45 @@ Verdikt sa vzťahuje výlučne na pripravenosť návrhu Classification. Nemení 
 | Date | Version | Revision | Author | Change |
 | --- | --- | --- | --- | --- |
 | 2026-09-07 | 0.1 | 0 | Codex | Pre-design review podľa Accepted RFC; odporúčaný klasifikačný odkaz s podmienenými SourceLink, katalógové hranice, riziká a implementačné podmienky; bez schémy alebo zmeny architektúry |
+| 2026-09-07 | 0.1 | 1 | Codex | Doplnenie finálneho Classification kontraktu a implementačného výsledku; zachovanie existujúcej multiplicity SourceLink vrátane prázdneho poľa a odloženie katalógovej kontroly zdrojového pôvodu do 0.2B.2 |
+
+## 19. Implementation Outcome
+
+Implementovaný je embedded reference Value Object `Classification` vo fáze `0.2B.1.5`. Vlastní ho rodič a reviduje sa cez rodiča. Nie je samostatná entita, Reference Object ani Catalog Entry. JSON Schema zostáva iba serializačným kontraktom Accepted znalostného modelu.
+
+### Final Field Model
+
+| Pole | Štrukturálna povinnosť | Implementácia a význam |
+| --- | --- | --- |
+| `classificationId` | Povinné | String cez `common/identifiers.schema.json#/$defs/CLS`; formát `CLS-xxxxxx` identifikuje jednu budúcu Classification Catalog Entry, nie vnorenú inštanciu |
+| `sourceLinks` | Nepovinné | Pole existujúcich `common/source-link.schema.json` objektov cez `$ref`; bez lokálnej redefinície |
+
+Schéma: `schemas/knowledge-core/classification.schema.json`, canonical ID `https://eos.local/schemas/knowledge-core/classification.schema.json`. Discovery: `schemas/index.schema.json#/$defs/classification`; index prijíma kolekciu `classifications`.
+
+Pre `sourceLinks` sa zachováva multiplicita existujúceho `common/metadata.schema.json`: nula alebo viac položiek, bez požiadavky `uniqueItems`. Pole môže byť vynechané alebo prázdne; `null`, iný typ a neplatné položky sú odmietnuté. Pôvodné odporúčanie neprázdneho poľa v §8 sa v tomto implementačnom profile nepoužilo, v súlade so zadaním zachovať existujúce pravidlá EOS. Ide o jedinú odchýlku od odporúčaného pre-design obmedzenia, nie od Accepted architektúry.
+
+### Structural Invariants
+
+JSON Schema Draft 2020-12 kontroluje typ object, povinné `classificationId`, centrálny CLS formát, typ a položky `sourceLinks` a `additionalProperties: false`. SourceLink vrátane svojich vnorených referencií a verificationStatus sa opakovane používa bez zmeny.
+
+Classification nemá vlastné `id`, `status`, `revision`, lifecycle metadata, koreňový `verificationStatus`, `evaluationMode`, `notes`, textovú hodnotu, fallback, enum klasifikácií, kód systému ani hierarchiu. Predstavuje presne jednu klasifikáciu; viac zaradení tvoria viaceré Classification objekty vlastnené rodičom. Hierarchia patrí budúcemu katalógu.
+
+### Application Boundary
+
+RFC-0001 §4.6 stále sémanticky vyžaduje sourceLinks, ak klasifikácia pochádza z externého systému, normy alebo dokumentu. Zo samotného classificationId nemožno bez katalógu určiť pôvod. Preto sourceLinks nie sú univerzálne povinné a katalógová kontrola podmienenej povinnosti je odložená do `0.2B.2`, nie odstránená.
+
+Zatiaľ sa nekontrolujú existencia CLS položky, aktívny stav, systém, kompatibilita s rodičom, hierarchia ani interný/externý pôvod. Ani prepínač existujúceho validátora `has_verifiable_claims` tento chýbajúci kontext nevytvára. Úspešný výsledok pre Classification je štrukturálny výsledok, nie overenie správneho zaradenia alebo referenčnej integrity voči budúcemu katalógu.
+
+Nová aplikačná validácia nebola potrebná. `scripts/validation/` zostáva nezmenené. Existujúca rekurzívna kontrola formátu sourceReferenceId sa na vnorené SourceLink naďalej uplatňuje a môže vydať `reference_integrity.invalid_source_reference_id` popri schema chybe; nepotvrdzuje však existenciu SRC záznamu. Toto je zachované správanie, nie nová katalogizácia alebo detekcia pôvodu.
+
+### Verification And Scope
+
+Vstup implementácie: vetva `feature/phase-0.2b-knowledge-contracts`, HEAD `b333c80`, pracovný strom clean, 80 pôvodných testov úspešných. Nové pokrytie tvorí 4 platných a 26 neplatných fixtures a 12 testov. Kompletná sada 92 testov zahŕňa všetky predchádzajúce Knowledge Core regresie. Fixtures sú výhradne fiktívne štruktúry, nie autoritatívne CLS alebo SRC záznamy.
+
+Implementačné kontroly zahŕňajú unittest, UTF-8, JSON syntax, Draft202012Validator.check_schema pre všetky schémy a vyriešenie lokálnych aj cross-file `$ref`. Akceptačným kritériom je úspech všetkých kontrol bez zmeny Accepted RFC, ADR, závislostí a predchádzajúcich kontraktov.
+
+Skutočný výsledok verifikácie dňa 2026-09-07: `Ran 92 tests in 2.124s`, `OK`; 92 úspešných, 0 zlyhaní, 0 chýb a 0 preskočených. JSON syntax: 169 súborov PASS; `Draft202012Validator.check_schema`: 14 schém PASS; lokálne a cross-file `$ref`: 65 výskytov PASS; Python compile: 6 súborov PASS; UTF-8: 232 projektových súborov PASS. Runtime: Python 3.12.14, jsonschema 4.26.0, referencing 0.37.0. Schémy: 13 -> 14; ADR súbory: 17 -> 17 vrátane šablóny; RFC súbory: 4 -> 4 vrátane cross-review. Diff potvrdil nezmenené Accepted dokumenty, validačný kód, SourceLink, závislosti a všetky štyri predchádzajúce core schémy.
+
+Dokončený je iba implementačný rozsah `0.2B.1.5`; celý `0.2B.1` zostáva rozpracovaný. Stav CDR je Review. Classification Catalog, reálne CLS položky, nové ADR/RFC, governance, PropertyRecord ani Observation nevznikli. `0.2B.2` nebola začatá. Konkrétna následná úloha katalógovej validácie je zaznamenaná v BACKLOG.md.
 
 READY WITH CONDITIONS

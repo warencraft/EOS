@@ -1,5 +1,19 @@
 # ROADMAP
 
+## Míľnik 0.2B.1.5 - Classification Contract
+
+Cieľ:
+
+- implementovať embedded reference Value Object s jedným povinným `classificationId` na budúcu CLS katalógovú položku,
+- znovu použiť SourceLink a ponechať `sourceLinks` štrukturálne nepovinné,
+- zachovať sémantickú povinnosť zdrojov pre externý pôvod a odložiť jej katalógové vynucovanie do `0.2B.2`,
+- vynechať voľný text, enum klasifikácií, notes, evaluationMode, vlastné ID, lifecycle a koreňový verificationStatus,
+- ponechať hierarchiu katalógu a násobnosť kolekcii rodiča.
+
+Stav: implementačný rozsah Completed, kontrakt Review. Celý `0.2B.1` zostáva In progress.
+
+Do `0.2B.2` zostáva existencia a použiteľnosť CLS položiek, systémy, hierarchia, kompatibilita s rodičom a katalógová kontrola povinnosti zdrojov. Classification Catalog ani reálne CLS položky zatiaľ nevznikli; `0.2B.2` nezačala.
+
 ## Míľnik 0.2B.1.4 - Condition Contract
 
 Cieľ:

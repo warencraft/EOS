@@ -1,5 +1,19 @@
 # tests
 
+## Míľnik 0.2B.1.5 - Classification Contract
+
+Testy používajú `unittest` a existujúci EOS validátor. Nové fixtures majú názvy `classification-*-valid.json` a `classification-*-invalid.json` v príslušných `tests/fixtures/valid/knowledge-core/` a `tests/fixtures/invalid/knowledge-core/` priečinkoch. Obsahujú iba fiktívne CLS a SRC identifikátory, nie reálne katalógové či zdrojové záznamy.
+
+Pokrytie zahŕňa 4 platné a 26 neplatných fixtures, centrálny CLS `$ref`, znovupoužitie SourceLink, povinné `classificationId`, voliteľné a prázdne `sourceLinks`, viac zdrojov a zachovanie existujúceho pravidla bez unikátnosti. Neplatné fixtures sa kontrolujú podľa očakávaného schema error kódu a presnej cesty. Testy odmietajú metadáta, lifecycle, koreňový `verificationStatus`, `evaluationMode`, poznámky, voľný text a ostatné nepovolené polia; overujú vnorené chyby cez index, viac chýb naraz a rozlíšenie existujúcej kategórie `reference_integrity`.
+
+Úspech Classification testov potvrdzuje štruktúru. Existencia a použiteľnosť CLS cieľa, externý pôvod a z neho vyplývajúca povinnosť `sourceLinks` sa ešte nekontrolujú; katalógová validácia je odložená do `0.2B.2`. Aj platný odkaz bez zdrojov môže byť po zavedení katalógu sémanticky neplatný. Test neprítomnosti odhadu pôvodu dokumentuje toto obmedzenie, nie jeho budúcu platnosť.
+
+Kompletná sada má 92 testov vrátane pôvodných 80 testov a regresií Quantity, ValueRange, MeasurementQuality a Condition. Spustenie z koreňa projektu:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
 ## Míľnik 0.2B.1.4 - Condition Contract
 
 Testy pre `Condition` používajú iba `unittest` a existujúcu validačnú vrstvu.

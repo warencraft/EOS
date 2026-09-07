@@ -1,5 +1,25 @@
 # schemas
 
+## Míľnik 0.2B.1.5 - Classification Contract
+
+Piaty Knowledge Core Contract je `Classification`, embedded reference Value Object vlastnený rodičom:
+
+- schéma: `knowledge-core/classification.schema.json`,
+- schema id: `https://eos.local/schemas/knowledge-core/classification.schema.json`,
+- discovery: `index.schema.json#/$defs/classification`, kolekcia `classifications`,
+- povinné `classificationId` cez centrálny `common/identifiers.schema.json#/$defs/CLS`,
+- nepovinné `sourceLinks` ako pole existujúcich `common/source-link.schema.json` objektov.
+
+`CLS-xxxxxx` identifikuje budúcu Classification Catalog Entry, nie túto vnorenú inštanciu. Jedna Classification reprezentuje jedno zaradenie; viac klasifikácií tvoria viaceré objekty v kolekcii rodiča. Hierarchia a klasifikačné systémy patria budúcemu Classification Catalog.
+
+Kontrakt nemá vlastné ID, lifecycle, `verificationStatus`, `evaluationMode`, `notes`, enum klasifikačných hodnôt ani voľný text či fallback. Neznáme polia odmieta. Vnorený SourceLink zachováva vlastný `verificationStatus` podľa existujúceho kontraktu.
+
+`sourceLinks` sú v `0.2B.1` štrukturálne nepovinné. Pri uvedení ide o pole s nulou alebo viacerými položkami, bez novej požiadavky unikátnosti, rovnako ako v spoločných EOS metadátach. RFC-0001 §4.6 naďalej sémanticky vyžaduje zdroje pri klasifikáciách pochádzajúcich z externých systémov, noriem alebo dokumentov. Vynucovanie tejto podmienky podľa katalógového pôvodu je odložené do `0.2B.2`; pôvod sa z CLS neodhaduje.
+
+Validátor zatiaľ nekontroluje existenciu ani aktívny stav CLS položky, referenčnú integritu voči katalógu, správny systém, kompatibilitu s rodičom ani hierarchiu. Existujúce kontroly formátu `sourceReferenceId` zostávajú zachované; nepotvrdzujú existenciu SRC záznamu. Štrukturálne platná Classification nie je dôkazom správneho zaradenia. Zdroj definície kategórie automaticky nedokazuje zaradenie konkrétneho objektu.
+
+Implementačný rozsah `Phase 0.2B.1.5` je dokončený; celý `0.2B.1` zostáva rozpracovaný. Classification Catalog ani reálne CLS položky nevznikli a `0.2B.2` nezačala. JSON Schema je serializačný kontrakt, nie samotný Knowledge Model.
+
 ## Míľnik 0.2B.1.4 - Condition Contract
 
 Štvrtý Knowledge Core Contract je `Condition`:

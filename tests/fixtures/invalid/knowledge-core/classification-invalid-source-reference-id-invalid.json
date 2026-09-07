@@ -1,0 +1,12 @@
+{
+  "classificationId": "CLS-000001",
+  "sourceLinks": [
+    {
+      "sourceReferenceId": "BAD-1",
+      "sourceClass": "N",
+      "supportedField": "classificationId",
+      "usageType": "citation",
+      "verificationStatus": "Draft"
+    }
+  ]
+}
