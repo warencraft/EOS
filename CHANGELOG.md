@@ -1,5 +1,29 @@
 # CHANGELOG
 
+## 0.2B.1.4 - 2026-08-01
+
+Status: Review
+
+### Added
+
+- `CDR-0004_Condition_Contract.md` ako contract review dokument pre štvrtý Knowledge Core Contract.
+- `schemas/knowledge-core/condition.schema.json` pre value object `Condition`.
+- Centrálny identifikátor `CND-xxxxxx` v `schemas/common/identifiers.schema.json`.
+- Discovery záznam pre `Condition` v `schemas/index.schema.json`.
+- Platné a neplatné fixture záznamy pre `Condition`.
+- `unittest` pokrytie pre `CND` identifikátor, `evaluationMode`, presne jednu hodnotovú formu, vnorené `Quantity`/`ValueRange` `$ref`, notes-only rozhodnutie, zákaz metadata/source/verification polí a regresie `Quantity`/`ValueRange`/`MeasurementQuality`.
+
+### Changed
+
+- Dokumentácia schém, testov a skriptov opisuje počiatočný scope `Condition`, rozdiel medzi kontextovou podmienkou a výrobnou toleranciou, schema-only validáciu a odložené aplikačné pravidlá.
+
+### Not Added
+
+- Nevznikol Condition Type Catalog, Classification, PropertyRecord ani Observation kontrakt.
+- Nevznikol tolerance schema, MeasurementMethod, Instrument, Unit Catalog ani Property Catalog.
+- Nevznikli konkrétne strojárske hodnoty, reálne jednotky, konverzné faktory, kalkulačky, API, databázový server ani UI.
+- Nevznikol nový ADR ani RFC.
+
 ## 0.2B.1.3 - 2026-08-01
 
 Status: Review

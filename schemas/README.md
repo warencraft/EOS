@@ -1,5 +1,33 @@
 # schemas
 
+## Míľnik 0.2B.1.4 - Condition Contract
+
+Štvrtý Knowledge Core Contract je `Condition`:
+
+- schéma: `knowledge-core/condition.schema.json`,
+- schema id: `https://eos.local/schemas/knowledge-core/condition.schema.json`,
+- discovery: `index.schema.json#/$defs/condition`,
+- typ: value object vlastnený rodičovským objektom,
+- lifecycle: nemá vlastné `id`, `status`, `revision`, `schemaVersion`, `recordVersion`, `sourceLinks` ani `verificationStatus`.
+
+`Condition` opisuje kontext, okolnosť, hranicu alebo stav, za ktorých má tvrdenie, vlastnosť, pozorovanie alebo schopnosť význam. Neobsahuje meranú hodnotu samotnú, property identitu, observation identitu, workflow stav ani zdrojové dôkazy.
+
+Počiatočný scope obsahuje povinné polia `conditionTypeId` a `evaluationMode`. `conditionTypeId` používa centralizovaný formát `CND-xxxxxx` pre budúci Condition Type Catalog Entry. Samotný Condition Type Catalog zatiaľ nevzniká.
+
+Presne jedna hodnotová forma musí byť prítomná:
+
+- `quantity`,
+- `valueRange`,
+- `textValue`,
+- `booleanValue`,
+- `referenceId`.
+
+`quantity` a `valueRange` používajú `$ref` na existujúce Knowledge Core kontrakty. `textValue` a `referenceId` musia byť neprázdne. `referenceId` je obmedzený na existujúce centrálne podporované EOS identifikátory a nezavádza univerzálny prefix.
+
+`evaluationMode` používa hodnoty `mandatory`, `limiting`, `descriptive`, `recommended` a `contextual`. Hodnoty `required` a `optional` sa nepoužívajú, pretože miešajú význam požiadavky so štrukturálnou povinnosťou poľa.
+
+Validácia pre `Condition` je v tomto míľniku schema-only. Budúca aplikačná validácia bude potrebná až pre existenciu Condition Type Catalog položiek, kompatibilitu hodnotovej formy a vyhodnotenie použiteľnosti.
+
 ## Míľnik 0.2B.1.3 - MeasurementQuality Contract
 
 Tretí Knowledge Core Contract je `MeasurementQuality`:

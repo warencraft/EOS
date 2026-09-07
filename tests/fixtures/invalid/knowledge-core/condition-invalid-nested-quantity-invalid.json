@@ -1,0 +1,8 @@
+{
+  "conditionTypeId": "CND-000001",
+  "evaluationMode": "mandatory",
+  "quantity": {
+    "value": "not a number",
+    "unitId": "UNT-000001"
+  }
+}

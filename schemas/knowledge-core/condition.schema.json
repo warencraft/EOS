@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/schemas/knowledge-core/condition.schema.json",
+  "title": "EOS Condition",
+  "description": "Immutable value object describing a contextual qualifier for a claim, property, observation, or capability.",
+  "type": "object",
+  "required": [
+    "conditionTypeId",
+    "evaluationMode"
+  ],
+  "oneOf": [
+    { "required": ["quantity"] },
+    { "required": ["valueRange"] },
+    { "required": ["textValue"] },
+    { "required": ["booleanValue"] },
+    { "required": ["referenceId"] }
+  ],
+  "properties": {
+    "conditionTypeId": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/CND",
+      "description": "Identifier of a future Condition Type Catalog Entry. The catalog is not implemented by this contract."
+    },
+    "evaluationMode": {
+      "type": "string",
+      "enum": [
+        "mandatory",
+        "limiting",
+        "descriptive",
+        "recommended",
+        "contextual"
+      ],
+      "description": "Meaningful mode for applying the condition in its parent context. It does not perform condition evaluation."
+    },
+    "quantity": {
+      "$ref": "https://eos.local/schemas/knowledge-core/quantity.schema.json",
+      "description": "Scalar condition value using the Quantity contract."
+    },
+    "valueRange": {
+      "$ref": "https://eos.local/schemas/knowledge-core/value-range.schema.json",
+      "description": "Interval condition value using the ValueRange contract."
+    },
+    "textValue": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Non-empty textual condition value. It must not contain source citations, lifecycle state, or multiple conditions."
+    },
+    "booleanValue": {
+      "type": "boolean",
+      "description": "Boolean condition value."
+    },
+    "referenceId": {
+      "description": "Reference to an existing centrally supported EOS identifier. This contract does not introduce a universal reference prefix or check target existence.",
+      "anyOf": [
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/EOS" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/MET" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/STD" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/NRM" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/SRC" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/UNT" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/CND" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/MAT" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/POL" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/TEC" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/MAC" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/TOOL" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/SUP" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/JOB" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/JOB_OPERATION" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/JOB_TIME_RECORD" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/JOB_RISK" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/JOB_QUOTATION_NOTE" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/CAL" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/FRM" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/ADR" }
+      ]
+    },
+    "notes": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional supporting note. It must not replace the condition value, store source citations, lifecycle state, or verification state."
+    }
+  },
+  "additionalProperties": false
+}

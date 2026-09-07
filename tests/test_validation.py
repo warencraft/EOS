@@ -20,6 +20,7 @@ INDEX_SCHEMA = "https://eos.local/schemas/index.schema.json"
 QUANTITY_SCHEMA = "https://eos.local/schemas/knowledge-core/quantity.schema.json"
 VALUE_RANGE_SCHEMA = "https://eos.local/schemas/knowledge-core/value-range.schema.json"
 MEASUREMENT_QUALITY_SCHEMA = "https://eos.local/schemas/knowledge-core/measurement-quality.schema.json"
+CONDITION_SCHEMA = "https://eos.local/schemas/knowledge-core/condition.schema.json"
 
 
 def load_fixture(name: str) -> dict:
@@ -659,6 +660,168 @@ class ValidationTests(unittest.TestCase):
         }
         result = self.validator.validate(record, INDEX_SCHEMA)
         self.assertTrue(result.ok, [f"{e.path}: {e.message}" for e in result.errors])
+
+    def test_condition_schema_definition_is_valid(self) -> None:
+        result = self.validator.validate_schema_definition(CONDITION_SCHEMA)
+        self.assertTrue(result.ok, [f"{e.schemaPath}: {e.message}" for e in result.errors])
+
+    def test_valid_condition_fixtures_pass(self) -> None:
+        files = sorted(VALID_KNOWLEDGE_CORE_FIXTURES.glob("condition-*-valid.json"))
+        self.assertGreaterEqual(len(files), 7)
+        for path in files:
+            with self.subTest(path=path.name):
+                result = self.validator.validate_json_file(path, CONDITION_SCHEMA)
+                self.assertTrue(result.ok, [f"{e.path}: {e.message}" for e in result.errors])
+
+    def test_invalid_condition_fixtures_fail(self) -> None:
+        files = sorted(INVALID_KNOWLEDGE_CORE_FIXTURES.glob("condition-*-invalid.json"))
+        self.assertGreaterEqual(len(files), 31)
+        for path in files:
+            with self.subTest(path=path.name):
+                result = self.validator.validate_json_file(path, CONDITION_SCHEMA)
+                self.assertFalse(result.ok, path.name)
+
+    def test_condition_type_id_uses_central_cnd_identifier(self) -> None:
+        identifiers = self.validator.registry.by_id["https://eos.local/schemas/common/identifiers.schema.json"]
+        schema = self.validator.registry.by_id[CONDITION_SCHEMA]
+        self.assertEqual(identifiers["$defs"]["CND"]["pattern"], "^CND-[0-9]{6}$")
+        self.assertEqual(
+            schema["properties"]["conditionTypeId"]["$ref"],
+            "https://eos.local/schemas/common/identifiers.schema.json#/$defs/CND",
+        )
+        result = self.validator.validate(
+            {
+                "conditionTypeId": "CND-000010",
+                "evaluationMode": "mandatory",
+                "textValue": "fictional context",
+            },
+            CONDITION_SCHEMA,
+        )
+        self.assertTrue(result.ok, [f"{e.path}: {e.message}" for e in result.errors])
+
+    def test_condition_evaluation_modes_are_accepted(self) -> None:
+        for index, mode in enumerate(["mandatory", "limiting", "descriptive", "recommended", "contextual"], start=1):
+            with self.subTest(mode=mode):
+                record = {
+                    "conditionTypeId": f"CND-00001{index}",
+                    "evaluationMode": mode,
+                    "textValue": "fictional context",
+                }
+                self.assertValid(record, CONDITION_SCHEMA)
+
+    def test_condition_invalid_evaluation_mode_fails_with_path(self) -> None:
+        record = load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / "condition-invalid-evaluation-mode-invalid.json")
+        result = self.validator.validate(record, CONDITION_SCHEMA)
+        self.assertFalse(result.ok)
+        self.assertTrue(any(error.category == "schema_validation" and error.path == "$.evaluationMode" for error in result.errors))
+
+    def test_condition_requires_exactly_one_value_form(self) -> None:
+        cases = [
+            "condition-no-value-form-invalid.json",
+            "condition-notes-only-invalid.json",
+            "condition-quantity-and-value-range-invalid.json",
+            "condition-quantity-and-text-invalid.json",
+            "condition-boolean-and-reference-invalid.json",
+            "condition-all-value-forms-invalid.json",
+        ]
+        for filename in cases:
+            with self.subTest(filename=filename):
+                record = load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / filename)
+                result = self.validator.validate(record, CONDITION_SCHEMA)
+                self.assertFalse(result.ok)
+                self.assertTrue(any(error.category == "schema_validation" and error.errorCode == "schema_validation.oneOf" for error in result.errors))
+
+    def test_condition_quantity_and_value_range_refs_resolve(self) -> None:
+        schema = self.validator.registry.by_id[CONDITION_SCHEMA]
+        self.assertEqual(
+            schema["properties"]["quantity"]["$ref"],
+            "https://eos.local/schemas/knowledge-core/quantity.schema.json",
+        )
+        self.assertEqual(
+            schema["properties"]["valueRange"]["$ref"],
+            "https://eos.local/schemas/knowledge-core/value-range.schema.json",
+        )
+        self.assertValid(load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "condition-quantity-valid.json"), CONDITION_SCHEMA)
+        self.assertValid(load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "condition-value-range-valid.json"), CONDITION_SCHEMA)
+
+    def test_condition_nested_error_paths_identify_fields(self) -> None:
+        cases = [
+            ("condition-invalid-nested-quantity-invalid.json", "$.quantity.value"),
+            ("condition-invalid-nested-value-range-invalid.json", "$.valueRange.minValue"),
+        ]
+        for filename, expected_path in cases:
+            with self.subTest(filename=filename):
+                record = load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / filename)
+                result = self.validator.validate(record, CONDITION_SCHEMA)
+                self.assertFalse(result.ok)
+                self.assertTrue(any(error.path == expected_path for error in result.errors))
+
+    def test_condition_empty_text_and_reference_fail_with_paths(self) -> None:
+        cases = [
+            ("condition-empty-text-value-invalid.json", "$.textValue"),
+            ("condition-empty-reference-id-invalid.json", "$.referenceId"),
+        ]
+        for filename, expected_path in cases:
+            with self.subTest(filename=filename):
+                record = load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / filename)
+                result = self.validator.validate(record, CONDITION_SCHEMA)
+                self.assertFalse(result.ok)
+                self.assertTrue(any(error.path == expected_path for error in result.errors))
+
+    def test_condition_metadata_source_and_status_fields_fail(self) -> None:
+        cases = [
+            ("condition-entity-metadata-invalid.json", "$.id"),
+            ("condition-lifecycle-field-invalid.json", "$.status"),
+            ("condition-source-links-invalid.json", "$.sourceLinks"),
+            ("condition-verification-status-invalid.json", "$.verificationStatus"),
+            ("condition-property-id-invalid.json", "$.propertyId"),
+        ]
+        for filename, expected_path in cases:
+            with self.subTest(filename=filename):
+                record = load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / filename)
+                result = self.validator.validate(record, CONDITION_SCHEMA)
+                self.assertFalse(result.ok)
+                self.assertTrue(any(error.path == expected_path for error in result.errors))
+
+    def test_condition_reference_id_uses_existing_supported_identifiers(self) -> None:
+        schema = self.validator.registry.by_id[CONDITION_SCHEMA]
+        reference_targets = {
+            ref["$ref"].rsplit("/", 1)[-1]
+            for ref in schema["properties"]["referenceId"]["anyOf"]
+        }
+        self.assertIn("SRC", reference_targets)
+        self.assertIn("CND", reference_targets)
+        self.assertNotIn("REL", reference_targets)
+
+        valid_record = {
+            "conditionTypeId": "CND-000020",
+            "evaluationMode": "contextual",
+            "referenceId": "SRC-000001",
+        }
+        invalid_record = {
+            "conditionTypeId": "CND-000020",
+            "evaluationMode": "contextual",
+            "referenceId": "REL-000001",
+        }
+        self.assertValid(valid_record, CONDITION_SCHEMA)
+        self.assertInvalid(invalid_record, CONDITION_SCHEMA)
+
+    def test_condition_schema_index_resolves_condition(self) -> None:
+        record = {
+            "conditions": [
+                load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "condition-text-valid.json")
+            ]
+        }
+        result = self.validator.validate(record, INDEX_SCHEMA)
+        self.assertTrue(result.ok, [f"{e.path}: {e.message}" for e in result.errors])
+
+    def test_condition_validation_is_schema_only_for_contract_rules(self) -> None:
+        record = load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / "condition-notes-only-invalid.json")
+        result = self.validator.validate(record, CONDITION_SCHEMA)
+        self.assertFalse(result.ok)
+        categories = {error.category for error in result.errors}
+        self.assertIn("schema_validation", categories)
+        self.assertNotIn("application_validation", categories)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,19 @@
 # ROADMAP
 
+## Míľnik 0.2B.1.4 - Condition Contract
+
+Cieľ:
+
+- zaviesť štvrtý minimálny Knowledge Core Contract pre value object `Condition`,
+- definovať povinné `conditionTypeId` a `evaluationMode`,
+- používať centralizovaný formát `CND-xxxxxx` pre budúci Condition Type Catalog význam,
+- vyžadovať presne jednu hodnotovú formu z `quantity`, `valueRange`, `textValue`, `booleanValue` alebo `referenceId`,
+- použiť vnorený `Quantity` a `ValueRange` cez `$ref`,
+- ponechať existenciu Condition Type Catalog položky, kompatibilitu hodnotovej formy a vyhodnotenie podmienky budúcej aplikačnej validácii,
+- nemodelovať manufacturing tolerance, workflow stav ani zdrojové dôkazy.
+
+Stav: Review.
+
 ## Míľnik 0.2B.1.3 - MeasurementQuality Contract
 
 Cieľ:

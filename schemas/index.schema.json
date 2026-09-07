@@ -12,7 +12,8 @@
     "documentRecord": { "$ref": "https://eos.local/schemas/document-record.schema.json" },
     "quantity": { "$ref": "https://eos.local/schemas/knowledge-core/quantity.schema.json" },
     "valueRange": { "$ref": "https://eos.local/schemas/knowledge-core/value-range.schema.json" },
-    "measurementQuality": { "$ref": "https://eos.local/schemas/knowledge-core/measurement-quality.schema.json" }
+    "measurementQuality": { "$ref": "https://eos.local/schemas/knowledge-core/measurement-quality.schema.json" },
+    "condition": { "$ref": "https://eos.local/schemas/knowledge-core/condition.schema.json" }
   },
   "properties": {
     "sourceReferences": {
@@ -38,6 +39,10 @@
     "measurementQualities": {
       "type": "array",
       "items": { "$ref": "#/$defs/measurementQuality" }
+    },
+    "conditions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/condition" }
     }
   },
   "additionalProperties": false

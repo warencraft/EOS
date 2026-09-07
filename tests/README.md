@@ -1,5 +1,30 @@
 # tests
 
+## Míľnik 0.2B.1.4 - Condition Contract
+
+Testy pre `Condition` používajú iba `unittest` a existujúcu validačnú vrstvu.
+
+Platné a neplatné fixture sú v:
+
+- `tests/fixtures/valid/knowledge-core/`
+- `tests/fixtures/invalid/knowledge-core/`
+
+Pokrytie zahŕňa:
+
+- povinné `conditionTypeId` vo formáte `CND-xxxxxx`,
+- povinné `evaluationMode` s hodnotami `mandatory`, `limiting`, `descriptive`, `recommended` a `contextual`,
+- presne jednu hodnotovú formu z `quantity`, `valueRange`, `textValue`, `booleanValue` alebo `referenceId`,
+- notes-only objekt ako neplatný,
+- vnorené `Quantity` a `ValueRange` cez `$ref`,
+- neprázdne `textValue` a `referenceId`,
+- obmedzenie `referenceId` na existujúce centrálne podporované EOS identifikátory,
+- zákaz entity metadát, lifecycle polí, `sourceLinks`, `verificationStatus` a `propertyId`,
+- presné cesty k vnoreným chybám,
+- dostupnosť `Condition` cez centrálny schema index,
+- regresiu `Quantity`, `ValueRange` a `MeasurementQuality`.
+
+Pre `Condition` nebolo pridané nové aplikačné pravidlo; kontraktové pravidlá tohto míľnika sú pokryté JSON Schema Draft 2020-12.
+
 ## Míľnik 0.2B.1.3 - MeasurementQuality Contract
 
 Testy pre `MeasurementQuality` používajú iba `unittest` a existujúcu validačnú vrstvu.

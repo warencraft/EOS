@@ -1,5 +1,14 @@
 # scripts
 
+## Míľnik 0.2B.1.4 - Condition Contract
+
+Pre `Condition` zostáva validácia v tomto míľniku schema-only:
+
+- JSON Schema kontroluje objekt, povinné `conditionTypeId`, centrálny `CND-xxxxxx` formát, `evaluationMode`, presne jednu hodnotovú formu, vnorené `$ref` na `Quantity` a `ValueRange`, neprázdne textové a referenčné hodnoty a zákaz neznámych polí.
+- EOS aplikačná validačná vrstva sa nemení, pretože existencia Condition Type Catalog položky, kompatibilita hodnotovej formy, dimenzionálna kompatibilita a skutočné vyhodnotenie podmienky sú odložené.
+
+Validačná vrstva nevytvára Condition Type Catalog, nevykonáva unit conversion, nehodnotí splnenie podmienky a nemodeluje manufacturing tolerance.
+
 ## Míľnik 0.2B.1.3 - MeasurementQuality Contract
 
 Pre `MeasurementQuality` zostáva validácia rozdelená na dve vrstvy:
