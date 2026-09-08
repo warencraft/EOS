@@ -71,6 +71,33 @@ ALLOWED_SCHEMA_KEYWORDS = {
     "else",
 }
 
+QUANTITY_SCHEMA_ID = "https://eos.local/schemas/knowledge-core/quantity.schema.json"
+VALUE_RANGE_SCHEMA_ID = "https://eos.local/schemas/knowledge-core/value-range.schema.json"
+MEASUREMENT_QUALITY_SCHEMA_ID = "https://eos.local/schemas/knowledge-core/measurement-quality.schema.json"
+CONDITION_SCHEMA_ID = "https://eos.local/schemas/knowledge-core/condition.schema.json"
+PROPERTY_RECORD_SCHEMA_ID = "https://eos.local/schemas/knowledge-core/property-record.schema.json"
+INDEX_SCHEMA_ID = "https://eos.local/schemas/index.schema.json"
+
+EMBEDDED_CONTRACT_FIELDS: dict[str, dict[str, tuple[str, bool]]] = {
+    MEASUREMENT_QUALITY_SCHEMA_ID: {
+        "uncertainty": (QUANTITY_SCHEMA_ID, False),
+        "resolution": (QUANTITY_SCHEMA_ID, False),
+    },
+    CONDITION_SCHEMA_ID: {
+        "quantity": (QUANTITY_SCHEMA_ID, False),
+        "valueRange": (VALUE_RANGE_SCHEMA_ID, False),
+    },
+    PROPERTY_RECORD_SCHEMA_ID: {
+        "quantity": (QUANTITY_SCHEMA_ID, False),
+        "valueRange": (VALUE_RANGE_SCHEMA_ID, False),
+        "measurementQuality": (MEASUREMENT_QUALITY_SCHEMA_ID, False),
+        "conditions": (CONDITION_SCHEMA_ID, True),
+    },
+    INDEX_SCHEMA_ID: {
+        "propertyRecords": (PROPERTY_RECORD_SCHEMA_ID, True),
+    },
+}
+
 
 class MissingValidationDependencyError(RuntimeError):
     pass
@@ -321,12 +348,41 @@ class EosValidator:
         if not isinstance(instance, dict):
             return
         self._validate_finite_numbers(instance, result)
-        self._validate_value_range_rules(instance, result, schema_id=schema_id)
-        self._validate_measurement_quality_rules(instance, result, schema_id=schema_id)
+        self._validate_contract_rules(instance, result, schema_id=schema_id)
         self._validate_source_links_rule(instance, result, has_verifiable_claims=has_verifiable_claims)
         self._validate_source_link_ids(instance, result)
         self._validate_hierarchical_ids(instance, result)
         self._validate_document_record_versions(instance, result)
+
+    def _validate_contract_rules(
+        self,
+        instance: Any,
+        result: ValidationResult,
+        *,
+        schema_id: str,
+        path: str = "$",
+    ) -> None:
+        if not isinstance(instance, dict):
+            return
+
+        if schema_id == VALUE_RANGE_SCHEMA_ID:
+            self._validate_value_range_rules(instance, result, path=path)
+        elif schema_id == MEASUREMENT_QUALITY_SCHEMA_ID:
+            self._validate_measurement_quality_rules(instance, result, path=path)
+
+        for field_name, (child_schema_id, is_array) in EMBEDDED_CONTRACT_FIELDS.get(schema_id, {}).items():
+            child = instance.get(field_name)
+            child_path = f"{path}.{field_name}"
+            if is_array and isinstance(child, list):
+                for index, value in enumerate(child):
+                    self._validate_contract_rules(
+                        value,
+                        result,
+                        schema_id=child_schema_id,
+                        path=f"{child_path}[{index}]",
+                    )
+            elif not is_array:
+                self._validate_contract_rules(child, result, schema_id=child_schema_id, path=child_path)
 
     def _validate_finite_numbers(self, instance: Any, result: ValidationResult, path: str = "$") -> None:
         if isinstance(instance, float) and not math.isfinite(instance):
@@ -350,11 +406,8 @@ class EosValidator:
         instance: dict[str, Any],
         result: ValidationResult,
         *,
-        schema_id: str,
+        path: str,
     ) -> None:
-        if schema_id != "https://eos.local/schemas/knowledge-core/value-range.schema.json":
-            return
-
         min_value = instance.get("minValue")
         max_value = instance.get("maxValue")
         if isinstance(min_value, (int, float)) and not isinstance(min_value, bool):
@@ -364,7 +417,7 @@ class EosValidator:
                         errorCode="application_validation.value_range_reversed_bounds",
                         category="application_validation",
                         message="ValueRange minValue must be less than or equal to maxValue.",
-                        instancePath="$.minValue",
+                        instancePath=f"{path}.minValue",
                         recordId=self._record_id(instance),
                     )
 
@@ -373,7 +426,7 @@ class EosValidator:
                 errorCode="application_validation.value_range_lower_inclusive_without_min",
                 category="application_validation",
                 message="ValueRange lowerInclusive is meaningful only when minValue exists.",
-                instancePath="$.lowerInclusive",
+                instancePath=f"{path}.lowerInclusive",
                 recordId=self._record_id(instance),
             )
 
@@ -382,7 +435,7 @@ class EosValidator:
                 errorCode="application_validation.value_range_upper_inclusive_without_max",
                 category="application_validation",
                 message="ValueRange upperInclusive is meaningful only when maxValue exists.",
-                instancePath="$.upperInclusive",
+                instancePath=f"{path}.upperInclusive",
                 recordId=self._record_id(instance),
             )
 
@@ -391,18 +444,15 @@ class EosValidator:
         instance: dict[str, Any],
         result: ValidationResult,
         *,
-        schema_id: str,
+        path: str,
     ) -> None:
-        if schema_id != "https://eos.local/schemas/knowledge-core/measurement-quality.schema.json":
-            return
-
         uncertainty_value = self._quantity_value(instance.get("uncertainty"))
         if uncertainty_value is not None and uncertainty_value < 0:
             result.add(
                 errorCode="application_validation.measurement_quality_negative_uncertainty",
                 category="application_validation",
                 message="MeasurementQuality uncertainty.value must be greater than or equal to zero.",
-                instancePath="$.uncertainty.value",
+                instancePath=f"{path}.uncertainty.value",
                 recordId=self._record_id(instance),
             )
 
@@ -412,7 +462,7 @@ class EosValidator:
                 errorCode="application_validation.measurement_quality_nonpositive_resolution",
                 category="application_validation",
                 message="MeasurementQuality resolution.value must be greater than zero.",
-                instancePath="$.resolution.value",
+                instancePath=f"{path}.resolution.value",
                 recordId=self._record_id(instance),
             )
 

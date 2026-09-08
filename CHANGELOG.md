@@ -1,5 +1,28 @@
 # CHANGELOG
 
+## 0.2B.1.6 - 2026-09-08
+
+Status: Implemented / Review
+
+### Added
+
+- `schemas/knowledge-core/property-record.schema.json` pre embedded claim-like Value Object s povinným `propertyId`, `valueType`, `verificationStatus`, `sourceLinks` a presne jednou vetvou `quantity` alebo `valueRange`.
+- Centrálny PRP formát a discovery PropertyRecord v schema indexe.
+- 10 platných a 40 neplatných fiktívnych fixtures a 13 unittest testov pre štruktúru, `$ref`, discriminator, odmietnuté polia, vnorené aplikačné pravidlá a regresie.
+
+### Changed
+
+- CDR-0006 Revision 1 zaznamenáva finálny implementačný výsledok; Status zostáva Review a verdikt `READY WITH CONDITIONS` je zachovaný.
+- Validačná orchestrácia rekurzívne aplikuje existujúce ValueRange a MeasurementQuality pravidlá aj vo vnorených kontraktoch bez duplikácie ich implementácie.
+- Dokumentácia schém, testov a validátora opisuje claim boundary, zdroje, verifikáciu a odložené katalógové kontroly.
+
+### Deferred / Not Added
+
+- Do 0.2B.2 zostáva existencia a stav PRP, povolený valueType, kompatibilita jednotiek a dimenzií, povinné podmienky, doménové rozsahy a property classification.
+- Kontextová povinnosť neprázdnych `sourceLinks` a Decision workflow zostávajú odložené; samostatný kontrakt nepredstiera lifecycle rodiča.
+- Nevznikol Property Catalog, Observation, Decision, reálne PRP položky, nové RFC, ADR ani governance dokumenty.
+- Dokončený je iba rozsah 0.2B.1.6; Phase 0.2B.2 nezačala.
+
 ## 0.2B.1.5 - 2026-09-07
 
 Status: Implemented / Review

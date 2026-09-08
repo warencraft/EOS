@@ -14,7 +14,8 @@
     "valueRange": { "$ref": "https://eos.local/schemas/knowledge-core/value-range.schema.json" },
     "measurementQuality": { "$ref": "https://eos.local/schemas/knowledge-core/measurement-quality.schema.json" },
     "condition": { "$ref": "https://eos.local/schemas/knowledge-core/condition.schema.json" },
-    "classification": { "$ref": "https://eos.local/schemas/knowledge-core/classification.schema.json" }
+    "classification": { "$ref": "https://eos.local/schemas/knowledge-core/classification.schema.json" },
+    "propertyRecord": { "$ref": "https://eos.local/schemas/knowledge-core/property-record.schema.json" }
   },
   "properties": {
     "sourceReferences": {
@@ -48,6 +49,10 @@
     "classifications": {
       "type": "array",
       "items": { "$ref": "#/$defs/classification" }
+    },
+    "propertyRecords": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/propertyRecord" }
     }
   },
   "additionalProperties": false

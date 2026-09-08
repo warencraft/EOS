@@ -1,5 +1,20 @@
 # ROADMAP
 
+## Míľnik 0.2B.1.6 - PropertyRecord Contract
+
+Cieľ:
+
+- zaviesť embedded claim-like Value Object pre jedno štruktúrované technické tvrdenie,
+- používať centrálny `PRP-xxxxxx`, povinný `valueType` a presne jednu číselnú vetvu Quantity alebo ValueRange,
+- podporiť voliteľné MeasurementQuality a viac rodičom vlastnených Conditions,
+- používať povinné pole `sourceLinks` a VerificationStatus tvrdenia bez predstierania lifecycle rodiča,
+- zachovať vnorené aplikačné invarianty bez duplikácie validačných pravidiel,
+- odložiť Property Catalog, Observation a Decision kontrakty do určených fáz.
+
+Stav: implementačný rozsah Completed, kontrakt Review. Celý `0.2B.1` zostáva In progress.
+
+Do `0.2B.2` zostáva existencia a použiteľnosť PRP, povolené hodnotové formy, jednotková a rozmerová kompatibilita, povinné podmienky, doménové rozsahy a klasifikácia vlastností. Property Catalog ani reálne PRP položky nevznikli; `0.2B.2` nezačala.
+
 ## Míľnik 0.2B.1.5 - Classification Contract
 
 Cieľ:

@@ -1,5 +1,13 @@
 # scripts
 
+## Míľnik 0.2B.1.6 - PropertyRecord Contract
+
+EOS aplikačná validácia používa explicitnú mapu kompozície Knowledge Core kontraktov. Existujúce pravidlá ValueRange a MeasurementQuality sa tým spúšťajú aj pri vnorení v PropertyRecord a zachovávajú úplnú cestu chyby. Condition je zapojený do rovnakej orchestrácie, takže jeho prípadné budúce významové pravidlá sa budú aplikovať bez kopírovania do PropertyRecord.
+
+JSON Schema naďalej kontroluje discriminator, presne jednu hodnotovú vetvu, vnorené `$ref`, VerificationStatus, SourceLink a zákaz neznámych polí. Aplikačná vrstva kontroluje iba existujúce významové invarianty. Nekontroluje PRP existenciu, kompatibilitu jednotiek, povolenú hodnotovú formu podľa katalógu ani Decision workflow.
+
+Samostatná PropertyRecord validácia nemá lifecycle rodiča. `sourceLinks: []` preto môže byť štrukturálne platné a validátor nepredstiera kontextovú evidence kontrolu. Rodičovská integračná vrstva musí neskôr odovzdať explicitný kontext.
+
 ## Míľnik 0.2B.1.4 - Condition Contract
 
 Pre `Condition` zostáva validácia v tomto míľniku schema-only:

@@ -1,5 +1,24 @@
 # schemas
 
+## Míľnik 0.2B.1.6 - PropertyRecord Contract
+
+Šiesty Knowledge Core Contract je `PropertyRecord`, embedded claim-like Value Object vlastnený rodičom:
+
+- schéma: `knowledge-core/property-record.schema.json`,
+- schema id: `https://eos.local/schemas/knowledge-core/property-record.schema.json`,
+- discovery: `index.schema.json#/$defs/propertyRecord`, kolekcia `propertyRecords`,
+- povinné `propertyId`, `valueType`, `verificationStatus`, `sourceLinks` a presne jedna hodnotová vetva,
+- `valueType` povoľuje iba `quantity` a `valueRange` a musí zodpovedať rovnomennej vetve,
+- voliteľné `measurementQuality` a pole `conditions`; prázdne `conditions` je prípustné.
+
+`propertyId` používa centrálny `PRP-xxxxxx` a označuje budúci Property Catalog Entry, nie identitu vnorenej inštancie. Kontrakt nemá vlastné ID, lifecycle ani verziu. Neumožňuje `textValue`, `booleanValue`, `referenceId`, classification, koreňové notes ani voľný JSON.
+
+`sourceLinks` je štrukturálne povinné pole existujúcich SourceLink objektov, ale môže byť prázdne. Kontextová povinnosť reálneho dôkazu závisí od rodiča a budúceho workflow; samostatná validácia PropertyRecord tento kontext nepredstiera. `verificationStatus` overuje tvrdenie a používa `Draft`, `Reviewed`, `Approved`, `Disputed`; nie je lifecycle rodiča.
+
+Quantity, ValueRange, MeasurementQuality a Condition sa používajú cez `$ref`. Významové pravidlá vnoreného ValueRange a MeasurementQuality vykonáva EOS aplikačná vrstva. Property Catalog v 0.2B.2 doplní existenciu PRP, povolený typ hodnoty, jednotkovú a rozmerovú kompatibilitu, povinné podmienky a doménové rozsahy. Observation zostáva dôkazom a Decision budúcim explicitným mechanizmom prijatia; žiadny z nich nevznikol v tomto míľniku.
+
+Dokončený je iba rozsah Phase 0.2B.1.6. Celá Phase 0.2B.1 zostáva rozpracovaná a Phase 0.2B.2 nezačala.
+
 ## Míľnik 0.2B.1.5 - Classification Contract
 
 Piaty Knowledge Core Contract je `Classification`, embedded reference Value Object vlastnený rodičom:

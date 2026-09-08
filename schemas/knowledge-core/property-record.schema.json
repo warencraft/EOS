@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/schemas/knowledge-core/property-record.schema.json",
+  "title": "EOS PropertyRecord",
+  "description": "Embedded claim-like value object representing one numeric technical property claim. Catalog meaning and authority are validated outside this structural contract.",
+  "type": "object",
+  "required": [
+    "propertyId",
+    "valueType",
+    "verificationStatus",
+    "sourceLinks"
+  ],
+  "oneOf": [
+    { "required": ["quantity"] },
+    { "required": ["valueRange"] }
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": { "valueType": { "const": "quantity" } },
+        "required": ["valueType"]
+      },
+      "then": {
+        "required": ["quantity"],
+        "not": { "required": ["valueRange"] }
+      }
+    },
+    {
+      "if": {
+        "properties": { "valueType": { "const": "valueRange" } },
+        "required": ["valueType"]
+      },
+      "then": {
+        "required": ["valueRange"],
+        "not": { "required": ["quantity"] }
+      }
+    }
+  ],
+  "properties": {
+    "propertyId": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/PRP",
+      "description": "Identifier of a future Property Catalog Entry, not of this embedded PropertyRecord instance."
+    },
+    "valueType": {
+      "type": "string",
+      "enum": ["quantity", "valueRange"],
+      "description": "Discriminator for the single supported numeric value branch."
+    },
+    "quantity": {
+      "$ref": "https://eos.local/schemas/knowledge-core/quantity.schema.json",
+      "description": "Scalar property value using the Quantity contract."
+    },
+    "valueRange": {
+      "$ref": "https://eos.local/schemas/knowledge-core/value-range.schema.json",
+      "description": "Interval property value using the ValueRange contract."
+    },
+    "measurementQuality": {
+      "$ref": "https://eos.local/schemas/knowledge-core/measurement-quality.schema.json",
+      "description": "Optional metrological quality associated with the represented numeric result."
+    },
+    "conditions": {
+      "type": "array",
+      "items": { "$ref": "https://eos.local/schemas/knowledge-core/condition.schema.json" },
+      "description": "Optional parent-owned conditions. Array order has no authoritative semantic meaning."
+    },
+    "verificationStatus": {
+      "$ref": "https://eos.local/schemas/common/lifecycle-status.schema.json#/$defs/VerificationStatus",
+      "description": "Verification state of this technical claim, not lifecycle state of the parent entity."
+    },
+    "sourceLinks": {
+      "type": "array",
+      "items": { "$ref": "https://eos.local/schemas/common/source-link.schema.json" },
+      "description": "Required evidence collection. An empty array is structurally valid; context-aware evidence requirements are application and workflow concerns."
+    }
+  },
+  "additionalProperties": false
+}

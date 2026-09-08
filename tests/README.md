@@ -1,5 +1,19 @@
 # tests
 
+## Míľnik 0.2B.1.6 - PropertyRecord Contract
+
+Testy používajú `unittest` a existujúci EOS validátor. PropertyRecord má 10 platných a 40 neplatných fiktívnych fixtures v Knowledge Core priečinkoch. Pokrytie overuje centrálny PRP `$ref`, povinný discriminator `valueType`, presne jednu vetvu `quantity` alebo `valueRange`, všetky znovupoužité kontrakty, štyri VerificationStatus stavy, povinné ale potenciálne prázdne `sourceLinks`, viac podmienok a odmietnutie deferred, identity a lifecycle polí.
+
+Kritické regresie dokazujú, že obrátené hranice ValueRange, záporná MeasurementQuality uncertainty a nulová resolution zostávajú aplikačnými chybami aj pri vnorení v PropertyRecord, s úplnou cestou k poľu. Kompozičná kontrola pokrýva aj ValueRange vo vnorenom Condition. Schema a aplikačné chyby zostávajú rozlíšiteľné.
+
+Platný PRP alebo UNT formát nepotvrdzuje existenciu katalógovej položky ani kompatibilitu. Kontextová povinnosť neprázdnych zdrojov, Property Catalog pravidlá a Decision workflow nie sú predmetom týchto testov.
+
+Kompletná sada má 105 testov. Spustenie z koreňa projektu:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
 ## Míľnik 0.2B.1.5 - Classification Contract
 
 Testy používajú `unittest` a existujúci EOS validátor. Nové fixtures majú názvy `classification-*-valid.json` a `classification-*-invalid.json` v príslušných `tests/fixtures/valid/knowledge-core/` a `tests/fixtures/invalid/knowledge-core/` priečinkoch. Obsahujú iba fiktívne CLS a SRC identifikátory, nie reálne katalógové či zdrojové záznamy.

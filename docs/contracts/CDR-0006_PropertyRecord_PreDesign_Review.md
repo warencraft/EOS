@@ -5,7 +5,7 @@ Contract Review ID: CDR-0006
 Contract: PropertyRecord  
 Review type: Pre-design  
 Version: 0.1  
-Revision: 0  
+Revision: 1
 Status: Review  
 Document basis: Accepted EOS architecture
 
@@ -288,12 +288,27 @@ Bezpečný rozsah 0.2B.1.6 je uzavretý štrukturálny PropertyRecord profil, je
 
 Odporúčanie je podmienečne pripravený číselný kontrakt. Autorita jednoznačne určuje typ objektu, `propertyId`, povinné `valueType`, verifikáciu a zdroje. Nevyžaduje opravu architektúry; presný počiatočný union a odloženie nepovinných foriem sú implementačná konkretizácia na schválenie.
 
-Podmienky sú explicitne uvedené v §21. Najdôležitejšie sú zachovanie povinného `valueType`, vnorená aplikačná validácia a prenášanie rodičovského kontextu zdrojov. Katalógová pravdivosť a rozhodovacia autorita zostávajú mimo tohto kontraktu. Phase 0.2B.1.6 nebola implementovaná a Phase 0.2B.2 nezačala.
+Podmienky sú explicitne uvedené v §21. Najdôležitejšie sú zachovanie povinného `valueType`, vnorená aplikačná validácia a prenášanie rodičovského kontextu zdrojov. Katalógová pravdivosť a rozhodovacia autorita zostávajú mimo tohto kontraktu. Phase 0.2B.2 nezačala.
+
+### Implementation Outcome
+
+Phase 0.2B.1.6 implementuje odporúčaný profil bez odchýlky od CDR:
+
+- finálne polia: `propertyId`, `valueType`, `quantity`, `valueRange`, `measurementQuality`, `conditions`, `verificationStatus`, `sourceLinks`,
+- vždy povinné: `propertyId`, `valueType`, `verificationStatus`, `sourceLinks`,
+- presne jedna podmienečne povinná vetva: `quantity` alebo `valueRange`, viazaná na `valueType`,
+- voliteľné: `measurementQuality` a `conditions`; prázdne polia `conditions` a `sourceLinks` sú štrukturálne prípustné,
+- centrálna definícia `PRP-xxxxxx` bola doplnená podľa existujúceho EOS-003; Property Catalog ani reálne PRP položky nevznikli,
+- existujúce významové pravidlá ValueRange a MeasurementQuality sa rekurzívne aplikujú aj pri vnorení v PropertyRecord; rovnaká orchestrácia pripravuje Condition na budúce významové pravidlá,
+- kontextová povinnosť neprázdnych zdrojov, katalógová kompatibilita a rozhodovacie workflow zostávajú odložené.
+
+Kontrakt je dostupný v `schemas/knowledge-core/property-record.schema.json` a cez centrálny index. Implementácia nemení Accepted RFC/ADR a neposkytuje autoritu tvrdeniu iba na základe úspešnej štrukturálnej validácie alebo hodnoty VerificationStatus.
 
 ## 23. Change History
 
 | Dátum | Version | Revision | Autor | Zmena |
 | --- | --- | --- | --- | --- |
 | 2026-09-08 | 0.1 | 0 | Codex | Pre-design review PropertyRecord nad Accepted architektúrou a piatimi existujúcimi kontraktmi; odporúčaný minimálny číselný profil, hranice validácie a podmienky budúcej implementácie. Bez zmeny existujúcich kontraktov. |
+| 2026-09-08 | 0.1 | 1 | Codex | Zaznamenanie implementačného výsledku: uzavretý číselný profil, centrálny PRP formát, registrácia schémy, fixtures, testy a rekurzívna aplikácia existujúcich vnorených významových pravidiel. Status zostáva Review. |
 
 READY WITH CONDITIONS

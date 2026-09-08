@@ -22,6 +22,7 @@ VALUE_RANGE_SCHEMA = "https://eos.local/schemas/knowledge-core/value-range.schem
 MEASUREMENT_QUALITY_SCHEMA = "https://eos.local/schemas/knowledge-core/measurement-quality.schema.json"
 CONDITION_SCHEMA = "https://eos.local/schemas/knowledge-core/condition.schema.json"
 CLASSIFICATION_SCHEMA = "https://eos.local/schemas/knowledge-core/classification.schema.json"
+PROPERTY_RECORD_SCHEMA = "https://eos.local/schemas/knowledge-core/property-record.schema.json"
 
 
 def load_fixture(name: str) -> dict:
@@ -976,6 +977,181 @@ class ValidationTests(unittest.TestCase):
         result = self.validator.validate(record, CLASSIFICATION_SCHEMA)
         self.assertEqual({e.category for e in result.errors}, {"schema_validation", "reference_integrity"})
         self.assertTrue(all(e.path == "$.sourceLinks[0].sourceReferenceId" for e in result.errors))
+
+
+    def test_property_record_schema_definition_is_valid(self) -> None:
+        result = self.validator.validate_schema_definition(PROPERTY_RECORD_SCHEMA)
+        self.assertTrue(result.ok, [f"{e.schemaPath}: {e.message}" for e in result.errors])
+
+    def test_valid_property_record_fixtures_pass(self) -> None:
+        files = sorted(VALID_KNOWLEDGE_CORE_FIXTURES.glob("property-record-*-valid.json"))
+        self.assertEqual(len(files), 10)
+        for path in files:
+            with self.subTest(path=path.name):
+                result = self.validator.validate_json_file(path, PROPERTY_RECORD_SCHEMA)
+                self.assertTrue(result.ok, [f"{e.path}: {e.message}" for e in result.errors])
+
+    def test_invalid_property_record_fixtures_fail(self) -> None:
+        files = sorted(INVALID_KNOWLEDGE_CORE_FIXTURES.glob("property-record-*-invalid.json"))
+        self.assertEqual(len(files), 40)
+        for path in files:
+            with self.subTest(path=path.name):
+                result = self.validator.validate_json_file(path, PROPERTY_RECORD_SCHEMA)
+                self.assertFalse(result.ok, path.name)
+
+    def test_property_record_uses_central_prp_identifier(self) -> None:
+        schema = self.validator.registry.by_id[PROPERTY_RECORD_SCHEMA]
+        self.assertEqual(
+            schema["properties"]["propertyId"]["$ref"],
+            "https://eos.local/schemas/common/identifiers.schema.json#/$defs/PRP",
+        )
+        valid = load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "property-record-quantity-valid.json")
+        valid["propertyId"] = "PRP-999999"
+        self.assertValid(valid, PROPERTY_RECORD_SCHEMA)
+
+    def test_property_record_discriminator_requires_exactly_one_branch(self) -> None:
+        names = [
+            "property-record-quantity-missing-branch-invalid.json",
+            "property-record-value-range-missing-branch-invalid.json",
+            "property-record-quantity-type-with-range-invalid.json",
+            "property-record-range-type-with-quantity-invalid.json",
+            "property-record-both-branches-invalid.json",
+            "property-record-neither-branch-invalid.json",
+        ]
+        for name in names:
+            with self.subTest(name=name):
+                self.assertInvalid(load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / name), PROPERTY_RECORD_SCHEMA)
+
+    def test_property_record_reuses_required_contracts(self) -> None:
+        schema = self.validator.registry.by_id[PROPERTY_RECORD_SCHEMA]
+        expected_refs = {
+            "quantity": QUANTITY_SCHEMA,
+            "valueRange": VALUE_RANGE_SCHEMA,
+            "measurementQuality": MEASUREMENT_QUALITY_SCHEMA,
+            "verificationStatus": (
+                "https://eos.local/schemas/common/lifecycle-status.schema.json#/$defs/VerificationStatus"
+            ),
+        }
+        for field, expected_ref in expected_refs.items():
+            with self.subTest(field=field):
+                self.assertEqual(schema["properties"][field]["$ref"], expected_ref)
+        self.assertEqual(schema["properties"]["conditions"]["items"]["$ref"], CONDITION_SCHEMA)
+        self.assertEqual(
+            schema["properties"]["sourceLinks"]["items"]["$ref"],
+            "https://eos.local/schemas/common/source-link.schema.json",
+        )
+
+    def test_property_record_source_links_are_required_but_may_be_empty(self) -> None:
+        empty = load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "property-record-empty-source-links-valid.json")
+        self.assertValid(empty, PROPERTY_RECORD_SCHEMA)
+        missing = load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / "property-record-missing-source-links-invalid.json")
+        result = self.validator.validate(missing, PROPERTY_RECORD_SCHEMA)
+        self.assertIn(
+            ("schema_validation.required", "$.sourceLinks"),
+            {(e.errorCode, e.path) for e in result.errors},
+        )
+
+    def test_property_record_rejects_deferred_and_lifecycle_fields(self) -> None:
+        cases = {
+            "textValue": "fictional",
+            "booleanValue": True,
+            "referenceId": "SRC-000001",
+            "classification": {"classificationId": "CLS-000001"},
+            "notes": "fictional",
+            "id": "PRC-000001",
+            "revision": 0,
+            "status": "Draft",
+            "lifecycle": "Draft",
+            "observationId": "OBS-000001",
+            "decisionId": "DEC-000001",
+        }
+        base = load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "property-record-quantity-valid.json")
+        for field, value in cases.items():
+            with self.subTest(field=field):
+                result = self.validator.validate({**base, field: value}, PROPERTY_RECORD_SCHEMA)
+                self.assertIn(
+                    ("schema_validation.additionalProperties", f"$.{field}"),
+                    {(e.errorCode, e.path) for e in result.errors},
+                )
+
+    def test_property_record_nested_reversed_range_is_application_validation(self) -> None:
+        record = load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / "property-record-reversed-value-range-invalid.json")
+        result = self.validator.validate(record, PROPERTY_RECORD_SCHEMA)
+        self.assertIn(
+            (
+                "application_validation",
+                "application_validation.value_range_reversed_bounds",
+                "$.valueRange.minValue",
+            ),
+            {(e.category, e.errorCode, e.path) for e in result.errors},
+        )
+
+    def test_property_record_nested_measurement_quality_application_rules(self) -> None:
+        cases = [
+            (
+                "property-record-negative-uncertainty-invalid.json",
+                "application_validation.measurement_quality_negative_uncertainty",
+                "$.measurementQuality.uncertainty.value",
+            ),
+            (
+                "property-record-zero-resolution-invalid.json",
+                "application_validation.measurement_quality_nonpositive_resolution",
+                "$.measurementQuality.resolution.value",
+            ),
+        ]
+        for name, code, path in cases:
+            with self.subTest(name=name):
+                result = self.validator.validate(
+                    load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / name), PROPERTY_RECORD_SCHEMA,
+                )
+                self.assertIn(
+                    ("application_validation", code, path),
+                    {(e.category, e.errorCode, e.path) for e in result.errors},
+                )
+
+    def test_nested_condition_contract_rules_are_composed(self) -> None:
+        record = load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "property-record-one-condition-valid.json")
+        record["conditions"][0] = {
+            "conditionTypeId": "CND-000001",
+            "evaluationMode": "limiting",
+            "valueRange": {"minValue": 2, "maxValue": 1, "unitId": "UNT-000001"},
+        }
+        result = self.validator.validate(record, PROPERTY_RECORD_SCHEMA)
+        self.assertIn(
+            (
+                "application_validation.value_range_reversed_bounds",
+                "$.conditions[0].valueRange.minValue",
+            ),
+            {(e.errorCode, e.path) for e in result.errors},
+        )
+
+    def test_property_record_schema_and_application_errors_remain_distinct(self) -> None:
+        record = load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / "property-record-reversed-value-range-invalid.json")
+        record["propertyId"] = "bad"
+        result = self.validator.validate(record, PROPERTY_RECORD_SCHEMA)
+        self.assertEqual(
+            {"schema_validation", "application_validation"},
+            {e.category for e in result.errors},
+        )
+
+    def test_property_record_schema_index_resolves(self) -> None:
+        record = {
+            "propertyRecords": [
+                load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "property-record-quantity-valid.json")
+            ]
+        }
+        self.assertValid(record, INDEX_SCHEMA)
+        record["propertyRecords"][0] = load_json(
+            INVALID_KNOWLEDGE_CORE_FIXTURES / "property-record-reversed-value-range-invalid.json"
+        )
+        result = self.validator.validate(record, INDEX_SCHEMA)
+        self.assertIn(
+            (
+                "application_validation.value_range_reversed_bounds",
+                "$.propertyRecords[0].valueRange.minValue",
+            ),
+            {(e.errorCode, e.path) for e in result.errors},
+        )
 
 
 if __name__ == "__main__":
