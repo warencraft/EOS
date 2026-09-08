@@ -5,7 +5,7 @@ Contract Review ID: CDR-0007
 Contract: Observation  
 Review type: Pre-design  
 Version: 0.1  
-Revision: 0  
+Revision: 1  
 Status: Review  
 Document basis: Accepted EOS architecture
 
@@ -14,6 +14,8 @@ Document basis: Accepted EOS architecture
 Posúdiť najmenší bezpečný kontrakt `Observation` pred implementáciou a presne oddeliť prijaté architektonické pravidlá od otvorených serializačných a významových otázok. Review má zabrániť tomu, aby sa dôkaz zamenil s tvrdením, aby sa first-class entita stala vnoreným záznamom alebo aby schéma predčasne zaviedla všeobecnú referenčnú či payload architektúru.
 
 Výstup neimplementuje `Observation`. Určuje, či je možné začať `Phase 0.2B.1.7` bez nového architektonického rozhodnutia alebo chýbajúceho core kontraktu.
+
+Revision 1 uzatvára dva blockery z Revision 0 cez RFC-0001 Revision 5. Pri rozdiele medzi pôvodným pre-design posúdením a closure rozhodnutím má prednosť §24 a §25 tejto revízie.
 
 ## 2. Scope
 
@@ -44,20 +46,20 @@ Pre-flight dňa 2026-09-08: vetva `feature/phase-0.2b-knowledge-contracts`, HEAD
 | Samostatnosť | AUTHORITATIVE | Má samostatnú existenciu, lifecycle, audit a môže byť referencovaná viacerými tvrdeniami alebo rozhodnutiami. |
 | Dôkazový význam | AUTHORITATIVE | Predstavuje pravdu o tom, čo bolo pozorované, nie automaticky pravdu o svete. |
 | Scope | AUTHORITATIVE | `observationScope` je povinný koncept; hodnoty sú `GLOBAL`, `JOB`, `PROJECT`, `EXPERIMENT`. |
-| Scope referencia | OPEN | Job ID existuje, ale spoločný tvar väzby pre všetky scope nie je prijatý. Project ani Experiment nemajú autoritatívny prefix. |
+| Scope referencia | AUTHORITATIVE | Počiatočný profil používa `scopeReferenceId`: GLOBAL ho zakazuje, JOB ho vyžaduje vo formáte `JOB-yyyy-xxxx`; PROJECT a EXPERIMENT zostávajú mimo profilu. RFC-0001 Revision 5. |
 | Pozorovaný subjekt | AUTHORITATIVE | RFC-0002 vyžaduje, aby Observation meraný alebo pozorovaný objekt iba referencovala. |
-| Tvar subjektu | OPEN | `relatedEntityIds` je iba navrhované pole; nie je rozhodnuté medzi jedným subjektom, typovanou referenciou a viacerými cieľmi. |
+| Tvar subjektu | AUTHORITATIVE | Počiatočný profil vyžaduje jeden `subjectId` obmedzený na schválené doménové ID formáty. Prefix je discriminator; `subjectType` sa neukladá. RFC-0001 Revision 5. |
 | Dôkazový payload | AUTHORITATIVE | Observation môže vlastniť hodnotu pozorovania a používať Quantity, ValueRange, MeasurementQuality a Condition. |
-| Presný payload union | OPEN | RFC-0001 uvádza navrhované priame polia, ale neurčuje povinnosť, kardinalitu, discriminator ani model nečíselného dôkazu. |
+| Presný payload union | AUTHORITATIVE | Počiatočný profil vyžaduje `propertyId`, `valueType` a presne jednu zhodnú vetvu Quantity alebo ValueRange. Je to atomický property-measurement profil, nie všeobecný Observation payload. RFC-0001 Revision 5. |
 | PropertyRecord | AUTHORITATIVE | Observation je oddelená od PropertyRecord a nesmie ho automaticky vytvoriť, zmeniť ani povýšiť. |
 | Evidence relationship | DEFERRED | Presná persistovaná väzba Observation ↔ Claim/PropertyRecord je odložená; kardinalita je mnoho-na-mnoho. |
 | MeasurementQuality | AUTHORITATIVE | Môže byť value objectom Observation; opisuje kvalitu konkrétneho meraného alebo reportovaného výsledku. |
 | Conditions | AUTHORITATIVE | Observation môže vlastniť podmienky kontextu alebo platnosti cez Condition. |
 | Čas | AUTHORITATIVE | Observation je event-like záznam v čase; RFC-0001 navrhuje `observedAt`. |
-| Presné timestamp pravidlá | OPEN | Nie je prijaté, či okrem entity `createdAt` musí existovať `recordedAt`, ani politika normalizácie offsetov. |
+| Presné timestamp pravidlá | AUTHORITATIVE | `observedAt` je doménový čas pozorovania, `createdAt` čas vytvorenia EOS záznamu; `recordedAt` sa nepridáva. RFC-0001 Revision 5. |
 | Zdroje | AUTHORITATIVE | Observation je source-backed evidence, musí mať dohľadateľný zdroj alebo zdrojový kontext a SourceReference používa cez SourceLink. |
 | Neprázdnosť zdrojov | AUTHORITATIVE | Pri overiteľnej Observation v stave Review alebo Approved musia byť zdroje prítomné; Draft môže podliehať všeobecnému pravidlu prázdnych `sourceLinks`. |
-| Verifikácia | OPEN | RFC-0001 navrhuje `verificationStatus` a RFC-0002 stav overenia, ale ADR-0016 oddeľuje pravdivosť evidence od pravdivosti claim; presná sémantika stavu Observation nie je uzavretá. |
+| Verifikácia | AUTHORITATIVE | Počiatočný profil nemá `verificationStatus`. `status` je lifecycle zrelosť, nie potvrdenie pravdivosti claim; evidence-specific verification zostáva deferred. RFC-0001 Revision 5. |
 | Nemennosť | AUTHORITATIVE | Dôkazový obsah sa po vzniku nesmie ticho prepisovať; nový výsledok je nová Observation. |
 | Oprava metadát | AUTHORITATIVE | Neúmyselná technická oprava musí byť auditovaná cez revision, changeSummary alebo ekvivalent a nesmie meniť pôvodný dôkazový význam. |
 | Korekčný lifecycle | DEFERRED | Presný superseded/disputed/replaced model je výslovne odložený v ADR-0016. |
@@ -67,16 +69,16 @@ Pre-flight dňa 2026-09-08: vetva `feature/phase-0.2b-knowledge-contracts`, HEAD
 
 ## 4. Open Questions
 
-1. Aký je povinný, uzavretý a typovo bezpečný payload spoločný pre meranie, vizuálne zistenie, fotografiu, kontrolu a výstup nástroja?
-2. Je základnou jednotkou Observation jeden výsledok o jednom subjekte, alebo môže jeden záznam obsahovať viac výsledkov a viac subjektov?
-3. Ako sa reprezentuje subjekt, ak fyzická vzorka alebo artefakt ešte nemá EOS identitu?
-4. Ako sa odlíši `observationScope` od konkrétnej scope referencie a od pozorovaného subjektu?
-5. Ako sa viaže Observation na konkrétnu historickú inštanciu embedded PropertyRecord bez pridania identity PropertyRecord?
-6. Čo presne verifikuje stav na Observation: autenticitu, úplnosť, integritu prenosu, alebo pravdivosť interpretácie?
-7. Ktoré lifecycle prechody sú prípustné pri immutable evidence a aký je presný korekčný odkaz?
-8. Je fotografia alebo súbor payloadom, SourceReference, DocumentRecord alebo budúcim attachment objektom?
+Closure vyriešilo blocker počiatočného kontraktu obmedzením na jeden property-measurement výsledok jedného už identifikovaného EOS subjektu. Otvorené, ale neblokujúce otázky sú:
 
-Prvé tri otázky sú materiálne pre schému. Nie sú iba budúcou aplikačnou validáciou.
+1. Aký typed result model pokryje budúce vizuálne zistenie, fotografiu, kontrolu a výstup nástroja?
+2. Ako sa reprezentuje subjekt bez EOS identity, napríklad ešte neregistrovaná fyzická vzorka?
+3. Aké identifikátory budú mať Project a Experiment?
+4. Ako sa Observation viaže na konkrétnu historickú inštanciu embedded PropertyRecord?
+5. Aký bude evidence-specific verification a korekčný lifecycle?
+6. Bude fotografia payloadom, SourceReference, DocumentRecord alebo budúcim attachment objektom?
+
+Tieto otázky sú mimo uzavretého počiatočného profilu. Nesmú sa riešiť voľným textom, fiktívnym ID ani ľubovoľným JSON payloadom.
 
 ## 5. Entity / Aggregate Assessment
 
@@ -99,7 +101,7 @@ Budúca schéma musí doplniť OBS do centrálnej definície identifikátorov po
 
 ## 7. Observation Scope Model
 
-`observationScope` má byť povinné a uzavreté na štyri prijaté hodnoty. Scope vyjadruje kontext interpretácie, nie identitu subjektu.
+`observationScope` je povinné. Konceptuálne hodnoty zostávajú presne `GLOBAL`, `JOB`, `PROJECT`, `EXPERIMENT`; počiatočný profil implementuje iba `GLOBAL` a `JOB`. Scope vyjadruje kontext interpretácie, nie identitu subjektu.
 
 Posúdenie kandidátov:
 
@@ -110,7 +112,7 @@ Posúdenie kandidátov:
 | C: samostatné `jobId`, `projectId`, `experimentId` | Typovo zrozumiteľný, ale predčasne zmrazuje tri polia a dve neexistujúce identity. |
 | D: typovaná reference value object | Rozšíriteľná, ale zaviedla by nový všeobecný reference kontrakt bez Accepted rozhodnutia. |
 
-Odporúčanie pre budúce rozhodnutie je model B. `GLOBAL` nemá scope referenciu; ostatné hodnoty ju logicky vyžadujú. Dnes je možné bezpečne validovať iba `JOB` proti existujúcemu `JOB-yyyy-xxxx`. PROJECT a EXPERIMENT nemajú autoritatívne identifikátory, preto ich referenčné zviazanie nemožno implementovať bez ďalšieho rozhodnutia. Samotné scope bez referencie nestačí na plnohodnotný audit job/project/experiment evidence.
+Vybraný je model B. `GLOBAL` zakazuje `scopeReferenceId`; `JOB` ho vyžaduje vo formáte `JOB-yyyy-xxxx`. PROJECT a EXPERIMENT sa v počiatočnej schéme odmietnu, kým nebudú mať governance schválené ID. Budúce rozšírenie rovnakého poľa je aditívne. Scope referencia a `subjectId` majú rozdielny význam.
 
 ## 8. Subject / Target Model
 
@@ -124,7 +126,9 @@ Posúdenie:
 - Všeobecný `targetReference` by bez spoločného kontraktu vytvoril neriadenú graph edge.
 - Navrhnuté `relatedEntityIds` nehovorí, ktorý objekt je predmetom a ktorý iba súvisí s kontextom.
 
-Odporúčaný smer je jeden povinný `subjectId` pre atomickú Observation, s katalógovo alebo typovo riadeným cieľom. Nie je však pripravený pre neidentifikované fyzické vzorky ani pre všetky typy dôkazov. Viac cieľov má byť predvolene rozdelených na viac Observations; korelačné zoskupenie môže vzniknúť neskôr. Toto je odporúčanie review, nie už prijatý serializačný kontrakt.
+Vybraný je jeden povinný koreňový `subjectId`. Nie je to unrestricted string: musí zodpovedať jednej z centrálnych definícií `MAT`, `POL`, `TEC`, `MAC`, `TOOL`, `SUP`, `JOB` alebo `JOB_OPERATION`. Prefix poskytuje object-type discrimination, preto sa `subjectType` nepridáva. Existencia a použiteľnosť cieľa sa kontroluje aplikačne; samotný pattern nie je referenčná integrita.
+
+Observation subjekt iba referencuje a nikdy ho nevlastní. Objekt bez pridelenej EOS identity nie je podporovaný počiatočným profilom. Jeden záznam má jeden subjekt; viac subjektov znamená viac Observation záznamov.
 
 ## 9. Observed Content Model
 
@@ -137,7 +141,9 @@ Odporúčaný smer je jeden povinný `subjectId` pre atomickú Observation, s ka
 - Typed payload je potrebný pre všeobecnú Observation, ktorá má pokryť aj textové, obrazové, kontrolné a nástrojové výsledky.
 - Evidence-only obálka bez výsledku je citácia udalosti, nie úplný dôkazový záznam o tom, čo bolo zistené.
 
-Accepted architektúra teda podporuje priamy číselný observed result, ale neurčuje univerzálny payload Observation. Dedicated `ObservedValue` alebo `ObservationResult` kontrakt neexistuje a tento review ho nesmie vytvoriť. Zavedenie takého kontraktu alebo obmedzenie celej Observation iba na property measurement by bolo novým návrhovým rozhodnutím.
+Počiatočný profil je autoritatívne obmedzený na priamy číselný property result: povinné `propertyId`, `valueType` a presne jedna vetva `quantity` alebo `valueRange`, ktorá zodpovedá discriminatoru. Observation neobsahuje PropertyRecord. Jeden záznam nesie jeden výsledok.
+
+Všeobecný ObservationResult alebo ObservedValue kontrakt nevzniká. Budúce nečíselné a artifact typy vyžadujú samostatné typed rozšírenie a nesmú používať arbitrary payload.
 
 ## 10. MeasurementQuality Placement
 
@@ -181,7 +187,7 @@ Dôkaz možno overovať z hľadiska autenticity, integrity, úplnosti alebo spr�
 
 Existujúce Accepted texty nie sú dostatočne presné na bezpečné použitie všeobecného `verificationStatus` na Observation. RFC-0001 ho navrhuje a RFC-0002 povoľuje stav overenia, ale RFC-0003 necháva presný enum otvorený a ADR-0016 neustanovuje jeho význam pre evidence. Slepo prevziať PropertyRecord enum by mohlo znamenať, že `Approved` Observation sa považuje za schválený Claim.
 
-Preto je `verificationStatus` v budúcom minimálnom kontrakte odložený, kým nebude definovaná evidence-verification semantika. Entity `status` zostáva lifecycle stavom, nie pravdivostným skóre.
+Počiatočný kontrakt nemá `verificationStatus`. Entity `status` riadi zrelosť a použiteľnosť záznamu, nie pravdivosť claim. Budúci EvidenceVerificationStatus sa môže zaviesť až po definovaní autenticity, integrity a oprávnených prechodov; PropertyRecord VerificationStatus sa nerecykluje.
 
 ## 15. Immutability and Correction Boundary
 
@@ -227,7 +233,7 @@ Stabilná identita sama osebe nevylučuje containment, ale Accepted EOS pravidlo
 
 ## 19. Recommended Minimal Model
 
-Odporúčaný cieľový smer je typed result model C. Pred jeho prijatím možno presne navrhnúť iba obmedzený property-measurement profil odvodený z kandidáta B:
+Vybraný je obmedzený property-measurement profil B s priamym typed unionom z kandidáta C hodnotového posúdenia:
 
 ```json
 {
@@ -241,10 +247,9 @@ Odporúčaný cieľový smer je typed result model C. Pred jeho prijatím možno
   "updatedAt": "...",
   "updatedBy": "...",
   "changeSummary": "...",
-  "observationType": "...",
   "observationScope": "JOB",
   "scopeReferenceId": "JOB-yyyy-xxxx",
-  "subjectId": "...",
+  "subjectId": "MAT-0001",
   "observedAt": "...",
   "propertyId": "PRP-xxxxxx",
   "valueType": "quantity",
@@ -252,15 +257,14 @@ Odporúčaný cieľový smer je typed result model C. Pred jeho prijatím možno
     "value": 0,
     "unitId": "UNT-xxxxxx"
   },
-  "measurementQuality": {},
   "conditions": [],
   "sourceLinks": []
 }
 ```
 
-Toto nie je schválený kontrakt ani implementačný návrh pripravený na schému. Ukazuje minimum potrebné pre auditovateľné číselné pozorovanie. Otvorené `subjectId`, všeobecný `scopeReferenceId`, význam `observationType` a širší result union bránia tomu, aby sa tento príklad implementoval ako univerzálna Observation.
+Príklad je tvarové odporúčanie pre budúcu schému, nie technický ani strojársky údaj. `MAT-0001`, PRP a UNT sú fiktívne formátové príklady; implementácia fixture nimi nesmie predstierať existujúcu entitu alebo katalógový záznam.
 
-Bezpečný rozsah `0.2B.1.7` dnes neobsahuje Observation JSON Schema. Obsahuje najprv uzavretie predmetu a payloadu: buď prijať výslovne obmedzený `PropertyMeasurementObservation` profil pod všeobecným Observation kontraktom, alebo schváliť malý typed ObservationResult kontrakt pre podporované druhy evidence.
+Bezpečný rozsah `0.2B.1.7` je Observation entity schema pre tento jediný profil, registrácia v indexe, fiktívne fixtures, testy a nevyhnutná validačná kompozícia. Nie je ním všeobecný ObservationResult, katalóg, Knowledge Entity, Project, Experiment, Decision ani attachment model.
 
 ## 20. Field Requirement Matrix
 
@@ -276,16 +280,18 @@ Bezpečný rozsah `0.2B.1.7` dnes neobsahuje Observation JSON Schema. Obsahuje n
 | `createdAt`, `createdBy` | REQUIRED | Audit vytvorenia v EOS. |
 | `updatedAt`, `updatedBy` | REQUIRED | Spoločná metadata stopa; nesmie legalizovať zmenu evidence payloadu. |
 | `changeSummary` | REQUIRED | Audit každej revízie. |
-| `observationType` | REQUIRED | Odlišuje druh dôkazu; riadené hodnoty sú OPEN. |
+| `observationType` | DEFERRED | Počiatočný profil má jediný význam; voľný string ani predčasný enum sa nepridáva. |
+| `observedBy` | DEFERRED | Actor identita nie je riadená; `createdBy` ani SourceLink sa nesmú nesprávne vydávať za pozorovateľa. |
 | `observationScope` | REQUIRED | Autoritatívne povinný kontext. |
-| `scopeReferenceId` | CONDITIONALLY REQUIRED | Pre ne-GLOBAL scope je logicky potrebný; všeobecný kontrakt cieľa je OPEN. |
-| `subjectId` | CONDITIONALLY REQUIRED | Potrebný pre samostatný auditovateľný objekt, ale model neidentifikovaného subjektu je OPEN. |
+| `scopeReferenceId` | CONDITIONALLY REQUIRED | Zakázaný pre GLOBAL; povinný JOB ID pre JOB. PROJECT/EXPERIMENT nie sú v počiatočnom profile. |
+| `subjectId` | REQUIRED | Jeden subjekt, obmedzený na vybrané aktívne doménové EOS ID definície. |
 | `subjectType` | REJECTED | V prvom smere zbytočne duplikuje typ ID; môže sa prehodnotiť pri externých cieľoch. |
 | `observedAt` | REQUIRED | Čas dôkazovej udalosti. |
 | `recordedAt` | REJECTED | Bez prijatého odlišného významu duplikuje `createdAt`. |
-| `propertyId` | CONDITIONALLY REQUIRED | Povinný iba pre property-result payload, nie pre každý typ Observation. |
-| `quantity` | CONDITIONALLY REQUIRED | Jedna možná výsledková vetva. |
-| `valueRange` | CONDITIONALLY REQUIRED | Jedna možná výsledková vetva. |
+| `propertyId` | REQUIRED | Počiatočný profil je property-measurement evidence. |
+| `valueType` | REQUIRED | Discriminator `quantity` alebo `valueRange`. |
+| `quantity` | CONDITIONALLY REQUIRED | Presne jedna vetva a zhoda s `valueType`. |
+| `valueRange` | CONDITIONALLY REQUIRED | Presne jedna vetva a zhoda s `valueType`. |
 | `measurementQuality` | OPTIONAL | Len pri kompatibilnom meranom/reportovanom výsledku. |
 | `conditions` | OPTIONAL | Kontext Observation alebo jediného výsledku. |
 | `propertyRecord` | REJECTED | Claim-like objekt nesmie byť payloadom evidence. |
@@ -341,31 +347,42 @@ JSON Schema nemôže potvrdiť existenciu referencovaných objektov, pravdivosť
 
 ## 24. Implementation Preconditions
 
-Pred Observation schémou musia byť uzavreté minimálne tieto body:
+Architecture closure uzavrelo pôvodné blockery nasledovne:
 
-1. Vybrať rozsah prvého kontraktu: všeobecná Observation alebo výslovne obmedzený property-measurement profil.
-2. Určiť presný observed content union vrátane povinnosti a kardinality; žiadny voľný JSON payload.
-3. Určiť povinnú reprezentáciu subject a pravidlo pre objekty bez EOS identity.
-4. Určiť scope-reference tvar. Minimálne musí byť možné vynútiť JOB → existujúci JOB ID; PROJECT a EXPERIMENT nesmú dostať vymyslené prefixy.
-5. Rozhodnúť, či `verificationStatus` na Observation znamená evidence verification, alebo ho prvý kontrakt nemá.
-6. Potvrdiť, že `sourceLinks` je povinné pole a stanoviť lifecycle pravidlo neprázdnosti bez zamieňania SourceReference za payload.
-7. Zachovať priamu OBS aggregate root, `id`, spoločné entity metadata, `observedAt` a append-only hranicu.
-8. Budúca implementácia musí kompozitne validovať existujúce ValueRange a MeasurementQuality pravidlá a presné vnorené cesty.
+1. **Subject model:** povinný koreňový `subjectId`, presne jeden subjekt, hodnota cez centrálny union `MAT`, `POL`, `TEC`, `MAC`, `TOOL`, `SUP`, `JOB` alebo `JOB_OPERATION`; `subjectType` ani SubjectReference objekt nevznikajú.
+2. **Subject integrity:** JSON Schema kontroluje riadený formát. Aplikačná vrstva kontroluje existenciu, použiteľnosť a povolený typ cieľa. Neexistujúca budúca entita sa nesmie nahradiť fiktívnym ID.
+3. **Result model:** povinné `propertyId`, `valueType` a presne jedna zhodná Quantity alebo ValueRange vetva. PropertyRecord sa nevkladá a arbitrary payload je zakázaný.
+4. **Profile:** počiatočný Property Measurement Observation s jedným výsledkom a jedným subjektom. Všeobecná Observation zostáva architektonickým pojmom, nie rozsahom prvej schémy.
+5. **Observation type:** `observationType` sa odkladá. Jeden profil nepotrebuje voľný string ani nový katalóg.
+6. **Scope:** konceptuálne hodnoty sú `GLOBAL`, `JOB`, `PROJECT`, `EXPERIMENT`; prvá schéma povoľuje iba `GLOBAL` a `JOB`. GLOBAL zakazuje `scopeReferenceId`, JOB vyžaduje platný JOB ID.
+7. **Time:** `observedAt` je povinný doménový čas; `createdAt` zostáva povinným časom EOS metadát. `recordedAt` nevzniká.
+8. **Sources:** `sourceLinks` je povinné pole. Draft povoľuje `[]`; Review a Approved vyžadujú neprázdny zoznam cez workflow/aplikačnú validáciu.
+9. **Verification:** Observation nemá claim `verificationStatus`. Evidence-specific verification zostáva deferred.
+10. **Immutability:** sémantická oprava vytvára novú Observation; pôvodná ostáva auditovateľná. `supersedesObservationId` a plný korekčný lifecycle zostávajú deferred.
+11. **MeasurementQuality:** voliteľné koreňové pole kvalifikuje jediný číselný výsledok. Budúci multi-result model by vyžadoval verziovanú migráciu.
+12. **Conditions:** jedno voliteľné koreňové pole `conditions` kvalifikuje kontext jediného výsledku a Observation; nevznikajú duplicitné kolekcie.
 
-Tieto body možno uzavrieť samostatným schváleným contract-design rozhodnutím, ak iba spresní prijatú architektúru. Ak sa zavedie nový first-class payload objekt, generic reference alebo nový význam verifikácie, treba najprv použiť príslušný RFC/ADR governance proces.
+Pred dokončením budúcej implementácie treba:
+
+- doplniť `OBS` do centrálnej identifiers schémy podľa už Active EOS-003,
+- uzavrieť schému cez `additionalProperties: false` a nepovoliť odložené polia,
+- kompozitne spustiť existujúce sémantické pravidlá ValueRange a MeasurementQuality s presnými cestami,
+- oddeliť schema, application, catalog a reference-integrity chyby,
+- otestovať GLOBAL/JOB podmienky, subject ID union, typed result, zdroje a regresiu všetkých existujúcich kontraktov.
+
+RFC-0001 Revision 5 je jediná potrebná autoritatívna korekcia. RFC-0002 už podporuje samostatnú aggregate root s vlastneným resultom a referencovaným subjektom. RFC-0003 nepotrebuje zmenu, pretože nevznikol nový preferovaný termín, SubjectReference ani ObservationResult objekt. ADR zmena nie je potrebná.
 
 ## 25. Readiness Verdict
 
-Identita, lifecycle, aggregate boundary, scope hodnoty, zdrojová stopa a hranica voči Claim/Decision sú pripravené. Materiálne však nie je uzavreté, čo je povinným dôkazovým obsahom všeobecnej Observation a ako samostatná entita jednoznačne identifikuje pozorovaný subjekt.
+Počiatočný profil má jednoznačný subjekt, typed result, implementovateľný scope, oddelenie evidence od PropertyRecord, auditovateľný čas, zdrojovú hranicu a jasnú kompozíciu vnorených pravidiel. Nepotrebuje nový reusable value object, nový prefix, Job schému, Property Catalog ani stored Decision.
 
-Implementácia kandidáta A by porušila evidence/claim separation. Kandidát B je bezpečný iba ako obmedzené property-measurement evidence a nepokrýva prijatý všeobecný význam Observation. Kandidát C potrebuje chýbajúci typed result kontrakt. Kandidát D je neúplná evidence obálka. Preto by aktuálna schéma musela buď potichu zúžiť Accepted význam, alebo vymyslieť nový payload/reference kontrakt.
-
-Phase 0.2B.1.7 môže začať až po splnení §24. Stored Decision ani Job schéma nie sú nevyhnutnou podmienkou, ale subject, scope binding a observed payload áno.
+Phase 0.2B.1.7 môže implementovať iba profil definovaný v §24 a RFC-0001 Revision 5. PROJECT, EXPERIMENT, neidentifikovaný subjekt, nečíselný výsledok, všeobecný ObservationResult, observation type taxonomy, evidence verification a korekčný odkaz zostávajú výslovne mimo rozsahu.
 
 ## 26. Change History
 
 | Dátum | Version | Revision | Autor | Zmena |
 | --- | --- | --- | --- | --- |
 | 2026-09-08 | 0.1 | 0 | Codex | Pre-design review Observation nad Accepted EOS architektúrou; identifikované pevné evidence a aggregate hranice, otvorený subject/payload model a podmienky pred implementáciou. Bez zmeny schém alebo architektúry. |
+| 2026-09-08 | 0.1 | 1 | Codex | Architecture closure: výber jedného riadeného `subjectId`, atomického property-measurement result unionu, GLOBAL/JOB scope profilu, časovej, zdrojovej, verification a immutable hranice; zaznamenanie RFC-0001 Revision 5 a otvorenie implementačného gate. |
 
-NOT READY
+READY FOR IMPLEMENTATION

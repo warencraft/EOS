@@ -3,10 +3,10 @@
 **Project:** EOS - Engineering Operating System  
 **RFC ID:** RFC-0001  
 **Version:** 0.1  
-**Revision:** 4  
+**Revision:** 5  
 **Status:** Accepted  
 **Author:** Chief Engineering Knowledge Architect + Codex  
-**Last update:** 2026-08-01  
+**Last update:** 2026-09-08  
 **Document basis:** Internal architecture proposal  
 
 ---
@@ -469,24 +469,24 @@ Navrhovaný ID formát:
 
 - `OBS-xxxxxx`
 
-Navrhované polia:
+Počiatočný implementačný profil `0.2B.1.7` je obmedzený na jedno číselné pozorovanie jednej vlastnosti jedného EOS subjektu. Nejde o všeobecný payload pre všetky budúce druhy Observation.
 
-- `id`
-- `observationType`
-- `observationScope`
-- `observedAt`
-- `observedBy`
-- `relatedEntityIds`
-- `propertyId`
-- `quantity`
-- `valueRange`
-- `textValue`
-- `conditions`
-- `method`
-- `sourceLinks`
-- `verificationStatus`
-- `jobId`
-- `notes`
+Povinné polia počiatočného profilu:
+
+- spoločné entity metadata vrátane `id`, lifecycle, verzií, auditu a `sourceLinks`,
+- `subjectId`,
+- `observationScope`,
+- `observedAt`,
+- `propertyId`,
+- `valueType`,
+- presne jedna hodnotová vetva `quantity` alebo `valueRange` zodpovedajúca `valueType`.
+
+Voliteľné polia počiatočného profilu:
+
+- `scopeReferenceId` podľa pravidiel scope,
+- `measurementQuality`,
+- `conditions`,
+- `notes`.
 
 Pravidlá:
 
@@ -495,9 +495,21 @@ Pravidlá:
 - Viac `Observation` záznamov môže podporovať jednu vlastnosť.
 - Jednotlivé meranie nesmie automaticky prepísať všeobecnú materiálovú vlastnosť.
 - `Observation` musí mať `observationScope`, ktorý určuje kontext pozorovania.
-- Konceptuálne povolené hodnoty scope sú `GLOBAL`, `JOB`, `PROJECT` a `EXPERIMENT`. Tento RFC ešte nevytvára JSON enum.
-- `jobId` sa použije, ak pozorovanie pochádza zo zákazky alebo výrobnej udalosti.
+- Konceptuálne hodnoty scope zostávajú presne `GLOBAL`, `JOB`, `PROJECT` a `EXPERIMENT`.
+- Počiatočný profil implementuje iba `GLOBAL` a `JOB`. `PROJECT` a `EXPERIMENT` sa nesmú serializovať, kým ich identifikátory nebudú governance schválené.
+- `GLOBAL` zakazuje `scopeReferenceId`. `JOB` ho vyžaduje a jeho hodnota musí používať existujúci formát `JOB-yyyy-xxxx`.
+- `scopeReferenceId` identifikuje kontext vzniku; nie je identitou pozorovaného subjektu.
+- `subjectId` identifikuje práve jeden pozorovaný EOS objekt a je cross-aggregate referencia, nie vlastníctvo. V počiatočnom profile musí zodpovedať jednému z aktívnych doménových formátov `MAT`, `POL`, `TEC`, `MAC`, `TOOL`, `SUP`, `JOB` alebo `JOB_OPERATION`. Typ subjektu sa určuje z riadeného ID formátu; paralelné `subjectType` sa neukladá.
+- Referenčná existencia subjektu sa kontroluje aplikačne. Kým príslušná entita neexistuje, jej ID nemožno použiť iba ako fiktívny placeholder.
+- Počiatočný profil používa `valueType` s hodnotou `quantity` alebo `valueRange` a presne jednu zodpovedajúcu vetvu. `PropertyRecord` sa do Observation nevkladá.
 - Ak pozorovanie obsahuje číselnú hodnotu, jednotka má byť cez `quantity.unitId` alebo `valueRange.unitId`.
+- Počiatočný profil je atomický: jedna Observation nesie jeden property result pre jeden subject. Viac výsledkov alebo subjektov sa zapisuje ako viac Observation záznamov.
+- `measurementQuality` a `conditions` sa vzťahujú na jediný výsledok. Ich premiestnenie do budúceho typed result objektu by vyžadovalo novú verziu kontraktu.
+- `observedAt` je čas doménového pozorovania; spoločné `createdAt` je čas vytvorenia záznamu v EOS. `recordedAt` sa nepridáva.
+- `sourceLinks` je povinné pole. V `Draft` môže byť prázdne; pri `Review` alebo `Approved` musí byť neprázdne, pretože Observation obsahuje overiteľný dôkazový záznam.
+- Počiatočný profil nemá `verificationStatus`. Lifecycle `status` riadi zrelosť záznamu, nie pravdivosť claim. Evidence-specific verification sa odkladá do samostatného rozhodnutia.
+- Dôkazový obsah sa nesmie ticho meniť. Sémantická korekcia vytvorí novú Observation a pôvodná zostane auditovateľná. `supersedesObservationId` sa odkladá, kým nebude uzavretý korekčný lifecycle.
+- `observationType`, `observedBy`, `relatedEntityIds`, `textValue`, `method`, všeobecný payload a attachment model nie sú súčasťou počiatočného profilu. Budúci všeobecný Observation profil musí používať riadený typed result model, nie ľubovoľný JSON. Identita pozorovateľa sa nesmie zapisovať ako neriadený text; pôvod zatiaľ nesú `sourceLinks` a audit vytvorenia `createdBy` podľa svojich odlišných významov.
 - `Observation` alebo `Derived Result` nikdy automaticky nemení autoritatívny `PropertyRecord`.
 - Prijatie, odmietnutie alebo povýšenie tvrdenia musí prejsť cez `Decision` alebo ekvivalentný explicitne schválený governance mechanizmus.
 
@@ -666,23 +678,31 @@ Príklad `Observation`:
 ```json
 {
   "id": "OBS-000001",
-  "observationType": "sampleObservation",
+  "schemaVersion": "0.1.0",
+  "recordVersion": "0.1.0",
+  "revision": 0,
+  "status": "Draft",
+  "createdAt": "2026-07-14T10:05:00Z",
+  "createdBy": "example-user",
+  "updatedAt": "2026-07-14T10:05:00Z",
+  "updatedBy": "example-user",
+  "changeSummary": "Initial fictional observation",
   "observationScope": "JOB",
+  "scopeReferenceId": "JOB-2026-0001",
+  "subjectId": "MAT-0001",
   "observedAt": "2026-07-14T10:00:00Z",
-  "observedBy": "example-user",
-  "relatedEntityIds": ["MAT-0001"],
   "propertyId": "PRP-000001",
+  "valueType": "quantity",
   "quantity": {
     "value": 10,
     "unitId": "UNT-000001"
   },
-  "verificationStatus": "Draft",
   "sourceLinks": [
     {
       "sourceReferenceId": "SRC-000001",
       "sourceClass": "V",
       "supportedField": "quantity.value",
-      "usageType": "observation",
+      "usageType": "citation",
       "verificationStatus": "Draft"
     }
   ]
@@ -856,6 +876,8 @@ Pozorovanie, meranie alebo skúška môže podporiť vlastnosť, ale nemá ju au
 
 `Observation` má byť first-class evidence entity so stabilným `OBS-xxxxxx` a s poľom `observationScope`. Kontext pozorovania sa má riešiť scope hodnotou, nie vytváraním samostatných typov pre každý kontext.
 
+Počiatočný kontrakt je obmedzený property-measurement profil s jedným riadeným `subjectId`, jedným `propertyId` a presne jednou Quantity alebo ValueRange vetvou. Implementuje iba GLOBAL a JOB scope; širšie result typy a PROJECT/EXPERIMENT binding sú odložené podľa §4.11.
+
 `Observation` alebo `Derived Result` nikdy automaticky nemení autoritatívny `PropertyRecord`. Prijatie, odmietnutie alebo povýšenie tvrdenia musí prejsť cez `Decision` alebo ekvivalentný explicitne schválený governance mechanizmus.
 
 ## 13. RFC proces
@@ -934,3 +956,4 @@ Súvisiace dokumenty:
 | 2026-07-25 | 0.1 | 2 | Codex | Architecture Closure revision: uzavretie názvu `MeasurementQuality`, spresnenie `PropertyRecord` ako embedded claim-like value object, doplnenie `Observation.observationScope`, rozhodovacej hranice cez `Decision`, embedded observation records a fázovania `0.2B.1` / `0.2B.2` / `0.2C` |
 | 2026-08-01 | 0.1 | 3 | Codex | Phase 0.2B.0: prijatie RFC po splnení ARR podmienok, prijatí ADR-0014 až ADR-0016 a doplnení required prefixov v `EOS-003` Revision 2 |
 | 2026-08-01 | 0.1 | 4 | Codex | Accepted RFC vrátený do Review pre korekciu konfliktu `MeasurementQuality.tolerance`; výrobná, konštrukčná a akceptačná tolerancia odstránená z `MeasurementQuality`, budúci requirement/tolerance model odložený; interná kontrola konzistencie splnená a RFC znovu prijaté ako Accepted |
+| 2026-09-08 | 0.1 | 5 | Codex | Observation architecture closure: Accepted RFC vrátený do Review, spresnený počiatočný property-measurement profil so `subjectId`, typed Quantity/ValueRange výsledkom, implementovateľným GLOBAL/JOB scope, časovou, zdrojovou a immutable hranicou; po review znovu prijaté ako Accepted |
