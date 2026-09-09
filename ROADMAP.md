@@ -1,5 +1,19 @@
 # ROADMAP
 
+## Míľnik 0.2B.1.7 - Observation Contract
+
+Cieľ:
+
+- implementovať first-class evidence Entity a Aggregate Root so stabilným `OBS-xxxxxx`,
+- podporiť jeden riadený `subjectId`, GLOBAL alebo JOB scope a jeden typed property result,
+- znovu použiť Quantity, ValueRange, MeasurementQuality, Condition, SourceLink a spoločné entity metadata,
+- zachovať hranicu evidence voči PropertyRecord, Decision a Derived Result,
+- aplikovať existujúce vnorené významové invarianty bez duplikácie.
+
+Stav: implementačný rozsah Completed, kontrakt Review. Všetkých sedem plánovaných Knowledge Core kontraktov má technickú implementáciu; formálne uzatvorenie Phase 0.2B.1 je samostatný governance krok.
+
+PROJECT/EXPERIMENT scope, neidentifikované subjekty, všeobecné a nečíselné výsledky, observation type taxonomy, actor/attachment, evidence verification, korekčný lifecycle, referenčná existencia a katalógová kompatibilita zostávajú deferred. Phase 0.2B.2 ani 0.2C nezačala.
+
 ## Míľnik 0.2B.1.6 - PropertyRecord Contract
 
 Cieľ:
@@ -124,7 +138,7 @@ Predbežný cieľ:
 - pripraviť pravidlá validácie,
 - vytvoriť testy štruktúry bez technických hodnôt.
 
-Stav: In progress.
+Stav: sedem plánovaných kontraktov technicky implementovaných; Phase 0.2B.1 čaká na formálne review a uzatvorenie. Phase 0.2B.2 nezačala.
 
 ## Fáza 0.2A - Foundation Data Contracts
 
@@ -190,7 +204,7 @@ Predbežný scope:
 - `PropertyRecord`,
 - `Observation`.
 
-Stav: In progress.
+Stav: sedem plánovaných kontraktov technicky implementovaných; Phase 0.2B.1 čaká na formálne review a uzatvorenie. Phase 0.2B.2 nezačala.
 
 ## Fáza 0.3 - Prvé prázdne záznamové šablóny
 

@@ -23,6 +23,7 @@ MEASUREMENT_QUALITY_SCHEMA = "https://eos.local/schemas/knowledge-core/measureme
 CONDITION_SCHEMA = "https://eos.local/schemas/knowledge-core/condition.schema.json"
 CLASSIFICATION_SCHEMA = "https://eos.local/schemas/knowledge-core/classification.schema.json"
 PROPERTY_RECORD_SCHEMA = "https://eos.local/schemas/knowledge-core/property-record.schema.json"
+OBSERVATION_SCHEMA = "https://eos.local/schemas/knowledge-core/observation.schema.json"
 
 
 def load_fixture(name: str) -> dict:
@@ -1149,6 +1150,226 @@ class ValidationTests(unittest.TestCase):
             (
                 "application_validation.value_range_reversed_bounds",
                 "$.propertyRecords[0].valueRange.minValue",
+            ),
+            {(e.errorCode, e.path) for e in result.errors},
+        )
+
+    def test_observation_schema_definition_is_valid(self) -> None:
+        result = self.validator.validate_schema_definition(OBSERVATION_SCHEMA)
+        self.assertTrue(result.ok, [f"{e.schemaPath}: {e.message}" for e in result.errors])
+
+    def test_valid_observation_fixtures_pass(self) -> None:
+        files = sorted(VALID_KNOWLEDGE_CORE_FIXTURES.glob("observation-*-valid.json"))
+        self.assertEqual(len(files), 10)
+        for path in files:
+            with self.subTest(path=path.name):
+                result = self.validator.validate_json_file(path, OBSERVATION_SCHEMA)
+                self.assertTrue(result.ok, [f"{e.path}: {e.message}" for e in result.errors])
+
+    def test_invalid_observation_fixtures_fail(self) -> None:
+        files = sorted(INVALID_KNOWLEDGE_CORE_FIXTURES.glob("observation-*-invalid.json"))
+        self.assertEqual(len(files), 45)
+        for path in files:
+            with self.subTest(path=path.name):
+                result = self.validator.validate_json_file(path, OBSERVATION_SCHEMA)
+                self.assertFalse(result.ok, path.name)
+
+    def test_observation_uses_central_obs_and_prp_identifiers(self) -> None:
+        schema = self.validator.registry.by_id[OBSERVATION_SCHEMA]
+        self.assertEqual(
+            schema["properties"]["id"]["$ref"],
+            "https://eos.local/schemas/common/identifiers.schema.json#/$defs/OBS",
+        )
+        self.assertEqual(
+            schema["properties"]["propertyId"]["$ref"],
+            "https://eos.local/schemas/common/identifiers.schema.json#/$defs/PRP",
+        )
+        identifiers = self.validator.registry.by_id[
+            "https://eos.local/schemas/common/identifiers.schema.json"
+        ]
+        self.assertEqual(identifiers["$defs"]["OBS"]["pattern"], "^OBS-[0-9]{6}$")
+
+    def test_observation_subject_identifier_families(self) -> None:
+        record = load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "observation-global-quantity-valid.json")
+        subject_ids = [
+            "MAT-0001", "POL-0001", "TEC-0001", "MAC-0001", "TOOL-0001",
+            "SUP-0001", "JOB-2026-0001", "JOB-2026-0001-OP-001",
+        ]
+        for subject_id in subject_ids:
+            with self.subTest(subject_id=subject_id):
+                self.assertValid({**record, "subjectId": subject_id}, OBSERVATION_SCHEMA)
+        for subject_id in ["SRC-000001", "MAT-1", "PROJECT-0001"]:
+            with self.subTest(rejected_subject_id=subject_id):
+                self.assertInvalid({**record, "subjectId": subject_id}, OBSERVATION_SCHEMA)
+
+    def test_observation_global_and_job_scope_rules(self) -> None:
+        global_record = load_json(
+            VALID_KNOWLEDGE_CORE_FIXTURES / "observation-global-quantity-valid.json"
+        )
+        self.assertValid(global_record, OBSERVATION_SCHEMA)
+        self.assertInvalid(
+            {**global_record, "scopeReferenceId": "JOB-2026-0001"}, OBSERVATION_SCHEMA,
+        )
+        job_record = {**global_record, "observationScope": "JOB"}
+        self.assertInvalid(job_record, OBSERVATION_SCHEMA)
+        self.assertValid(
+            {**job_record, "scopeReferenceId": "JOB-2026-0001"}, OBSERVATION_SCHEMA,
+        )
+        self.assertInvalid(
+            {**job_record, "scopeReferenceId": "MAT-0001"}, OBSERVATION_SCHEMA,
+        )
+        for scope in ["PROJECT", "EXPERIMENT"]:
+            with self.subTest(scope=scope):
+                self.assertInvalid({**global_record, "observationScope": scope}, OBSERVATION_SCHEMA)
+
+    def test_observation_result_discriminator_and_exactly_one_branch(self) -> None:
+        names = [
+            "observation-quantity-type-without-quantity-invalid.json",
+            "observation-value-range-type-without-range-invalid.json",
+            "observation-both-result-branches-invalid.json",
+            "observation-neither-result-branch-invalid.json",
+            "observation-invalid-value-type-invalid.json",
+        ]
+        for name in names:
+            with self.subTest(name=name):
+                self.assertInvalid(load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / name), OBSERVATION_SCHEMA)
+
+    def test_observation_rejects_claim_generic_and_deferred_fields(self) -> None:
+        base = load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "observation-global-quantity-valid.json")
+        cases = {
+            "propertyRecord": {"propertyId": "PRP-000001"},
+            "payload": {"value": "fictional"},
+            "textValue": "fictional",
+            "observationId": "OBS-000002",
+            "subjectType": "Material",
+            "recordedAt": "2026-09-08T10:00:00Z",
+            "verificationStatus": "Draft",
+            "supersedesObservationId": "OBS-000002",
+            "observationType": "measurement",
+            "observedBy": "example-user",
+        }
+        for field, value in cases.items():
+            with self.subTest(field=field):
+                result = self.validator.validate({**base, field: value}, OBSERVATION_SCHEMA)
+                self.assertIn(
+                    ("schema_validation.additionalProperties", f"$.{field}"),
+                    {(e.errorCode, e.path) for e in result.errors},
+                )
+
+    def test_observation_reuses_numeric_quality_condition_and_source_contracts(self) -> None:
+        schema = self.validator.registry.by_id[OBSERVATION_SCHEMA]
+        expected_refs = {
+            "quantity": QUANTITY_SCHEMA,
+            "valueRange": VALUE_RANGE_SCHEMA,
+            "measurementQuality": MEASUREMENT_QUALITY_SCHEMA,
+        }
+        for field, expected_ref in expected_refs.items():
+            with self.subTest(field=field):
+                self.assertEqual(schema["properties"][field]["$ref"], expected_ref)
+        self.assertEqual(schema["properties"]["conditions"]["items"]["$ref"], CONDITION_SCHEMA)
+        self.assertEqual(
+            schema["properties"]["sourceLinks"]["$ref"],
+            "https://eos.local/schemas/common/metadata.schema.json#/properties/sourceLinks",
+        )
+
+    def test_observation_nested_reversed_range_is_application_validation(self) -> None:
+        record = load_json(
+            INVALID_KNOWLEDGE_CORE_FIXTURES / "observation-reversed-nested-value-range-invalid.json"
+        )
+        result = self.validator.validate(record, OBSERVATION_SCHEMA)
+        self.assertIn(
+            (
+                "application_validation.value_range_reversed_bounds",
+                "$.valueRange.minValue",
+            ),
+            {(e.errorCode, e.path) for e in result.errors},
+        )
+
+    def test_observation_nested_measurement_quality_rules(self) -> None:
+        cases = [
+            (
+                "observation-negative-uncertainty-invalid.json",
+                "application_validation.measurement_quality_negative_uncertainty",
+                "$.measurementQuality.uncertainty.value",
+            ),
+            (
+                "observation-zero-resolution-invalid.json",
+                "application_validation.measurement_quality_nonpositive_resolution",
+                "$.measurementQuality.resolution.value",
+            ),
+        ]
+        for name, code, path in cases:
+            with self.subTest(name=name):
+                result = self.validator.validate(
+                    load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / name), OBSERVATION_SCHEMA,
+                )
+                self.assertIn((code, path), {(e.errorCode, e.path) for e in result.errors})
+
+    def test_observation_nested_condition_rules_are_composed(self) -> None:
+        record = load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "observation-one-condition-valid.json")
+        record["conditions"][0] = {
+            "conditionTypeId": "CND-000001",
+            "evaluationMode": "limiting",
+            "valueRange": {"minValue": 2, "maxValue": 1, "unitId": "UNT-000001"},
+        }
+        result = self.validator.validate(record, OBSERVATION_SCHEMA)
+        self.assertIn(
+            (
+                "application_validation.value_range_reversed_bounds",
+                "$.conditions[0].valueRange.minValue",
+            ),
+            {(e.errorCode, e.path) for e in result.errors},
+        )
+
+    def test_observation_source_links_structure_and_lifecycle_rule(self) -> None:
+        draft = load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "observation-empty-source-links-valid.json")
+        self.assertValid(draft, OBSERVATION_SCHEMA)
+        missing = dict(draft)
+        del missing["sourceLinks"]
+        result = self.validator.validate(missing, OBSERVATION_SCHEMA)
+        self.assertIn(
+            ("schema_validation.required", "$.sourceLinks"),
+            {(e.errorCode, e.path) for e in result.errors},
+        )
+        review = {**draft, "status": "Review"}
+        result = self.validator.validate(review, OBSERVATION_SCHEMA)
+        self.assertIn(
+            ("application_validation.source_links_required", "$.sourceLinks"),
+            {(e.errorCode, e.path) for e in result.errors},
+        )
+
+    def test_observation_time_and_identity_field_boundaries(self) -> None:
+        valid = load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "observation-distinct-times-valid.json")
+        self.assertNotEqual(valid["observedAt"], valid["createdAt"])
+        self.assertValid(valid, OBSERVATION_SCHEMA)
+        for name in [
+            "observation-missing-observed-at-invalid.json",
+            "observation-recorded-at-invalid.json",
+            "observation-observation-id-invalid.json",
+        ]:
+            with self.subTest(name=name):
+                self.assertInvalid(load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / name), OBSERVATION_SCHEMA)
+
+    def test_observation_schema_index_resolves_and_composes_application_rules(self) -> None:
+        valid = load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "observation-global-quantity-valid.json")
+        self.assertValid({"observations": [valid]}, INDEX_SCHEMA)
+        review_without_source = {**valid, "status": "Review"}
+        result = self.validator.validate({"observations": [review_without_source]}, INDEX_SCHEMA)
+        self.assertIn(
+            (
+                "application_validation.source_links_required",
+                "$.observations[0].sourceLinks",
+            ),
+            {(e.errorCode, e.path) for e in result.errors},
+        )
+        invalid = load_json(
+            INVALID_KNOWLEDGE_CORE_FIXTURES / "observation-negative-uncertainty-invalid.json"
+        )
+        result = self.validator.validate({"observations": [invalid]}, INDEX_SCHEMA)
+        self.assertIn(
+            (
+                "application_validation.measurement_quality_negative_uncertainty",
+                "$.observations[0].measurementQuality.uncertainty.value",
             ),
             {(e.errorCode, e.path) for e in result.errors},
         )

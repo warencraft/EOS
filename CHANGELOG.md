@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## 0.2B.1.7 - 2026-09-08
+
+Status: Implemented / Review
+
+### Added
+
+- `schemas/knowledge-core/observation.schema.json` pre first-class Property Measurement Observation Aggregate Root s jedným subjektom a jedným Quantity alebo ValueRange výsledkom.
+- Centrálny OBS formát, Observation discovery v schema indexe, 10 platných a 45 neplatných fixtures.
+- 15 unittest testov pre identitu, subject rodiny, GLOBAL/JOB scope, typed result, vnorené pravidlá, zdroje a indexovú kompozíciu.
+
+### Changed
+
+- CDR-0007 Revision 2 zaznamenáva implementačný výsledok; verdict zostáva `READY FOR IMPLEMENTATION` a Status Review.
+- Validačná kompozícia rekurzívne používa existujúce ValueRange a MeasurementQuality pravidlá a existujúcu source lifecycle kontrolu.
+- Dokumentácia schém, testov, validátora a roadmap opisuje úzky profil a deferred hranice.
+
+### Deferred / Not Added
+
+- Nevznikol PropertyRecord embedding, arbitrary payload, generic ObservationResult, nečíselný výsledok, PROJECT/EXPERIMENT binding, actor, attachment, evidence verification ani correction model.
+- Referenčná existencia subject/JOB/PRP, katalógová kompatibilita, persistence immutability a Decision workflow zostávajú aplikačné alebo budúce pravidlá.
+- Phase 0.2B.2 ani 0.2C nezačala; nevznikol nový RFC, ADR, katalóg, databáza, API ani UI.
+
 ## 0.2B.1.6 - 2026-09-08
 
 Status: Implemented / Review

@@ -5,7 +5,7 @@ Contract Review ID: CDR-0007
 Contract: Observation  
 Review type: Pre-design  
 Version: 0.1  
-Revision: 1  
+Revision: 2  
 Status: Review  
 Document basis: Accepted EOS architecture
 
@@ -378,11 +378,30 @@ Počiatočný profil má jednoznačný subjekt, typed result, implementovateľn�
 
 Phase 0.2B.1.7 môže implementovať iba profil definovaný v §24 a RFC-0001 Revision 5. PROJECT, EXPERIMENT, neidentifikovaný subjekt, nečíselný výsledok, všeobecný ObservationResult, observation type taxonomy, evidence verification a korekčný odkaz zostávajú výslovne mimo rozsahu.
 
+### Implementation Outcome
+
+Phase 0.2B.1.7 implementuje schválený profil bez odchýlky:
+
+- schéma je `schemas/knowledge-core/observation.schema.json` s kanonickým ID `https://eos.local/schemas/knowledge-core/observation.schema.json`,
+- ide o first-class Entity a Aggregate Root s vlastným `id` vo formáte `OBS-xxxxxx` a spoločnými EOS entity metadátami,
+- `subjectId` povoľuje centrálne rodiny `MAT`, `POL`, `TEC`, `MAC`, `TOOL`, `SUP`, `JOB` a `JOB_OPERATION`; existencia cieľa sa nepredstiera,
+- podporované scope sú iba `GLOBAL` bez scope referencie a `JOB` s povinným `scopeReferenceId` vo formáte JOB,
+- výsledok vyžaduje `propertyId`, discriminator `valueType` a presne jednu Quantity alebo ValueRange vetvu,
+- voliteľné MeasurementQuality a Conditions kvalifikujú jediný výsledok a používajú existujúce schémy cez `$ref`,
+- `sourceLinks` je povinné pole; Draft môže byť prázdny, Review/Approved bez zdroja vracia aplikačnú chybu,
+- JSON Schema kontroluje štruktúru, ID formáty, scope a result union; EOS aplikačná validácia skladá existujúce pravidlá ValueRange, MeasurementQuality a source lifecycle,
+- referenčná existencia subjektu, JOB a PRP, katalógová kompatibilita, persistence immutability a promotion cez Decision zostávajú mimo štrukturálnej validácie,
+- všeobecný ObservationResult, nečíselné payloady, PROJECT/EXPERIMENT, actor, attachment, evidence verification a korekčný model nevznikli,
+- 10 platných a 45 neplatných fixtures pokrýva profil; 15 nových testov zvýšilo kompletnú sadu zo 105 na 120 a všetky prešli.
+
+Implementácia nemení Accepted RFC ani ADR. JSON Schema zostáva serializačným kontraktom, nie Knowledge Modelom.
+
 ## 26. Change History
 
 | Dátum | Version | Revision | Autor | Zmena |
 | --- | --- | --- | --- | --- |
 | 2026-09-08 | 0.1 | 0 | Codex | Pre-design review Observation nad Accepted EOS architektúrou; identifikované pevné evidence a aggregate hranice, otvorený subject/payload model a podmienky pred implementáciou. Bez zmeny schém alebo architektúry. |
 | 2026-09-08 | 0.1 | 1 | Codex | Architecture closure: výber jedného riadeného `subjectId`, atomického property-measurement result unionu, GLOBAL/JOB scope profilu, časovej, zdrojovej, verification a immutable hranice; zaznamenanie RFC-0001 Revision 5 a otvorenie implementačného gate. |
+| 2026-09-08 | 0.1 | 2 | Codex | Implementation outcome: Observation schéma, centrálny OBS formát, index, fixtures, testy, rekurzívna významová validácia a potvrdenie všetkých deferred hraníc po míľniku 0.2B.1.7. |
 
 READY FOR IMPLEMENTATION

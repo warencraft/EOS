@@ -1,5 +1,26 @@
 # schemas
 
+## Míľnik 0.2B.1.7 - Observation Contract
+
+Siedmy Knowledge Core Contract je `Observation`, first-class evidence Entity a Aggregate Root. Počiatočný profil je zámerne obmedzený na jedno číselné pozorovanie jednej vlastnosti jedného EOS subjektu:
+
+- schéma: `knowledge-core/observation.schema.json`,
+- schema id: `https://eos.local/schemas/knowledge-core/observation.schema.json`,
+- discovery: `index.schema.json#/$defs/observation`, kolekcia `observations`,
+- vlastné `id` používa centrálny `OBS-xxxxxx`,
+- `subjectId` povoľuje centrálne MAT, POL, TEC, MAC, TOOL, SUP, JOB a JOB_OPERATION rodiny,
+- scope je `GLOBAL` bez referencie alebo `JOB` s povinným `scopeReferenceId`,
+- `propertyId`, `valueType` a presne jedna Quantity alebo ValueRange vetva tvoria jediný observed result,
+- voliteľné `measurementQuality`, `conditions` a `notes`.
+
+Spoločné entity metadata sa používajú priamo bez druhého wrappera. Jednotlivé metadata polia odkazujú na spoločnú metadata schému; `id` má špecializovaný centrálny OBS formát. `observedAt` je čas technického pozorovania, zatiaľ čo `createdAt` je čas vytvorenia EOS záznamu. Poradie medzi nimi sa nevynucuje.
+
+Observation je evidence, nie embedded `PropertyRecord`, Claim, Decision ani Derived Result. Nepovoľuje arbitrary payload, `textValue`, `subjectType`, `observationType`, `observedBy`, `recordedAt`, koreňový `verificationStatus` ani korekčné polia. MeasurementQuality a Conditions kvalifikujú jediný výsledok. Ich existujúce významové pravidlá sa aplikujú rekurzívne bez kopírovania validátorov.
+
+`sourceLinks` je štrukturálne povinné pole a Draft môže použiť prázdny zoznam. Review alebo Approved Observation bez zdroja je aplikačne neplatná. Formát ID nepotvrdzuje existenciu subjektu, JOB, PRP, UNT ani CND záznamu. PROJECT/EXPERIMENT, všeobecné a nečíselné výsledky, attachment, actor, evidence verification, correction relation a katalógové pravidlá zostávajú deferred.
+
+Míľnik 0.2B.1.7 je implementovaný v stave Review. Sedem plánovaných Knowledge Core kontraktov má technickú implementáciu, ale Phase 0.2B.2 nezačala.
+
 ## Míľnik 0.2B.1.6 - PropertyRecord Contract
 
 Šiesty Knowledge Core Contract je `PropertyRecord`, embedded claim-like Value Object vlastnený rodičom:

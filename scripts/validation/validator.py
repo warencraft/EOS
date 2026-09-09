@@ -76,6 +76,7 @@ VALUE_RANGE_SCHEMA_ID = "https://eos.local/schemas/knowledge-core/value-range.sc
 MEASUREMENT_QUALITY_SCHEMA_ID = "https://eos.local/schemas/knowledge-core/measurement-quality.schema.json"
 CONDITION_SCHEMA_ID = "https://eos.local/schemas/knowledge-core/condition.schema.json"
 PROPERTY_RECORD_SCHEMA_ID = "https://eos.local/schemas/knowledge-core/property-record.schema.json"
+OBSERVATION_SCHEMA_ID = "https://eos.local/schemas/knowledge-core/observation.schema.json"
 INDEX_SCHEMA_ID = "https://eos.local/schemas/index.schema.json"
 
 EMBEDDED_CONTRACT_FIELDS: dict[str, dict[str, tuple[str, bool]]] = {
@@ -93,8 +94,15 @@ EMBEDDED_CONTRACT_FIELDS: dict[str, dict[str, tuple[str, bool]]] = {
         "measurementQuality": (MEASUREMENT_QUALITY_SCHEMA_ID, False),
         "conditions": (CONDITION_SCHEMA_ID, True),
     },
+    OBSERVATION_SCHEMA_ID: {
+        "quantity": (QUANTITY_SCHEMA_ID, False),
+        "valueRange": (VALUE_RANGE_SCHEMA_ID, False),
+        "measurementQuality": (MEASUREMENT_QUALITY_SCHEMA_ID, False),
+        "conditions": (CONDITION_SCHEMA_ID, True),
+    },
     INDEX_SCHEMA_ID: {
         "propertyRecords": (PROPERTY_RECORD_SCHEMA_ID, True),
+        "observations": (OBSERVATION_SCHEMA_ID, True),
     },
 }
 
@@ -349,7 +357,8 @@ class EosValidator:
             return
         self._validate_finite_numbers(instance, result)
         self._validate_contract_rules(instance, result, schema_id=schema_id)
-        self._validate_source_links_rule(instance, result, has_verifiable_claims=has_verifiable_claims)
+        if schema_id != OBSERVATION_SCHEMA_ID:
+            self._validate_source_links_rule(instance, result, has_verifiable_claims=has_verifiable_claims)
         self._validate_source_link_ids(instance, result)
         self._validate_hierarchical_ids(instance, result)
         self._validate_document_record_versions(instance, result)
@@ -369,6 +378,13 @@ class EosValidator:
             self._validate_value_range_rules(instance, result, path=path)
         elif schema_id == MEASUREMENT_QUALITY_SCHEMA_ID:
             self._validate_measurement_quality_rules(instance, result, path=path)
+        elif schema_id == OBSERVATION_SCHEMA_ID:
+            self._validate_source_links_rule(
+                instance,
+                result,
+                has_verifiable_claims=True,
+                path=path,
+            )
 
         for field_name, (child_schema_id, is_array) in EMBEDDED_CONTRACT_FIELDS.get(schema_id, {}).items():
             child = instance.get(field_name)
@@ -480,6 +496,7 @@ class EosValidator:
         result: ValidationResult,
         *,
         has_verifiable_claims: bool,
+        path: str = "$",
     ) -> None:
         status = instance.get("status")
         source_links = instance.get("sourceLinks")
@@ -488,7 +505,7 @@ class EosValidator:
                 errorCode="application_validation.source_links_required",
                 category="application_validation",
                 message="Review or Approved records with verifiable claims require sourceLinks",
-                instancePath="$.sourceLinks",
+                instancePath=f"{path}.sourceLinks",
                 recordId=self._record_id(instance),
             )
 

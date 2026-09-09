@@ -1,5 +1,17 @@
 # tests
 
+## Míľnik 0.2B.1.7 - Observation Contract
+
+Observation má 10 platných a 45 neplatných fiktívnych fixtures v Knowledge Core priečinkoch. Pätnásť nových `unittest` testov overuje Draft 2020-12 schému, centrálny OBS a PRP formát, všetkých osem povolených subject ID rodín, GLOBAL/JOB podmienky, Quantity/ValueRange discriminator, odmietnutie PropertyRecord a arbitrary payloadu, povinný `observedAt`, spoločné metadata a registráciu v schema indexe.
+
+Regresie dokazujú, že obrátený ValueRange, záporná MeasurementQuality uncertainty, nulová resolution a významové pravidlá ValueRange vo vnorenom Condition sa zachytia aj v Observation s úplnou cestou. `sourceLinks` je povinné pole; prázdny Draft prejde, kým Review/Approved bez zdroja vracia `application_validation.source_links_required`.
+
+Úspešná validácia nepotvrdzuje existenciu subject, JOB, PRP ani katalógovú kompatibilitu. Nekontroluje persistence immutability, evidence promotion ani Decision workflow. Kompletná sada má 120 testov. Spustenie z koreňa projektu:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
 ## Míľnik 0.2B.1.6 - PropertyRecord Contract
 
 Testy používajú `unittest` a existujúci EOS validátor. PropertyRecord má 10 platných a 40 neplatných fiktívnych fixtures v Knowledge Core priečinkoch. Pokrytie overuje centrálny PRP `$ref`, povinný discriminator `valueType`, presne jednu vetvu `quantity` alebo `valueRange`, všetky znovupoužité kontrakty, štyri VerificationStatus stavy, povinné ale potenciálne prázdne `sourceLinks`, viac podmienok a odmietnutie deferred, identity a lifecycle polí.

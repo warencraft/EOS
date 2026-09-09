@@ -1,5 +1,13 @@
 # scripts
 
+## Míľnik 0.2B.1.7 - Observation Contract
+
+Existujúca kompozičná mapa validátora registruje Observation ako rodiča Quantity, ValueRange, MeasurementQuality a poľa Conditions. Rovnaké pravidlá sa tým aplikujú na top-level Observation aj na Observation vnorenú cez schema index, bez kopírovania významovej logiky.
+
+JSON Schema kontroluje entity metadata, OBS a subject ID formáty, GLOBAL/JOB scope podmienky, timestamp, PRP, result discriminator, vnorené kontrakty a uzavretý zoznam polí. EOS aplikačná vrstva kontroluje existujúce ValueRange a MeasurementQuality invarianty a neprázdne zdroje pre Review/Approved Observation. Source pravidlo znovu používa existujúci error model a pri vnorení zachováva úplnú cestu.
+
+Validátor nekontroluje existenciu subjektu, JOB alebo PRP, katalógovú kompatibilitu, nemennosť uloženého záznamu, korekcie ani Decision workflow. Tieto kontroly nemožno vydávať za vykonané iba na základe platného formátu ID alebo úspešnej schémy.
+
 ## Míľnik 0.2B.1.6 - PropertyRecord Contract
 
 EOS aplikačná validácia používa explicitnú mapu kompozície Knowledge Core kontraktov. Existujúce pravidlá ValueRange a MeasurementQuality sa tým spúšťajú aj pri vnorení v PropertyRecord a zachovávajú úplnú cestu chyby. Condition je zapojený do rovnakej orchestrácie, takže jeho prípadné budúce významové pravidlá sa budú aplikovať bez kopírovania do PropertyRecord.

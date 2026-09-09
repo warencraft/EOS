@@ -13,6 +13,7 @@
     "CND": { "type": "string", "pattern": "^CND-[0-9]{6}$" },
     "CLS": { "type": "string", "pattern": "^CLS-[0-9]{6}$" },
     "PRP": { "type": "string", "pattern": "^PRP-[0-9]{6}$" },
+    "OBS": { "type": "string", "pattern": "^OBS-[0-9]{6}$" },
     "MAT": { "type": "string", "pattern": "^MAT-[0-9]{4}$" },
     "POL": { "type": "string", "pattern": "^POL-[0-9]{4}$" },
     "TEC": { "type": "string", "pattern": "^TEC-[0-9]{4}$" },
