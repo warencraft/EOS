@@ -57,9 +57,7 @@ Skripty musia byť účelové, testovateľné a nesmú obsahovať hardcoded stro
 
 ## validation
 
-`scripts/validation/` obsahuje minimálnu validačnú vrstvu pre fázu 0.2A.
-
-Aktuálne používa iba štandardnú knižnicu Pythonu, pretože v dostupnom runtime nie sú prítomné balíky `jsonschema` ani `pytest` a projekt zatiaľ nepridáva nové závislosti.
+`scripts/validation/` obsahuje štandardnú JSON Schema Draft 2020-12 validáciu cez `jsonschema` a oddelenú EOS aplikačnú validačnú vrstvu. Balík `jsonschema` je priamou projektovou závislosťou; jeho tranzitívna závislosť `referencing` poskytuje štandardný register pre lokálne a cross-file `$ref`.
 
 Validácia rozlišuje:
 
@@ -70,7 +68,7 @@ Od fázy 0.2A.2 používa štrukturálna validácia knižnicu `jsonschema` a `Dr
 
 Interná EOS vrstva zostáva zodpovedná za aplikačné pravidlá, napríklad `sourceLinks`, hierarchické ID a rozlíšenie `schemaVersion` vs `documentVersion`.
 
-Ak závislosť `jsonschema` chýba, validačný nástroj zobrazí jasnú inštalačnú správu a integračná validácia je blokovaná.
+Ak chýba `jsonschema` alebo `referencing`, validačný nástroj zobrazí názov chýbajúcej závislosti a inštalačný postup. Kompletná testovacia sada zlyhá s nenulovým návratovým kódom; integračná validácia sa nesmie vykázať ako úspešná ani hromadne preskočená.
 
 ## Lokálne spustenie
 

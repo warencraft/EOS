@@ -13,7 +13,7 @@ from .schema_loader import SchemaRegistry
 
 
 INSTALL_INSTRUCTIONS = (
-    "Missing dependency 'jsonschema'. Create a virtual environment and install the project: "
+    "Create a virtual environment and install the project: "
     "python -m venv .venv; .venv\\Scripts\\python -m pip install -e ."
 )
 
@@ -120,7 +120,10 @@ def _load_jsonschema() -> tuple[Any, Any, Any, Any]:
         from jsonschema import Draft202012Validator, FormatChecker, SchemaError
         from jsonschema.exceptions import ValidationError as JsonSchemaValidationError
     except ModuleNotFoundError as exc:  # pragma: no cover - depends on runtime
-        raise MissingValidationDependencyError(INSTALL_INSTRUCTIONS) from exc
+        dependency = (exc.name or "jsonschema").split(".", 1)[0]
+        raise MissingValidationDependencyError(
+            f"Missing required validation dependency '{dependency}'. {INSTALL_INSTRUCTIONS}"
+        ) from exc
     return Draft202012Validator, FormatChecker, SchemaError, JsonSchemaValidationError
 
 
@@ -176,7 +179,13 @@ class EosValidator:
         self.registry = registry or SchemaRegistry()
         self.registry.load_all()
         self.Draft202012Validator, self.FormatChecker, self.SchemaError, self.JsonSchemaValidationError = _load_jsonschema()
-        self.referencing_registry = self.registry.as_referencing_registry()
+        try:
+            self.referencing_registry = self.registry.as_referencing_registry()
+        except ModuleNotFoundError as exc:  # pragma: no cover - depends on runtime
+            dependency = (exc.name or "referencing").split(".", 1)[0]
+            raise MissingValidationDependencyError(
+                f"Missing required validation dependency '{dependency}'. {INSTALL_INSTRUCTIONS}"
+            ) from exc
         self.format_checker = self._build_format_checker()
 
     def validate_json_file(
@@ -359,7 +368,6 @@ class EosValidator:
         self._validate_contract_rules(instance, result, schema_id=schema_id)
         if schema_id != OBSERVATION_SCHEMA_ID:
             self._validate_source_links_rule(instance, result, has_verifiable_claims=has_verifiable_claims)
-        self._validate_source_link_ids(instance, result)
         self._validate_hierarchical_ids(instance, result)
         self._validate_document_record_versions(instance, result)
 
@@ -508,24 +516,6 @@ class EosValidator:
                 instancePath=f"{path}.sourceLinks",
                 recordId=self._record_id(instance),
             )
-
-    def _validate_source_link_ids(self, instance: Any, result: ValidationResult, path: str = "$") -> None:
-        if isinstance(instance, dict):
-            if "sourceReferenceId" in instance:
-                value = instance["sourceReferenceId"]
-                if not isinstance(value, str) or not re.fullmatch(r"SRC-[0-9]{6}", value):
-                    result.add(
-                        errorCode="reference_integrity.invalid_source_reference_id",
-                        category="reference_integrity",
-                        message="sourceReferenceId must be a SRC-xxxxxx identifier",
-                        instancePath=f"{path}.sourceReferenceId",
-                        recordId=self._record_id(instance),
-                    )
-            for key, value in instance.items():
-                self._validate_source_link_ids(value, result, f"{path}.{key}")
-        elif isinstance(instance, list):
-            for index, value in enumerate(instance):
-                self._validate_source_link_ids(value, result, f"{path}[{index}]")
 
     def _validate_hierarchical_ids(self, instance: dict[str, Any], result: ValidationResult) -> None:
         record_id = instance.get("id")

@@ -5,7 +5,7 @@
 **Review:** Knowledge Core Integration  
 **Phase:** 0.2B.1-close  
 **Version:** 0.1  
-**Revision:** 0  
+**Revision:** 1
 **Status:** Review  
 **Document basis:** Accepted EOS architecture + implemented 0.2B.1 contracts
 
@@ -419,14 +419,29 @@ KCI-0003 sa musí rozhodnúť v návrhu Condition Type Catalog, nie pred samotn�
 
 Phase 0.2B.1 Knowledge Core je architektonicky konzistentné, acyklické, skladateľné a významové invarianty sa pri vnorení zachovávajú. Identity sú centralizované, evidence/claim hranica ostáva čistá a katalógové závislosti sú explicitné.
 
-Tri finite podmienky KCI-0001, KCI-0002 a KCI-0004 musia byť uzavreté pred implementáciou katalógov. Nevyžadujú nové RFC, ADR ani zmenu objektového modelu.
+Tri finite podmienky KCI-0001, KCI-0002 a KCI-0004 boli uzavreté v míľniku 0.2B.1-close.1 bez nového RFC, ADR alebo zmeny objektového modelu.
 
 Konečný strojovo čitateľný verdict je uvedený ako posledný riadok dokumentu.
 
-## 27. Change History
+## 27. Corrective Closure
+
+| Finding | Corrective action | Verification evidence | Final state |
+| --- | --- | --- | --- |
+| KCI-0001 | Suite-level dependency preflight nahradil per-test skip. Chýbajúci `jsonschema` aj tranzitívny `referencing` vyvolajú jasnú chybu s inštalačným postupom. | Riadené subprocess simulácie oboch chýbajúcich závislostí končia nenulovým návratovým kódom; normálny beh končí 122 úspešnými testami. | CLOSED |
+| KCI-0002 | Odstránená ručná regex kontrola `sourceReferenceId` z aplikačnej vrstvy. Formát kontroluje centrálna JSON Schema. | Chybný vnorený SRC identifikátor vracia iba `schema_validation.pattern` s presnou cestou. Platný, ale nevyriešený SRC formát nevytvára falošnú `reference_integrity` chybu. | CLOSED |
+| KCI-0004 | BACKLOG presunul dokončené úlohy 0.2B.1 a uvádza iba reálne katalógové a integračné pokračovania. | BACKLOG, ROADMAP a stav siedmich Knowledge Core schém sú navzájom konzistentné. | CLOSED |
+
+V aktuálnej vrstve ešte neexistuje resolver autoritatívnych SourceReference záznamov. Korekcia KCI-0002 preto neodstraňuje žiadnu reálnu kontrolu existencie: tá sa v 0.2B.2 musí zaviesť v kategórii `reference_integrity`, oddelene od schémového formátu ID.
+
+Neblokujúci finding KCI-0005 je takisto uzavretý odstránením zastaraného tvrdenia zo `scripts/README.md`. KCI-0003, KCI-0006, KCI-0007 a KCI-0008 zostávajú neblokujúce a ich odporúčané hranice sa nemenia.
+
+Všetky blokujúce findings sú uzavreté. Phase 0.2B.1 je `COMPLETE`; Phase 0.2B.2 je nasledujúca fáza a nebola začatá.
+
+## 28. Change History
 
 | Date | Version | Revision | Author | Change |
 | --- | --- | --- | --- | --- |
 | 2026-09-09 | 0.1 | 0 | Codex | Initial integration review of all seven Phase 0.2B.1 Knowledge Core contracts; contract, identifier, dependency, validation, traceability, fixture, test, documentation and catalog-readiness audit. |
+| 2026-09-09 | 0.1 | 1 | Codex | Corrective closure of blocking findings KCI-0001, KCI-0002 and KCI-0004; validation bootstrap, error-category boundary and backlog alignment verified. |
 
-READY WITH CONDITIONS
+READY FOR 0.2B.2

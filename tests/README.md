@@ -6,7 +6,9 @@ Observation má 10 platných a 45 neplatných fiktívnych fixtures v Knowledge C
 
 Regresie dokazujú, že obrátený ValueRange, záporná MeasurementQuality uncertainty, nulová resolution a významové pravidlá ValueRange vo vnorenom Condition sa zachytia aj v Observation s úplnou cestou. `sourceLinks` je povinné pole; prázdny Draft prejde, kým Review/Approved bez zdroja vracia `application_validation.source_links_required`.
 
-Úspešná validácia nepotvrdzuje existenciu subject, JOB, PRP ani katalógovú kompatibilitu. Nekontroluje persistence immutability, evidence promotion ani Decision workflow. Kompletná sada má 120 testov. Spustenie z koreňa projektu:
+Úspešná validácia nepotvrdzuje existenciu subject, JOB, PRP ani katalógovú kompatibilitu. Nekontroluje persistence immutability, evidence promotion ani Decision workflow. Po korektívnom uzatvorení 0.2B.1 má kompletná sada 122 testov. Suite-level preflight pri chýbajúcom `jsonschema` alebo `referencing` skončí chybou a nenulovým návratovým kódom, nie úspešným preskočením testov.
+
+Formát `sourceReferenceId` kontroluje iba JSON Schema. Platne formátovaný, ale nevyriešený SRC identifikátor zostáva platný, kým 0.2B.2 nezavedie skutočný resolver záznamov; budúca kontrola existencie musí používať kategóriu `reference_integrity`. Spustenie z koreňa projektu:
 
 ```powershell
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v

@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 0.2B.1-close.1 - 2026-09-09
+
+Status: Completed
+
+### Changed
+
+- Testovacia bootstrap kontrola teraz pri chýbajúcom `jsonschema` alebo `referencing` zlyhá s nenulovým návratovým kódom a jasným inštalačným postupom namiesto výsledku `OK` so všetkými testami preskočenými.
+- Odstránená duplicitná ručná regex kontrola `sourceReferenceId`; formát kontroluje centrálna JSON Schema a kategória `reference_integrity` zostáva vyhradená pre skutočnú existenciu, stav a kompatibilitu referencie.
+- `BACKLOG.md` je zosúladený s dokončenými siedmimi Knowledge Core kontraktmi a obsahuje konkrétne pokračovanie pre 0.2B.2.
+- CDR-0008 Revision 1 uzatvára blokery KCI-0001, KCI-0002 a KCI-0004; opravuje sa aj zastaraný popis validačného runtime v dokumentácii.
+
+### Validated
+
+- Kompletných 122 unittest testov prešlo; simulácie chýbajúceho `jsonschema` aj `referencing` skončili nenulovo.
+- Phase 0.2B.1 je `COMPLETE`. Nasleduje Phase 0.2B.2 - Knowledge Catalogs, ktorá nebola začatá.
+- Schémy, katalógy, Accepted RFC a ADR sa v korektívnom uzatvorení nemenili.
+
 ## 0.2B.1.7 - 2026-09-08
 
 Status: Implemented / Review

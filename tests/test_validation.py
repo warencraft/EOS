@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 import unittest
 from pathlib import Path
 
@@ -36,12 +38,56 @@ def load_json(path: Path) -> dict:
         return json.load(handle)
 
 
+def setUpModule() -> None:
+    try:
+        EosValidator()
+    except MissingValidationDependencyError as exc:
+        raise RuntimeError(f"Validation test suite blocked: {exc}") from exc
+
+
 class ValidationTests(unittest.TestCase):
     def setUp(self) -> None:
-        try:
-            self.validator = EosValidator()
-        except MissingValidationDependencyError as exc:
-            raise unittest.SkipTest(f"BLOCKED missing runtime dependency: {exc}") from exc
+        self.validator = EosValidator()
+
+    def test_required_validation_dependencies_fail_closed(self) -> None:
+        simulation = """
+import builtins
+import sys
+import unittest
+
+blocked = sys.argv[1]
+real_import = builtins.__import__
+
+def guarded_import(name, globals=None, locals=None, fromlist=(), level=0):
+    if name == blocked or name.startswith(blocked + "."):
+        error = ModuleNotFoundError(f"No module named '{blocked}'")
+        error.name = blocked
+        raise error
+    return real_import(name, globals, locals, fromlist, level)
+
+builtins.__import__ = guarded_import
+suite = unittest.defaultTestLoader.discover("tests")
+result = unittest.TextTestRunner(verbosity=0).run(suite)
+raise SystemExit(0 if result.wasSuccessful() else 1)
+"""
+        for dependency in ["jsonschema", "referencing"]:
+            with self.subTest(dependency=dependency):
+                completed = subprocess.run(
+                    [sys.executable, "-c", simulation, dependency],
+                    cwd=ROOT,
+                    capture_output=True,
+                    text=True,
+                    timeout=30,
+                    check=False,
+                )
+                output = completed.stdout + completed.stderr
+                self.assertNotEqual(completed.returncode, 0, output)
+                self.assertIn(
+                    f"Missing required validation dependency '{dependency}'",
+                    output,
+                )
+                self.assertIn("python -m venv .venv", output)
+                self.assertIn("pip install -e .", output)
 
     def assertValid(self, record: dict, schema_id: str) -> None:
         result = self.validator.validate(record, schema_id)
@@ -973,11 +1019,22 @@ class ValidationTests(unittest.TestCase):
         )
         self.assertTrue(result.ok, [f"{e.path}: {e.message}" for e in result.errors])
 
-    def test_classification_preserves_existing_reference_error_category(self) -> None:
+    def test_classification_source_reference_format_is_schema_validation(self) -> None:
         record = load_json(INVALID_KNOWLEDGE_CORE_FIXTURES / "classification-invalid-source-reference-id-invalid.json")
         result = self.validator.validate(record, CLASSIFICATION_SCHEMA)
-        self.assertEqual({e.category for e in result.errors}, {"schema_validation", "reference_integrity"})
+        self.assertEqual({e.category for e in result.errors}, {"schema_validation"})
+        self.assertEqual(
+            {e.errorCode for e in result.errors},
+            {"schema_validation.pattern"},
+        )
         self.assertTrue(all(e.path == "$.sourceLinks[0].sourceReferenceId" for e in result.errors))
+
+    def test_well_formed_source_reference_defers_existence_validation(self) -> None:
+        record = load_json(VALID_KNOWLEDGE_CORE_FIXTURES / "classification-one-source-link-valid.json")
+        record["sourceLinks"][0]["sourceReferenceId"] = "SRC-999999"
+        result = self.validator.validate(record, CLASSIFICATION_SCHEMA)
+        self.assertTrue(result.ok, [f"{e.path}: {e.message}" for e in result.errors])
+        self.assertNotIn("reference_integrity", {e.category for e in result.errors})
 
 
     def test_property_record_schema_definition_is_valid(self) -> None:

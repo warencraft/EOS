@@ -1,5 +1,18 @@
 # ROADMAP
 
+## Míľnik 0.2B.1-close.1 - Knowledge Core Corrective Closure
+
+Cieľ:
+
+- zabezpečiť fail-closed testovací bootstrap pri chýbajúcom `jsonschema` alebo `referencing`,
+- ponechať formát `sourceReferenceId` výlučne v JSON Schema a oddeliť ho od budúcej kontroly existencie referencie,
+- uzavrieť blokery KCI-0001, KCI-0002 a KCI-0004 z CDR-0008,
+- zosúladiť backlog a validačnú dokumentáciu so skutočným stavom repozitára.
+
+Stav: Completed. Phase 0.2B.1 je `COMPLETE`.
+
+Nasleduje: `Phase 0.2B.2 - Knowledge Catalogs` v poradí Unit Catalog, Condition Type Catalog, Property Catalog, Classification Catalog a katalógovo uvedomelá integračná validácia. Phase 0.2B.2 nebola začatá.
+
 ## Míľnik 0.2B.1.7 - Observation Contract
 
 Cieľ:
@@ -10,7 +23,7 @@ Cieľ:
 - zachovať hranicu evidence voči PropertyRecord, Decision a Derived Result,
 - aplikovať existujúce vnorené významové invarianty bez duplikácie.
 
-Stav: implementačný rozsah Completed, kontrakt Review. Všetkých sedem plánovaných Knowledge Core kontraktov má technickú implementáciu; formálne uzatvorenie Phase 0.2B.1 je samostatný governance krok.
+Stav: implementačný rozsah Completed, kontrakt Review. Všetkých sedem plánovaných Knowledge Core kontraktov má technickú implementáciu a Phase 0.2B.1 bola po integračnom review a korektívnom kroku formálne uzatvorená.
 
 PROJECT/EXPERIMENT scope, neidentifikované subjekty, všeobecné a nečíselné výsledky, observation type taxonomy, actor/attachment, evidence verification, korekčný lifecycle, referenčná existencia a katalógová kompatibilita zostávajú deferred. Phase 0.2B.2 ani 0.2C nezačala.
 
@@ -138,7 +151,7 @@ Predbežný cieľ:
 - pripraviť pravidlá validácie,
 - vytvoriť testy štruktúry bez technických hodnôt.
 
-Stav: sedem plánovaných kontraktov technicky implementovaných; Phase 0.2B.1 čaká na formálne review a uzatvorenie. Phase 0.2B.2 nezačala.
+Stav: Phase 0.2B.1 `COMPLETE`; všetkých sedem plánovaných kontraktov je implementovaných, integračne skontrolovaných a korektívne uzatvorených. Phase 0.2B.2 nezačala.
 
 ## Fáza 0.2A - Foundation Data Contracts
 
@@ -204,7 +217,18 @@ Predbežný scope:
 - `PropertyRecord`,
 - `Observation`.
 
-Stav: sedem plánovaných kontraktov technicky implementovaných; Phase 0.2B.1 čaká na formálne review a uzatvorenie. Phase 0.2B.2 nezačala.
+Stav: `COMPLETE`. Sedem plánovaných kontraktov je technicky implementovaných a blokujúce findings z integračného review sú uzavreté.
+
+## Fáza 0.2B.2 - Knowledge Catalogs
+
+Cieľ:
+
+- navrhnúť katalógy v poradí Unit, Condition Type, Property a Classification,
+- zaviesť katalógovo uvedomelú kontrolu existencie, lifecycle a kompatibility referencií,
+- zapojiť katalógové pravidlá do PropertyRecord a Observation bez zmeny ich evidence/claim hranice,
+- používať iba fiktívne testovacie záznamy, kým nie sú schválené autoritatívne technické dáta.
+
+Stav: Next / Not started.
 
 ## Fáza 0.3 - Prvé prázdne záznamové šablóny
 
