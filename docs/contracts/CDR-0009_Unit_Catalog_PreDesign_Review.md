@@ -6,7 +6,7 @@
 **Review type:** Pre-design  
 **Phase:** 0.2B.2.1-prep  
 **Version:** 0.1  
-**Revision:** 0  
+**Revision:** 1
 **Status:** Review  
 **Document basis:** Accepted EOS architecture + completed Phase 0.2B.1
 
@@ -610,10 +610,51 @@ Implementácia však musí zachovať explicitné obmedzenia: v1 nie je dimension
 
 Výsledok je `READY WITH CONDITIONS`. Implementácia Unit Catalog v1 môže začať po splnení ôsmich podmienok v sekcii 29; nemusí čakať na Quantity Kind Catalog, Dimension Catalog ani conversion engine.
 
-## 31. Change History
+## 31. Implementation Outcome
+
+Phase 0.2B.2.1 implementovala odporúčaný úzky Unit Catalog Registry v1 bez zmeny Accepted architektúry.
+
+### Final v1 field model
+
+Povinné polia sú `id`, `schemaVersion`, `recordVersion`, `revision`, `status`, `createdAt`, `createdBy`, `updatedAt`, `updatedBy`, `sourceLinks`, `changeSummary`, `name` a `symbol`.
+
+Voliteľné polia sú `description`, `notes`, `replaces` a `replacedBy`.
+
+### Schema and metadata reuse
+
+Schéma je `schemas/catalogs/unit-catalog-entry.schema.json` s canonical ID `https://eos.local/schemas/catalogs/unit-catalog-entry.schema.json`.
+
+Existujúca `common/metadata.schema.json` je uzavretý objekt, preto sa nedá bezpečne rozšíriť cez jednoduché `allOf`. Implementácia použila standalone fallback predvídaný týmto review: jednotlivé metadata vlastnosti odkazujú cez property-level `$ref` na autoritatívne subschémy common metadata. `id`, `replaces` a `replacedBy` používajú centrálny UNT `$ref`. Nevznikol druhý metadata wrapper ani nový lifecycle model.
+
+Schema index registruje definíciu `unitCatalogEntry` a discovery kolekciu `unitCatalogEntries`. Kolekcia je integračná plocha schema indexu, nie samostatný Unit Catalog container contract.
+
+### Lifecycle and provenance
+
+Lifecycle používa existujúce `Draft`, `Review`, `Approved`, `Deprecated` a `Archived`. Root nemá `verificationStatus`.
+
+`sourceLinks` je štrukturálne povinné pole a používa existujúci SourceLink kontrakt. Draft môže mať prázdne pole. Existujúca EOS aplikačná source kontrola sa kompozične používa pre priamo validovanú aj cez index vnorenú Unit Catalog Entry; Review alebo Approved položka bez zdroja vracia `application_validation.source_links_required` s úplnou cestou.
+
+### Replacement links
+
+`replaces` a `replacedBy` sú voliteľné one-to-one referencie na UNT ID. Nevnárajú Unit objekt a nevytvárajú vlastníctvo. Existencia cieľa, self-reference a viac-záznamové cykly zostávajú catalog/reference-integrity validáciou; v1 kontroluje ich centralizovaný formát.
+
+### Validation and deferred semantics
+
+JSON Schema kontroluje uzavretý tvar, required polia, UNT, metadata, lifecycle enum, name, symbol, SourceLink a replacement formát. Aplikačná vrstva kontroluje existujúce lifecycle/source pravidlo. Catalog-aware vrstva bude neskôr kontrolovať existenciu, použiteľnosť, kolízie a replacement integritu.
+
+`quantityKind`, `quantityKindId`, `dimension`, `dimensionSignature`, `system`, `unitSystem`, `aliases`, `conversion`, `baseUnitId`, `scale`, `offset`, `conversionFactor`, `isSI`, `canonicalBaseUnit`, `equivalence`, `formula` a `expression` nie sú súčasťou v1 a neboli implementované.
+
+### Fixtures and tests
+
+Vzniklo 8 platných a 31 neplatných fiktívnych fixtures. Pätnásť nových unittest testov pokrýva definíciu schémy, refs, metadata, identitu, name, symbol, zámernú neunikátnosť symbolu, lifecycle, provenance, replacement väzby, deferred polia a schema index. Kompletná sada obsahuje 137 úspešných testov.
+
+Implementácia nemení pôvodný verdict ani odložené hranice.
+
+## 32. Change History
 
 | Date | Version | Revision | Author | Change |
 | --- | --- | --- | --- | --- |
 | 2026-09-09 | 0.1 | 0 | Codex | Initial pre-design review of Unit Catalog identity, lifecycle, provenance, semantic boundaries, Property Catalog dependency and implementation readiness. |
+| 2026-09-10 | 0.1 | 1 | Codex | Unit Catalog Entry v1 implemented with property-level common metadata reuse, centralized UNT references, lifecycle/source composition, fictional fixtures and regression tests; dimension, quantity-kind and conversion semantics remain deferred. |
 
 READY WITH CONDITIONS

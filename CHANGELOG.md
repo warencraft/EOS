@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## 0.2B.2.1 - 2026-09-10
+
+Status: Implemented / Review
+
+### Added
+
+- `schemas/catalogs/unit-catalog-entry.schema.json` pre samostatný Unit Catalog Entry Aggregate Root s centrálnym UNT ID, common metadata, name, symbol, provenance a voliteľnými replacement referenciami.
+- Registrácia `unitCatalogEntry` a `unitCatalogEntries` v schema indexe.
+- 8 platných a 31 neplatných fiktívnych fixtures a 15 unittest testov pre Unit Catalog v1.
+
+### Changed
+
+- CDR-0009 zvýšený na Revision 1 a doplnený o skutočný implementačný, validačný a testovací výsledok.
+- Existujúca validačná kompozícia aplikuje lifecycle/source pravidlo na Unit Catalog Entry priamo aj cez schema index.
+- Dokumentácia schém, testov, validátora a roadmap opisuje identitu, lifecycle, symbolovú neunikátnosť, provenance a replacement hranice.
+
+### Deferred / Not Added
+
+- Nevznikol quantity-kind, dimension, unit-system, alias, equivalence ani conversion model alebo engine.
+- Nevznikla žiadna reálna jednotka ani autoritatívna Unit Catalog populácia.
+- Celá Phase 0.2B.2 nie je dokončená. Nasleduje Phase 0.2B.2.2 - Condition Type Catalog, ktorá nebola začatá.
+
 ## 0.2B.1-close.1 - 2026-09-09
 
 Status: Completed

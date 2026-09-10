@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/schemas/catalogs/unit-catalog-entry.schema.json",
+  "title": "EOS Unit Catalog Entry",
+  "description": "Standalone Reference Catalog Entry with stable UNT identity, lifecycle, canonical name, canonical symbol, audit metadata and source provenance. Version 1 defines no quantity-kind, dimension, conversion, equivalence or unit-system semantics.",
+  "type": "object",
+  "required": [
+    "id",
+    "schemaVersion",
+    "recordVersion",
+    "revision",
+    "status",
+    "createdAt",
+    "createdBy",
+    "updatedAt",
+    "updatedBy",
+    "sourceLinks",
+    "changeSummary",
+    "name",
+    "symbol"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/UNT",
+      "description": "Stable identity of exactly one Unit Catalog Entry. It is not the unit symbol, name, dimension or conversion rule."
+    },
+    "schemaVersion": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/schemaVersion"
+    },
+    "recordVersion": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/recordVersion"
+    },
+    "revision": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/revision"
+    },
+    "status": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/status"
+    },
+    "createdAt": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/createdAt"
+    },
+    "createdBy": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/createdBy"
+    },
+    "updatedAt": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/updatedAt"
+    },
+    "updatedBy": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/updatedBy"
+    },
+    "sourceLinks": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/sourceLinks"
+    },
+    "changeSummary": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/changeSummary"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Canonical human-readable name. It is not identity and does not define machine-readable unit semantics."
+    },
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Canonical case-sensitive Unicode display symbol. It is not identity and is not globally unique."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional explanation that must not encode deferred dimension, quantity-kind or conversion semantics."
+    },
+    "notes": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/notes"
+    },
+    "replaces": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/UNT",
+      "description": "Optional reference to one older Unit Catalog Entry replaced by this entry."
+    },
+    "replacedBy": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/UNT",
+      "description": "Optional reference to one newer Unit Catalog Entry that replaces this entry."
+    }
+  },
+  "additionalProperties": false
+}

@@ -77,6 +77,7 @@ MEASUREMENT_QUALITY_SCHEMA_ID = "https://eos.local/schemas/knowledge-core/measur
 CONDITION_SCHEMA_ID = "https://eos.local/schemas/knowledge-core/condition.schema.json"
 PROPERTY_RECORD_SCHEMA_ID = "https://eos.local/schemas/knowledge-core/property-record.schema.json"
 OBSERVATION_SCHEMA_ID = "https://eos.local/schemas/knowledge-core/observation.schema.json"
+UNIT_CATALOG_ENTRY_SCHEMA_ID = "https://eos.local/schemas/catalogs/unit-catalog-entry.schema.json"
 INDEX_SCHEMA_ID = "https://eos.local/schemas/index.schema.json"
 
 EMBEDDED_CONTRACT_FIELDS: dict[str, dict[str, tuple[str, bool]]] = {
@@ -103,6 +104,7 @@ EMBEDDED_CONTRACT_FIELDS: dict[str, dict[str, tuple[str, bool]]] = {
     INDEX_SCHEMA_ID: {
         "propertyRecords": (PROPERTY_RECORD_SCHEMA_ID, True),
         "observations": (OBSERVATION_SCHEMA_ID, True),
+        "unitCatalogEntries": (UNIT_CATALOG_ENTRY_SCHEMA_ID, True),
     },
 }
 
@@ -387,6 +389,13 @@ class EosValidator:
         elif schema_id == MEASUREMENT_QUALITY_SCHEMA_ID:
             self._validate_measurement_quality_rules(instance, result, path=path)
         elif schema_id == OBSERVATION_SCHEMA_ID:
+            self._validate_source_links_rule(
+                instance,
+                result,
+                has_verifiable_claims=True,
+                path=path,
+            )
+        elif schema_id == UNIT_CATALOG_ENTRY_SCHEMA_ID:
             self._validate_source_links_rule(
                 instance,
                 result,

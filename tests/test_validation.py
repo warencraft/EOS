@@ -13,6 +13,8 @@ ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "tests" / "fixtures" / "valid"
 VALID_KNOWLEDGE_CORE_FIXTURES = FIXTURES / "knowledge-core"
 INVALID_KNOWLEDGE_CORE_FIXTURES = ROOT / "tests" / "fixtures" / "invalid" / "knowledge-core"
+VALID_CATALOG_FIXTURES = FIXTURES / "catalogs"
+INVALID_CATALOG_FIXTURES = ROOT / "tests" / "fixtures" / "invalid" / "catalogs"
 
 
 SOURCE_SCHEMA = "https://eos.local/schemas/source-reference.schema.json"
@@ -26,6 +28,7 @@ CONDITION_SCHEMA = "https://eos.local/schemas/knowledge-core/condition.schema.js
 CLASSIFICATION_SCHEMA = "https://eos.local/schemas/knowledge-core/classification.schema.json"
 PROPERTY_RECORD_SCHEMA = "https://eos.local/schemas/knowledge-core/property-record.schema.json"
 OBSERVATION_SCHEMA = "https://eos.local/schemas/knowledge-core/observation.schema.json"
+UNIT_CATALOG_ENTRY_SCHEMA = "https://eos.local/schemas/catalogs/unit-catalog-entry.schema.json"
 
 
 def load_fixture(name: str) -> dict:
@@ -1430,6 +1433,189 @@ raise SystemExit(0 if result.wasSuccessful() else 1)
             ),
             {(e.errorCode, e.path) for e in result.errors},
         )
+
+    def test_unit_catalog_entry_schema_definition_is_valid(self) -> None:
+        result = self.validator.validate_schema_definition(UNIT_CATALOG_ENTRY_SCHEMA)
+        self.assertTrue(result.ok, [f"{e.schemaPath}: {e.message}" for e in result.errors])
+
+    def test_valid_unit_catalog_fixtures_pass(self) -> None:
+        files = sorted(VALID_CATALOG_FIXTURES.glob("unit-*-valid.json"))
+        self.assertEqual(len(files), 8)
+        for path in files:
+            with self.subTest(path=path.name):
+                self.assertValid(load_json(path), UNIT_CATALOG_ENTRY_SCHEMA)
+
+    def test_invalid_unit_catalog_fixtures_fail(self) -> None:
+        files = sorted(INVALID_CATALOG_FIXTURES.glob("unit-*-invalid.json"))
+        self.assertEqual(len(files), 31)
+        for path in files:
+            with self.subTest(path=path.name):
+                self.assertInvalid(load_json(path), UNIT_CATALOG_ENTRY_SCHEMA)
+
+    def test_unit_catalog_entry_reuses_central_unt_and_common_metadata(self) -> None:
+        schema = self.validator.registry.by_id[UNIT_CATALOG_ENTRY_SCHEMA]
+        self.assertEqual(
+            schema["properties"]["id"]["$ref"],
+            "https://eos.local/schemas/common/identifiers.schema.json#/$defs/UNT",
+        )
+        metadata_fields = {
+            "schemaVersion", "recordVersion", "revision", "status",
+            "createdAt", "createdBy", "updatedAt", "updatedBy",
+            "sourceLinks", "changeSummary", "notes",
+        }
+        for field in metadata_fields:
+            with self.subTest(field=field):
+                self.assertTrue(
+                    schema["properties"][field]["$ref"].startswith(
+                        "https://eos.local/schemas/common/metadata.schema.json#/properties/"
+                    )
+                )
+
+    def test_unit_catalog_entry_source_link_ref_resolves(self) -> None:
+        valid = load_json(VALID_CATALOG_FIXTURES / "unit-source-links-valid.json")
+        self.assertValid(valid, UNIT_CATALOG_ENTRY_SCHEMA)
+        invalid = load_json(INVALID_CATALOG_FIXTURES / "unit-malformed-source-link-invalid.json")
+        result = self.validator.validate(invalid, UNIT_CATALOG_ENTRY_SCHEMA)
+        self.assertIn(
+            ("schema_validation.required", "$.sourceLinks[0].verificationStatus"),
+            {(e.errorCode, e.path) for e in result.errors},
+        )
+
+    def test_unit_catalog_entry_name_is_required_and_nonempty(self) -> None:
+        cases = {
+            "unit-missing-name-invalid.json": "schema_validation.required",
+            "unit-empty-name-invalid.json": "schema_validation.minLength",
+            "unit-name-wrong-type-invalid.json": "schema_validation.type",
+        }
+        for name, code in cases.items():
+            with self.subTest(name=name):
+                result = self.validator.validate(load_json(INVALID_CATALOG_FIXTURES / name), UNIT_CATALOG_ENTRY_SCHEMA)
+                self.assertIn((code, "$.name"), {(e.errorCode, e.path) for e in result.errors})
+
+    def test_unit_catalog_entry_symbol_is_required_and_nonempty(self) -> None:
+        cases = {
+            "unit-missing-symbol-invalid.json": "schema_validation.required",
+            "unit-empty-symbol-invalid.json": "schema_validation.minLength",
+            "unit-symbol-wrong-type-invalid.json": "schema_validation.type",
+        }
+        for name, code in cases.items():
+            with self.subTest(name=name):
+                result = self.validator.validate(load_json(INVALID_CATALOG_FIXTURES / name), UNIT_CATALOG_ENTRY_SCHEMA)
+                self.assertIn((code, "$.symbol"), {(e.errorCode, e.path) for e in result.errors})
+
+    def test_unit_catalog_entry_symbol_is_not_identity_or_structurally_unique(self) -> None:
+        first = load_json(VALID_CATALOG_FIXTURES / "unit-minimal-draft-valid.json")
+        second = load_json(VALID_CATALOG_FIXTURES / "unit-duplicate-symbol-valid.json")
+        self.assertNotEqual(first["id"], second["id"])
+        self.assertEqual(first["symbol"], second["symbol"])
+        self.assertValid({"unitCatalogEntries": [first, second]}, INDEX_SCHEMA)
+
+    def test_unit_catalog_entry_optional_description_and_notes(self) -> None:
+        self.assertValid(
+            load_json(VALID_CATALOG_FIXTURES / "unit-description-valid.json"),
+            UNIT_CATALOG_ENTRY_SCHEMA,
+        )
+        self.assertValid(
+            load_json(VALID_CATALOG_FIXTURES / "unit-notes-valid.json"),
+            UNIT_CATALOG_ENTRY_SCHEMA,
+        )
+
+    def test_unit_catalog_entry_replacement_links_use_unt(self) -> None:
+        self.assertValid(
+            load_json(VALID_CATALOG_FIXTURES / "unit-replaces-valid.json"),
+            UNIT_CATALOG_ENTRY_SCHEMA,
+        )
+        self.assertValid(
+            load_json(VALID_CATALOG_FIXTURES / "unit-replaced-by-valid.json"),
+            UNIT_CATALOG_ENTRY_SCHEMA,
+        )
+        for name, path in [
+            ("unit-invalid-replaces-invalid.json", "$.replaces"),
+            ("unit-invalid-replaced-by-invalid.json", "$.replacedBy"),
+        ]:
+            with self.subTest(name=name):
+                result = self.validator.validate(load_json(INVALID_CATALOG_FIXTURES / name), UNIT_CATALOG_ENTRY_SCHEMA)
+                self.assertIn(
+                    ("schema_validation.pattern", path),
+                    {(e.errorCode, e.path) for e in result.errors},
+                )
+
+    def test_unit_catalog_entry_rejects_deferred_fields(self) -> None:
+        base = load_json(VALID_CATALOG_FIXTURES / "unit-minimal-draft-valid.json")
+        fields = {
+            "quantityKind": "fictional",
+            "quantityKindId": "fictional",
+            "dimension": "fictional",
+            "dimensionSignature": {},
+            "system": "fictional",
+            "unitSystem": "fictional",
+            "aliases": ["fictional"],
+            "conversion": {},
+            "baseUnitId": "UNT-900002",
+            "scale": 2,
+            "offset": 2,
+            "conversionFactor": 2,
+            "isSI": False,
+            "canonicalBaseUnit": "UNT-900002",
+            "equivalence": [],
+            "formula": "fictional",
+            "expression": "fictional",
+        }
+        for field, value in fields.items():
+            with self.subTest(field=field):
+                result = self.validator.validate({**base, field: value}, UNIT_CATALOG_ENTRY_SCHEMA)
+                self.assertIn(
+                    ("schema_validation.additionalProperties", f"$.{field}"),
+                    {(e.errorCode, e.path) for e in result.errors},
+                )
+
+    def test_unit_catalog_entry_rejects_root_verification_status_and_unit_id(self) -> None:
+        base = load_json(VALID_CATALOG_FIXTURES / "unit-minimal-draft-valid.json")
+        for field, value in {
+            "verificationStatus": "Approved",
+            "unitId": "UNT-900001",
+        }.items():
+            with self.subTest(field=field):
+                result = self.validator.validate({**base, field: value}, UNIT_CATALOG_ENTRY_SCHEMA)
+                self.assertIn(
+                    ("schema_validation.additionalProperties", f"$.{field}"),
+                    {(e.errorCode, e.path) for e in result.errors},
+                )
+
+    def test_unit_catalog_entry_lifecycle_uses_record_status(self) -> None:
+        draft = load_json(VALID_CATALOG_FIXTURES / "unit-minimal-draft-valid.json")
+        sourced = load_json(VALID_CATALOG_FIXTURES / "unit-source-links-valid.json")["sourceLinks"]
+        for status in ["Draft", "Review", "Approved", "Deprecated", "Archived"]:
+            with self.subTest(status=status):
+                record = {**draft, "status": status}
+                if status in {"Review", "Approved"}:
+                    record["sourceLinks"] = sourced
+                self.assertValid(record, UNIT_CATALOG_ENTRY_SCHEMA)
+        self.assertInvalid({**draft, "status": "Active"}, UNIT_CATALOG_ENTRY_SCHEMA)
+
+    def test_unit_catalog_entry_source_lifecycle_rule_is_composed(self) -> None:
+        draft = load_json(VALID_CATALOG_FIXTURES / "unit-minimal-draft-valid.json")
+        self.assertValid(draft, UNIT_CATALOG_ENTRY_SCHEMA)
+        review = {**draft, "status": "Review"}
+        direct = self.validator.validate(review, UNIT_CATALOG_ENTRY_SCHEMA)
+        self.assertIn(
+            ("application_validation.source_links_required", "$.sourceLinks"),
+            {(e.errorCode, e.path) for e in direct.errors},
+        )
+        nested = self.validator.validate({"unitCatalogEntries": [review]}, INDEX_SCHEMA)
+        self.assertIn(
+            ("application_validation.source_links_required", "$.unitCatalogEntries[0].sourceLinks"),
+            {(e.errorCode, e.path) for e in nested.errors},
+        )
+
+    def test_schema_index_resolves_unit_catalog_entry(self) -> None:
+        schema = self.validator.registry.by_id[INDEX_SCHEMA]
+        self.assertEqual(
+            schema["$defs"]["unitCatalogEntry"]["$ref"],
+            UNIT_CATALOG_ENTRY_SCHEMA,
+        )
+        valid = load_json(VALID_CATALOG_FIXTURES / "unit-minimal-draft-valid.json")
+        self.assertValid({"unitCatalogEntries": [valid]}, INDEX_SCHEMA)
 
 
 if __name__ == "__main__":

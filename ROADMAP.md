@@ -1,5 +1,20 @@
 # ROADMAP
 
+## Míľnik 0.2B.2.1 - Unit Catalog Contract
+
+Cieľ:
+
+- implementovať Unit Catalog ako prvý Reference Catalog kontrakt,
+- zaviesť samostatný Unit Catalog Entry Aggregate Root so stabilným `UNT-xxxxxx`,
+- znovu použiť common entity metadata, lifecycle a SourceLink pravidlá,
+- oddeliť identitu od name, symbolu a semantic equivalence,
+- ponechať quantity kind, dimension, unit system, aliasy a conversion mimo v1,
+- používať iba fiktívne validačné fixtures bez reálnych jednotiek.
+
+Stav: `COMPLETE`. Kompletná sada má 137 úspešných testov.
+
+Nasleduje: `Phase 0.2B.2.2 - Condition Type Catalog`. Tento míľnik nebol začatý a celá Phase 0.2B.2 zostáva rozpracovaná.
+
 ## Míľnik 0.2B.1-close.1 - Knowledge Core Corrective Closure
 
 Cieľ:

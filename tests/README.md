@@ -1,5 +1,17 @@
 # tests
 
+## Míľnik 0.2B.2.1 - Unit Catalog v1
+
+Unit Catalog Entry má 8 platných a 31 neplatných fiktívnych fixtures v priečinkoch `fixtures/valid/catalogs/` a `fixtures/invalid/catalogs/`. Nepredstavujú reálne jednotky ani autoritatívnu populáciu katalógu.
+
+Pätnásť nových unittest testov overuje Draft 2020-12 schému, centrálny UNT a property-level common metadata refs, SourceLink, povinný name a symbol, zámernú neunikátnosť symbolu, existujúci lifecycle, source pravidlo pri priamej aj indexovej validácii, replacement UNT formát, odmietnutie root verificationStatus a všetkých deferred polí a registráciu v schema indexe.
+
+Kompletná sada má 137 testov. Unit Catalog v1 nekontroluje existenciu UNT záznamov, symbolové kolízie, replacement cykly, quantity-kind alebo dimension kompatibilitu ani konverzie. Spustenie z koreňa projektu:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
 ## Míľnik 0.2B.1.7 - Observation Contract
 
 Observation má 10 platných a 45 neplatných fiktívnych fixtures v Knowledge Core priečinkoch. Pätnásť nových `unittest` testov overuje Draft 2020-12 schému, centrálny OBS a PRP formát, všetkých osem povolených subject ID rodín, GLOBAL/JOB podmienky, Quantity/ValueRange discriminator, odmietnutie PropertyRecord a arbitrary payloadu, povinný `observedAt`, spoločné metadata a registráciu v schema indexe.

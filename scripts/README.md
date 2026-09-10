@@ -1,5 +1,11 @@
 # scripts
 
+## Míľnik 0.2B.2.1 - Unit Catalog v1
+
+Validátor registruje Unit Catalog Entry ako samostatný kontrakt a ako položku `unitCatalogEntries` v schema indexe. Existujúca kompozičná mapa aplikuje rovnaké lifecycle/source pravidlo na priamy záznam aj na záznam vnorený cez index: Draft môže mať prázdne `sourceLinks`, kým Review alebo Approved bez zdroja vracia `application_validation.source_links_required` s presnou cestou.
+
+JSON Schema kontroluje UNT formát, common metadata, lifecycle enum, povinný name a symbol, SourceLink, replacement UNT referencie a zákaz neznámych alebo deferred polí. Validátor nekontroluje existenciu UNT cieľov, symbolovú unikátnosť, semantic equivalence, quantity kind, dimension, conversion ani replacement cykly.
+
 ## Míľnik 0.2B.1.7 - Observation Contract
 
 Existujúca kompozičná mapa validátora registruje Observation ako rodiča Quantity, ValueRange, MeasurementQuality a poľa Conditions. Rovnaké pravidlá sa tým aplikujú na top-level Observation aj na Observation vnorenú cez schema index, bez kopírovania významovej logiky.

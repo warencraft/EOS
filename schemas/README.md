@@ -1,5 +1,24 @@
 # schemas
 
+## Míľnik 0.2B.2.1 - Unit Catalog v1
+
+Prvý Reference Catalog kontrakt je `Unit Catalog Entry`, samostatný Catalog Entry Aggregate Root:
+
+- schéma: `catalogs/unit-catalog-entry.schema.json`,
+- schema id: `https://eos.local/schemas/catalogs/unit-catalog-entry.schema.json`,
+- discovery: `index.schema.json#/$defs/unitCatalogEntry`, kolekcia `unitCatalogEntries`,
+- stabilné `id` používa centrálny `UNT-xxxxxx`,
+- povinné sú common entity metadata, `name` a `symbol`,
+- voliteľné sú `description`, `notes`, `replaces` a `replacedBy`.
+
+Unit Catalog je Reference Catalog. `UNT` identifikuje položku, nie názov alebo symbol. Symbol je case-sensitive Unicode display metadata a nie je globálne unikátny. `unitId` zostáva referenčným poľom Quantity a ValueRange; nie je identitou Unit Catalog Entry.
+
+Metadata obmedzenia sa znovu používajú property-level `$ref` odkazmi na `common/metadata.schema.json`, pretože uzavretý common metadata objekt nemožno priamo rozšíriť o katalógové polia. Lifecycle používa `Draft`, `Review`, `Approved`, `Deprecated` a `Archived`; root nemá `verificationStatus`. `sourceLinks` je required, Draft môže byť prázdny a Review/Approved bez zdroja je aplikačne neplatný.
+
+`replaces` a `replacedBy` sú priame one-to-one UNT referencie bez vnoreného vlastníctva. Existencia cieľa a cykly zostávajú budúcej catalog-aware/reference-integrity validácii.
+
+V1 neobsahuje quantity kind, dimension, unit system, aliasy, ekvivalenciu ani conversion metadata alebo engine. Nevznikla žiadna reálna Unit Catalog položka; fixtures sú iba fiktívne validačné príklady. Phase 0.2B.2.1 je dokončená, celá Phase 0.2B.2 zostáva rozpracovaná.
+
 ## Míľnik 0.2B.1.7 - Observation Contract
 
 Siedmy Knowledge Core Contract je `Observation`, first-class evidence Entity a Aggregate Root. Počiatočný profil je zámerne obmedzený na jedno číselné pozorovanie jednej vlastnosti jedného EOS subjektu:

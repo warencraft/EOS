@@ -16,7 +16,8 @@
     "condition": { "$ref": "https://eos.local/schemas/knowledge-core/condition.schema.json" },
     "classification": { "$ref": "https://eos.local/schemas/knowledge-core/classification.schema.json" },
     "propertyRecord": { "$ref": "https://eos.local/schemas/knowledge-core/property-record.schema.json" },
-    "observation": { "$ref": "https://eos.local/schemas/knowledge-core/observation.schema.json" }
+    "observation": { "$ref": "https://eos.local/schemas/knowledge-core/observation.schema.json" },
+    "unitCatalogEntry": { "$ref": "https://eos.local/schemas/catalogs/unit-catalog-entry.schema.json" }
   },
   "properties": {
     "sourceReferences": {
@@ -58,6 +59,10 @@
     "observations": {
       "type": "array",
       "items": { "$ref": "#/$defs/observation" }
+    },
+    "unitCatalogEntries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/unitCatalogEntry" }
     }
   },
   "additionalProperties": false
