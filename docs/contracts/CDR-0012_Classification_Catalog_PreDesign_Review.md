@@ -6,7 +6,7 @@ Contract: Classification Catalog
 Review type: Pre-design  
 Phase: 0.2B.2.4-prep  
 Version: 0.1  
-Revision: 0  
+Revision: 1
 Status: Review  
 Document basis: Accepted EOS architecture + implemented Unit, Condition Type and Property catalogs
 
@@ -560,10 +560,51 @@ Implementácia je bezpečná iba ako úzky **system-neutral** kontrakt s povinn�
 
 Po splnení podmienok v sekcii 33 môže implementácia jednoduchého entry kontraktu začať. Catalog-aware validácia a reálna populácia katalógu musia zostať samostatnými následnými míľnikmi.
 
-## 35. Change History
+## 35. Implementation Outcome
+
+Phase 0.2B.2.4 implementovala odporúčaný Classification Catalog Entry v1 ako samostatný system-neutral Reference Catalog Entry Aggregate Root bez zmeny Accepted architektúry.
+
+### Final v1 field model
+
+Povinné polia sú `id`, `schemaVersion`, `recordVersion`, `revision`, `status`, `createdAt`, `createdBy`, `updatedAt`, `updatedBy`, `sourceLinks`, `changeSummary`, `name` a `description`.
+
+Voliteľné polia sú `notes`, `replaces` a `replacedBy`.
+
+`name` je neprázdny canonical human-readable label, ale nie identita ani schema-level unique hodnota. `description` je povinná neprázdna autoritatívna textová definícia CLS významu. Ani jedno pole nie je machine-readable náhradou za klasifikačný systém, external code, hierarchiu, ekvivalenciu alebo target applicability.
+
+### Schema and metadata reuse
+
+Schéma je `schemas/catalogs/classification-catalog-entry.schema.json` s canonical ID `https://eos.local/schemas/catalogs/classification-catalog-entry.schema.json`.
+
+Implementácia používa property-level `$ref` na autoritatívne polia `common/metadata.schema.json`. `id`, `replaces` a `replacedBy` používajú existujúci centrálny CLS `$ref`; nevznikol lokálny regex ani nový identifikátor. Schema index registruje definíciu `classificationCatalogEntry` a discovery kolekciu `classificationCatalogEntries`. Kolekcia nie je samostatný catalog-container ani persistence contract.
+
+### Lifecycle, provenance and replacement links
+
+Lifecycle používa existujúce hodnoty `Draft`, `Review`, `Approved`, `Deprecated` a `Archived`. Root nemá `verificationStatus`.
+
+`sourceLinks` je štrukturálne povinné pole a znovu používa existujúci SourceLink kontrakt. Draft môže mať prázdne pole. Existujúca EOS aplikačná source kontrola sa kompozične používa pri priamej aj indexom vnorenej validácii; Review alebo Approved položka bez definition provenance vracia `application_validation.source_links_required` s úplnou cestou.
+
+Catalog Entry `sourceLinks` dokazujú pôvod definície CLS významu. `Classification.sourceLinks` dokazujú pôvod konkrétneho priradenia classification rodičovi. Tieto provenance plochy sa nezlučujú ani navzájom nenahrádzajú.
+
+`replaces` a `replacedBy` sú voliteľné priame CLS referencie. Nemodelujú hierarchiu ani ekvivalenciu. Existencia cieľa, self-reference, obojsmerná konzistencia a cykly zostávajú reference-integrity a catalog-aware validáciou.
+
+### Deferred validation and semantics
+
+V1 nemá `classificationSystem`, `classificationSystemId`, system version, external code, hierarchy, parent väzby, path, level, aliases, localization, equivalence, broader/narrower vzťahy ani target-entity restrictions. System-neutral kontrakt sa nesmie vydávať za externú klasifikačnú interoperabilitu.
+
+Validátor zmenil iba registráciu nového kontraktu do existujúcej lifecycle/source kompozície. Nekontroluje existenciu `Classification.classificationId`, použiteľnosť CLS položky, assignment multiplicity, entity applicability ani konzistenciu definition a assignment provenance. Catalog-aware/reference-integrity integrácia zostáva nasledujúcim samostatným review míľnikom.
+
+### Fixtures and tests
+
+Vzniklo 9 platných a 34 neplatných fiktívnych fixtures. Štrnásť nových unittest testov pokrýva definíciu schémy, centrálny CLS a common metadata refs, SourceLink, povinný name a description, zámernú neunikátnosť name, lifecycle/provenance, replacement CLS odkazy, odmietnutie deferred polí, schema index a neprítomnosť catalog-aware validácie embedded Classification.
+
+Kompletná sada obsahuje 182 úspešných testov. Nevznikla žiadna reálna CLS položka, Classification System model, hierarchia, ekvivalencia ani catalog-aware consumer validácia. Implementácia nemení pôvodný verdict ani odložené hranice.
+
+## 36. Change History
 
 | Date | Version | Revision | Author | Change |
 | --- | --- | --- | --- | --- |
 | 2026-09-24 | 0.1 | 0 | Codex | Initial pre-design review of Classification Catalog role, CLS identity, system and code boundary, hierarchy, provenance, lifecycle and implementation readiness. |
+| 2026-09-24 | 0.1 | 1 | Codex | Classification Catalog Entry v1 implemented as a system-neutral Reference Catalog Aggregate Root with common metadata reuse, definition provenance, CLS replacement links, fictional fixtures and regression tests. |
 
 READY WITH CONDITIONS

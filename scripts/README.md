@@ -1,5 +1,11 @@
 # scripts
 
+## Míľnik 0.2B.2.4 - Classification Catalog v1
+
+Validátor registruje Classification Catalog Entry ako samostatný kontrakt a ako položku `classificationCatalogEntries` v schema indexe. Existujúca kompozičná mapa aplikuje rovnaké lifecycle/source pravidlo na priamu aj indexom vnorenú položku: Draft môže mať prázdne `sourceLinks`, kým Review alebo Approved bez definition provenance vracia `application_validation.source_links_required` s presnou cestou.
+
+JSON Schema kontroluje CLS, common metadata, lifecycle, povinný name a description, SourceLink, replacement CLS odkazy a zákaz neznámych alebo deferred polí. Validátor nekontroluje existenciu alebo použiteľnosť CLS cieľov, kompatibilitu embedded Classification s rodičom, classification systems, external codes, hierarchy, aliases, equivalence ani assignment multiplicity. Nevznikla nová validačná vetva; pridaná bola iba registrácia do existujúcej kompozície.
+
 ## Míľnik 0.2B.2.3 - Property Catalog v1
 
 Validátor registruje Property Catalog Entry ako samostatný kontrakt a ako položku `propertyCatalogEntries` v schema indexe. Existujúca kompozičná mapa aplikuje rovnaké lifecycle/source pravidlo na priamu aj indexom vnorenú položku: Draft môže mať prázdne `sourceLinks`, kým Review alebo Approved bez provenance vracia `application_validation.source_links_required` s presnou cestou.

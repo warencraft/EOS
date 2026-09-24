@@ -80,6 +80,7 @@ OBSERVATION_SCHEMA_ID = "https://eos.local/schemas/knowledge-core/observation.sc
 UNIT_CATALOG_ENTRY_SCHEMA_ID = "https://eos.local/schemas/catalogs/unit-catalog-entry.schema.json"
 CONDITION_TYPE_CATALOG_ENTRY_SCHEMA_ID = "https://eos.local/schemas/catalogs/condition-type-catalog-entry.schema.json"
 PROPERTY_CATALOG_ENTRY_SCHEMA_ID = "https://eos.local/schemas/catalogs/property-catalog-entry.schema.json"
+CLASSIFICATION_CATALOG_ENTRY_SCHEMA_ID = "https://eos.local/schemas/catalogs/classification-catalog-entry.schema.json"
 INDEX_SCHEMA_ID = "https://eos.local/schemas/index.schema.json"
 
 EMBEDDED_CONTRACT_FIELDS: dict[str, dict[str, tuple[str, bool]]] = {
@@ -109,6 +110,7 @@ EMBEDDED_CONTRACT_FIELDS: dict[str, dict[str, tuple[str, bool]]] = {
         "unitCatalogEntries": (UNIT_CATALOG_ENTRY_SCHEMA_ID, True),
         "conditionTypeCatalogEntries": (CONDITION_TYPE_CATALOG_ENTRY_SCHEMA_ID, True),
         "propertyCatalogEntries": (PROPERTY_CATALOG_ENTRY_SCHEMA_ID, True),
+        "classificationCatalogEntries": (CLASSIFICATION_CATALOG_ENTRY_SCHEMA_ID, True),
     },
 }
 
@@ -414,6 +416,13 @@ class EosValidator:
                 path=path,
             )
         elif schema_id == PROPERTY_CATALOG_ENTRY_SCHEMA_ID:
+            self._validate_source_links_rule(
+                instance,
+                result,
+                has_verifiable_claims=True,
+                path=path,
+            )
+        elif schema_id == CLASSIFICATION_CATALOG_ENTRY_SCHEMA_ID:
             self._validate_source_links_rule(
                 instance,
                 result,

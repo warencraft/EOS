@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## 0.2B.2.4 - 2026-09-24
+
+Status: Implemented / Review
+
+### Added
+
+- `schemas/catalogs/classification-catalog-entry.schema.json` pre samostatný system-neutral Reference Catalog Entry Aggregate Root s centrálnym CLS ID, common metadata, povinným názvom a definíciou a definition provenance.
+- Registrácia `classificationCatalogEntry` a `classificationCatalogEntries` v schema indexe.
+- 9 platných a 34 neplatných fiktívnych fixtures a 14 unittest testov pre Classification Catalog v1.
+
+### Changed
+
+- CDR-0012 zvýšený na Revision 1 a doplnený o skutočný implementačný, validačný a testovací výsledok.
+- Existujúca validačná kompozícia aplikuje lifecycle/source pravidlo na Classification Catalog Entry priamo aj cez schema index.
+- Dokumentácia schém, testov, validátora a roadmap opisuje Reference Catalog rolu, CLS identitu a hranicu definition/assignment provenance.
+
+### Deferred / Not Added
+
+- Nevznikol Classification System model, external-code binding, hierarchy, alias, equivalence, target-entity restriction ani catalog-aware/reference-integrity validácia embedded Classification.
+- Nevznikla žiadna reálna CLS položka a Accepted architektúra zostala nezmenená.
+- Celá Phase 0.2B.2 nie je dokončená. Nasleduje `Phase 0.2B.2.5-prep - Catalog-aware / Reference-integrity Integration Review`, ktorá nebola začatá.
+
 ## 0.2B.2.3 - 2026-09-24
 
 Status: Implemented / Review

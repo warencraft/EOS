@@ -1,5 +1,22 @@
 # schemas
 
+## Míľnik 0.2B.2.4 - Classification Catalog v1
+
+Classification Catalog je Reference Catalog. Jeho položka je samostatný Catalog Entry Aggregate Root:
+
+- schéma: `catalogs/classification-catalog-entry.schema.json`,
+- schema id: `https://eos.local/schemas/catalogs/classification-catalog-entry.schema.json`,
+- discovery: `index.schema.json#/$defs/classificationCatalogEntry`, kolekcia `classificationCatalogEntries`,
+- identita: centrálne `CLS-xxxxxx`,
+- povinné sú common metadata, `name`, `description` a `sourceLinks`,
+- voliteľné sú `notes`, `replaces` a `replacedBy`.
+
+`name` je canonical human-readable label, nie identita ani globálne unikátna hodnota. `description` je autoritatívna textová definícia CLS významu, ale nie machine-readable taxonómia. Metadata, lifecycle a SourceLink sa používajú rovnako ako pri ostatných katalógoch: Draft môže mať prázdne `sourceLinks`, kým Review/Approved bez definition provenance je aplikačne neplatný. Root nemá `verificationStatus`; replacement odkazy používajú iba CLS.
+
+Catalog Entry `sourceLinks` nesú provenance definície. Embedded `Classification.sourceLinks` nesú provenance konkrétneho priradenia. V1 je system-neutral: nemá Classification System model, external code, hierarchiu, aliases, equivalence ani target-entity restrictions. Catalog-aware kontrola existencie a použiteľnosti CLS zostáva odložená a nevznikla žiadna reálna CLS položka.
+
+Phase 0.2B.2.4 je dokončená. Celá Phase 0.2B.2 zostáva rozpracovaná; nasleduje `Phase 0.2B.2.5-prep - Catalog-aware / Reference-integrity Integration Review`.
+
 ## Míľnik 0.2B.2.3 - Property Catalog v1
 
 Property Catalog je Knowledge Catalog. Jeho položka je samostatný Catalog Entry Aggregate Root:

@@ -1,5 +1,22 @@
 # ROADMAP
 
+## Míľnik 0.2B.2.4 - Classification Catalog Contract
+
+Cieľ:
+
+- implementovať Classification Catalog ako Reference Catalog,
+- zaviesť samostatný Classification Catalog Entry Aggregate Root so stabilným `CLS-xxxxxx`,
+- znovu použiť common entity metadata, lifecycle a SourceLink pravidlá,
+- vyžadovať neprázdny human-readable `name` a autoritatívny textový `description`,
+- oddeliť definition provenance katalógovej položky od assignment provenance embedded Classification,
+- podporiť iba priame CLS replacement odkazy,
+- ponechať classification system, external code, hierarchy, aliases, equivalence, target applicability a catalog-aware validáciu mimo v1,
+- používať iba fiktívne validačné fixtures bez reálnych classifications.
+
+Stav: `COMPLETE`. Kompletná sada má 182 úspešných testov.
+
+Nasleduje: `Phase 0.2B.2.5-prep - Catalog-aware / Reference-integrity Integration Review`. Tento míľnik nebol začatý a celá Phase 0.2B.2 zostáva rozpracovaná.
+
 ## Míľnik 0.2B.2.3 - Property Catalog Contract
 
 Cieľ:

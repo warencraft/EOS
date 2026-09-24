@@ -31,6 +31,7 @@ OBSERVATION_SCHEMA = "https://eos.local/schemas/knowledge-core/observation.schem
 UNIT_CATALOG_ENTRY_SCHEMA = "https://eos.local/schemas/catalogs/unit-catalog-entry.schema.json"
 CONDITION_TYPE_CATALOG_ENTRY_SCHEMA = "https://eos.local/schemas/catalogs/condition-type-catalog-entry.schema.json"
 PROPERTY_CATALOG_ENTRY_SCHEMA = "https://eos.local/schemas/catalogs/property-catalog-entry.schema.json"
+CLASSIFICATION_CATALOG_ENTRY_SCHEMA = "https://eos.local/schemas/catalogs/classification-catalog-entry.schema.json"
 
 
 def load_fixture(name: str) -> dict:
@@ -2077,6 +2078,223 @@ raise SystemExit(0 if result.wasSuccessful() else 1)
         observation["propertyId"] = "PRP-999999"
         observation["quantity"]["unitId"] = "UNT-999999"
         self.assertValid(observation, OBSERVATION_SCHEMA)
+
+    def test_classification_catalog_entry_schema_definition_is_valid(self) -> None:
+        result = self.validator.validate_schema_definition(CLASSIFICATION_CATALOG_ENTRY_SCHEMA)
+        self.assertTrue(result.ok, [f"{e.schemaPath}: {e.message}" for e in result.errors])
+
+    def test_valid_classification_catalog_fixtures_pass(self) -> None:
+        files = sorted(VALID_CATALOG_FIXTURES.glob("classification-catalog-*-valid.json"))
+        self.assertEqual(len(files), 9)
+        for path in files:
+            with self.subTest(path=path.name):
+                self.assertValid(load_json(path), CLASSIFICATION_CATALOG_ENTRY_SCHEMA)
+
+    def test_invalid_classification_catalog_fixtures_fail(self) -> None:
+        cases = {
+            "classification-catalog-empty-object-invalid.json": ("schema_validation.required", "$.id"),
+            "classification-catalog-missing-id-invalid.json": ("schema_validation.required", "$.id"),
+            "classification-catalog-invalid-cls-prefix-invalid.json": ("schema_validation.pattern", "$.id"),
+            "classification-catalog-lowercase-cls-invalid.json": ("schema_validation.pattern", "$.id"),
+            "classification-catalog-incomplete-cls-padding-invalid.json": ("schema_validation.pattern", "$.id"),
+            "classification-catalog-missing-name-invalid.json": ("schema_validation.required", "$.name"),
+            "classification-catalog-empty-name-invalid.json": ("schema_validation.minLength", "$.name"),
+            "classification-catalog-name-wrong-type-invalid.json": ("schema_validation.type", "$.name"),
+            "classification-catalog-missing-description-invalid.json": ("schema_validation.required", "$.description"),
+            "classification-catalog-empty-description-invalid.json": ("schema_validation.minLength", "$.description"),
+            "classification-catalog-description-wrong-type-invalid.json": ("schema_validation.type", "$.description"),
+            "classification-catalog-missing-source-links-invalid.json": ("schema_validation.required", "$.sourceLinks"),
+            "classification-catalog-malformed-source-link-invalid.json": ("schema_validation.required", "$.sourceLinks[0].verificationStatus"),
+            "classification-catalog-source-links-wrong-type-invalid.json": ("schema_validation.type", "$.sourceLinks"),
+            "classification-catalog-verification-status-invalid.json": ("schema_validation.additionalProperties", "$.verificationStatus"),
+            "classification-catalog-classification-system-invalid.json": ("schema_validation.additionalProperties", "$.classificationSystem"),
+            "classification-catalog-classification-system-id-invalid.json": ("schema_validation.additionalProperties", "$.classificationSystemId"),
+            "classification-catalog-external-code-invalid.json": ("schema_validation.additionalProperties", "$.externalCode"),
+            "classification-catalog-parent-id-invalid.json": ("schema_validation.additionalProperties", "$.parentId"),
+            "classification-catalog-parent-ids-invalid.json": ("schema_validation.additionalProperties", "$.parentIds"),
+            "classification-catalog-hierarchy-path-invalid.json": ("schema_validation.additionalProperties", "$.hierarchyPath"),
+            "classification-catalog-level-invalid.json": ("schema_validation.additionalProperties", "$.level"),
+            "classification-catalog-aliases-invalid.json": ("schema_validation.additionalProperties", "$.aliases"),
+            "classification-catalog-equivalent-to-invalid.json": ("schema_validation.additionalProperties", "$.equivalentTo"),
+            "classification-catalog-broader-than-invalid.json": ("schema_validation.additionalProperties", "$.broaderThan"),
+            "classification-catalog-narrower-than-invalid.json": ("schema_validation.additionalProperties", "$.narrowerThan"),
+            "classification-catalog-allowed-target-types-invalid.json": ("schema_validation.additionalProperties", "$.allowedTargetTypes"),
+            "classification-catalog-unknown-root-field-invalid.json": ("schema_validation.additionalProperties", "$.fictionalField"),
+            "classification-catalog-invalid-replaces-invalid.json": ("schema_validation.pattern", "$.replaces"),
+            "classification-catalog-invalid-replaced-by-invalid.json": ("schema_validation.pattern", "$.replacedBy"),
+            "classification-catalog-null-id-invalid.json": ("schema_validation.type", "$.id"),
+            "classification-catalog-null-name-invalid.json": ("schema_validation.type", "$.name"),
+            "classification-catalog-null-description-invalid.json": ("schema_validation.type", "$.description"),
+            "classification-catalog-array-instead-of-object-invalid.json": ("schema_validation.type", "$"),
+        }
+        files = sorted(INVALID_CATALOG_FIXTURES.glob("classification-catalog-*-invalid.json"))
+        self.assertEqual(len(files), 34)
+        self.assertEqual({path.name for path in files}, set(cases))
+        for path in files:
+            with self.subTest(path=path.name):
+                result = self.validator.validate(load_json(path), CLASSIFICATION_CATALOG_ENTRY_SCHEMA)
+                self.assertIn(cases[path.name], {(e.errorCode, e.path) for e in result.errors})
+
+    def test_classification_catalog_reuses_central_cls_and_common_metadata(self) -> None:
+        schema = self.validator.registry.by_id[CLASSIFICATION_CATALOG_ENTRY_SCHEMA]
+        for field in {"id", "replaces", "replacedBy"}:
+            with self.subTest(field=field):
+                self.assertEqual(
+                    schema["properties"][field]["$ref"],
+                    "https://eos.local/schemas/common/identifiers.schema.json#/$defs/CLS",
+                )
+        for field in {
+            "schemaVersion", "recordVersion", "revision", "status",
+            "createdAt", "createdBy", "updatedAt", "updatedBy",
+            "sourceLinks", "changeSummary", "notes",
+        }:
+            with self.subTest(field=field):
+                self.assertTrue(
+                    schema["properties"][field]["$ref"].startswith(
+                        "https://eos.local/schemas/common/metadata.schema.json#/properties/"
+                    )
+                )
+
+    def test_classification_catalog_source_link_ref_resolves(self) -> None:
+        self.assertValid(
+            load_json(VALID_CATALOG_FIXTURES / "classification-catalog-source-links-valid.json"),
+            CLASSIFICATION_CATALOG_ENTRY_SCHEMA,
+        )
+        invalid = load_json(
+            INVALID_CATALOG_FIXTURES / "classification-catalog-malformed-source-link-invalid.json"
+        )
+        result = self.validator.validate(invalid, CLASSIFICATION_CATALOG_ENTRY_SCHEMA)
+        self.assertIn(
+            ("schema_validation.required", "$.sourceLinks[0].verificationStatus"),
+            {(e.errorCode, e.path) for e in result.errors},
+        )
+
+    def test_classification_catalog_name_and_description_are_required_and_nonempty(self) -> None:
+        cases = {
+            "classification-catalog-missing-name-invalid.json": ("schema_validation.required", "$.name"),
+            "classification-catalog-empty-name-invalid.json": ("schema_validation.minLength", "$.name"),
+            "classification-catalog-name-wrong-type-invalid.json": ("schema_validation.type", "$.name"),
+            "classification-catalog-missing-description-invalid.json": ("schema_validation.required", "$.description"),
+            "classification-catalog-empty-description-invalid.json": ("schema_validation.minLength", "$.description"),
+            "classification-catalog-description-wrong-type-invalid.json": ("schema_validation.type", "$.description"),
+        }
+        for name, expected in cases.items():
+            with self.subTest(name=name):
+                result = self.validator.validate(
+                    load_json(INVALID_CATALOG_FIXTURES / name),
+                    CLASSIFICATION_CATALOG_ENTRY_SCHEMA,
+                )
+                self.assertIn(expected, {(e.errorCode, e.path) for e in result.errors})
+
+    def test_classification_catalog_name_is_not_identity_or_structurally_unique(self) -> None:
+        first = load_json(VALID_CATALOG_FIXTURES / "classification-catalog-duplicate-name-a-valid.json")
+        second = load_json(VALID_CATALOG_FIXTURES / "classification-catalog-duplicate-name-b-valid.json")
+        self.assertEqual(first["name"], second["name"])
+        self.assertNotEqual(first["id"], second["id"])
+        self.assertValid(first, CLASSIFICATION_CATALOG_ENTRY_SCHEMA)
+        self.assertValid(second, CLASSIFICATION_CATALOG_ENTRY_SCHEMA)
+
+    def test_classification_catalog_rejects_deferred_semantics_and_verification_status(self) -> None:
+        fields = {
+            "verificationStatus": "verification-status",
+            "classificationSystem": "classification-system",
+            "classificationSystemId": "classification-system-id",
+            "externalCode": "external-code",
+            "parentId": "parent-id",
+            "parentIds": "parent-ids",
+            "hierarchyPath": "hierarchy-path",
+            "level": "level",
+            "aliases": "aliases",
+            "equivalentTo": "equivalent-to",
+            "broaderThan": "broader-than",
+            "narrowerThan": "narrower-than",
+            "allowedTargetTypes": "allowed-target-types",
+        }
+        for field, filename in fields.items():
+            path = INVALID_CATALOG_FIXTURES / f"classification-catalog-{filename}-invalid.json"
+            with self.subTest(field=field):
+                result = self.validator.validate(load_json(path), CLASSIFICATION_CATALOG_ENTRY_SCHEMA)
+                self.assertIn(
+                    ("schema_validation.additionalProperties", f"$.{field}"),
+                    {(e.errorCode, e.path) for e in result.errors},
+                )
+
+    def test_classification_catalog_replacement_links_use_cls(self) -> None:
+        for name in [
+            "classification-catalog-replaces-valid.json",
+            "classification-catalog-replaced-by-valid.json",
+        ]:
+            with self.subTest(name=name):
+                self.assertValid(load_json(VALID_CATALOG_FIXTURES / name), CLASSIFICATION_CATALOG_ENTRY_SCHEMA)
+        for name, path in [
+            ("classification-catalog-invalid-replaces-invalid.json", "$.replaces"),
+            ("classification-catalog-invalid-replaced-by-invalid.json", "$.replacedBy"),
+        ]:
+            with self.subTest(name=name):
+                result = self.validator.validate(
+                    load_json(INVALID_CATALOG_FIXTURES / name),
+                    CLASSIFICATION_CATALOG_ENTRY_SCHEMA,
+                )
+                self.assertIn(
+                    ("schema_validation.pattern", path),
+                    {(e.errorCode, e.path) for e in result.errors},
+                )
+
+    def test_classification_catalog_lifecycle_uses_record_status(self) -> None:
+        draft = load_json(VALID_CATALOG_FIXTURES / "classification-catalog-minimal-draft-valid.json")
+        sourced = load_json(
+            VALID_CATALOG_FIXTURES / "classification-catalog-source-links-valid.json"
+        )["sourceLinks"]
+        for status in ["Draft", "Review", "Approved", "Deprecated", "Archived"]:
+            with self.subTest(status=status):
+                record = {**draft, "status": status}
+                if status in {"Review", "Approved"}:
+                    record["sourceLinks"] = sourced
+                self.assertValid(record, CLASSIFICATION_CATALOG_ENTRY_SCHEMA)
+        self.assertInvalid({**draft, "status": "Active"}, CLASSIFICATION_CATALOG_ENTRY_SCHEMA)
+
+    def test_classification_catalog_source_lifecycle_rule_is_composed(self) -> None:
+        draft = load_json(VALID_CATALOG_FIXTURES / "classification-catalog-minimal-draft-valid.json")
+        self.assertValid(draft, CLASSIFICATION_CATALOG_ENTRY_SCHEMA)
+        review = {**draft, "status": "Review"}
+        direct = self.validator.validate(review, CLASSIFICATION_CATALOG_ENTRY_SCHEMA)
+        self.assertIn(
+            ("application_validation.source_links_required", "$.sourceLinks"),
+            {(e.errorCode, e.path) for e in direct.errors},
+        )
+        nested = self.validator.validate({"classificationCatalogEntries": [review]}, INDEX_SCHEMA)
+        self.assertIn(
+            ("application_validation.source_links_required", "$.classificationCatalogEntries[0].sourceLinks"),
+            {(e.errorCode, e.path) for e in nested.errors},
+        )
+
+    def test_classification_catalog_rejects_unknown_root_fields(self) -> None:
+        record = load_json(
+            INVALID_CATALOG_FIXTURES / "classification-catalog-unknown-root-field-invalid.json"
+        )
+        result = self.validator.validate(record, CLASSIFICATION_CATALOG_ENTRY_SCHEMA)
+        self.assertIn(
+            ("schema_validation.additionalProperties", "$.fictionalField"),
+            {(e.errorCode, e.path) for e in result.errors},
+        )
+
+    def test_schema_index_resolves_classification_catalog_entry(self) -> None:
+        schema = self.validator.registry.by_id[INDEX_SCHEMA]
+        self.assertEqual(
+            schema["$defs"]["classificationCatalogEntry"]["$ref"],
+            CLASSIFICATION_CATALOG_ENTRY_SCHEMA,
+        )
+        valid = load_json(
+            VALID_CATALOG_FIXTURES / "classification-catalog-minimal-draft-valid.json"
+        )
+        self.assertValid({"classificationCatalogEntries": [valid]}, INDEX_SCHEMA)
+
+    def test_classification_catalog_does_not_validate_assignments_yet(self) -> None:
+        classification = {
+            "classificationId": "CLS-999999",
+            "sourceLinks": [],
+        }
+        self.assertValid(classification, CLASSIFICATION_SCHEMA)
 
 
 if __name__ == "__main__":

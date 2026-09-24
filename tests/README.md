@@ -1,5 +1,17 @@
 # tests
 
+## Míľnik 0.2B.2.4 - Classification Catalog v1
+
+Classification Catalog Entry má 9 platných a 34 neplatných fiktívnych fixtures v priečinkoch `fixtures/valid/catalogs/` a `fixtures/invalid/catalogs/`. Nepredstavujú reálne classifications, externé klasifikačné systémy ani autoritatívnu populáciu katalógu.
+
+Štrnásť nových unittest testov overuje Draft 2020-12 schému, centrálny CLS a common metadata refs, SourceLink, povinný name a description, zámernú neunikátnosť name, lifecycle/provenance pri priamej aj indexovej validácii, replacement CLS odkazy, odmietnutie system/code/hierarchy/alias/equivalence/applicability polí a registráciu v schema indexe.
+
+Kompletná sada má 182 testov. Úspešná validácia katalógovej položky nepotvrdzuje existenciu alebo použiteľnosť CLS cieľa ani kompatibilitu embedded Classification s rodičom. Spustenie z koreňa projektu:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
 ## Míľnik 0.2B.2.3 - Property Catalog v1
 
 Property Catalog Entry má 11 platných a 44 neplatných fiktívnych fixtures v priečinkoch `fixtures/valid/catalogs/` a `fixtures/invalid/catalogs/`. Nepredstavujú reálne properties, jednotky, condition types ani autoritatívnu populáciu katalógu.

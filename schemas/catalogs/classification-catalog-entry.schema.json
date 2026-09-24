@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/schemas/catalogs/classification-catalog-entry.schema.json",
+  "title": "EOS Classification Catalog Entry",
+  "description": "Standalone Reference Catalog Entry Aggregate Root defining one system-neutral CLS meaning with lifecycle, audit metadata and definition provenance. Version 1 defines no classification-system, external-code, hierarchy, alias, equivalence or target-applicability semantics.",
+  "type": "object",
+  "required": [
+    "id",
+    "schemaVersion",
+    "recordVersion",
+    "revision",
+    "status",
+    "createdAt",
+    "createdBy",
+    "updatedAt",
+    "updatedBy",
+    "sourceLinks",
+    "changeSummary",
+    "name",
+    "description"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/CLS",
+      "description": "Stable identity of exactly one Classification Catalog Entry. It is not the identity of an embedded Classification assignment, classification system or external code."
+    },
+    "schemaVersion": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/schemaVersion"
+    },
+    "recordVersion": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/recordVersion"
+    },
+    "revision": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/revision"
+    },
+    "status": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/status"
+    },
+    "createdAt": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/createdAt"
+    },
+    "createdBy": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/createdBy"
+    },
+    "updatedAt": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/updatedAt"
+    },
+    "updatedBy": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/updatedBy"
+    },
+    "sourceLinks": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/sourceLinks",
+      "description": "Provenance of the catalog definition. Provenance of assigning this classification belongs to the embedded Classification value object."
+    },
+    "changeSummary": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/changeSummary"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Canonical human-readable label. It is not identity and is not structurally unique."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Authoritative human-readable definition of the classification meaning. It is not machine-readable hierarchy, system, external-code, equivalence or applicability data."
+    },
+    "notes": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/notes"
+    },
+    "replaces": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/CLS",
+      "description": "Optional reference to one older Classification Catalog Entry replaced by this entry. It is not a hierarchy or equivalence edge."
+    },
+    "replacedBy": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/CLS",
+      "description": "Optional reference to one newer Classification Catalog Entry that replaces this entry. It is not a hierarchy or equivalence edge."
+    }
+  },
+  "additionalProperties": false
+}
