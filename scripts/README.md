@@ -1,5 +1,13 @@
 # scripts
 
+## Míľnik 0.2B.2.2 - Condition Type Catalog v1
+
+Validátor registruje Condition Type Catalog Entry ako samostatný kontrakt a ako položku `conditionTypeCatalogEntries` v schema indexe. Existujúca kompozičná mapa aplikuje rovnaké lifecycle/source pravidlo na priamu aj indexom vnorenú položku: Draft môže mať prázdne `sourceLinks`, kým Review alebo Approved bez provenance vracia `application_validation.source_links_required` s presnou cestou.
+
+JSON Schema kontroluje CND, common metadata, lifecycle, name, neprázdne unikátne `allowedValueForms`, podmienenú uzavretú `allowedReferencePrefixes` policy, SourceLink, replacement CND odkazy a zákaz neznámych alebo deferred polí.
+
+Validátor zatiaľ nekontroluje existenciu `Condition.conditionTypeId`, kompatibilitu konkrétnej hodnotovej formy s CND položkou, existenciu alebo typ `referenceId` cieľa, evaluation mode, jednotky, multiplicitu, duplicity ani logické kombinácie. Tieto pravidlá zostávajú budúcej catalog-aware/reference-integrity integrácii; existujúca Condition schéma sa nezmenila.
+
 ## Míľnik 0.2B.2.1 - Unit Catalog v1
 
 Validátor registruje Unit Catalog Entry ako samostatný kontrakt a ako položku `unitCatalogEntries` v schema indexe. Existujúca kompozičná mapa aplikuje rovnaké lifecycle/source pravidlo na priamy záznam aj na záznam vnorený cez index: Draft môže mať prázdne `sourceLinks`, kým Review alebo Approved bez zdroja vracia `application_validation.source_links_required` s presnou cestou.

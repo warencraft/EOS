@@ -29,6 +29,7 @@ CLASSIFICATION_SCHEMA = "https://eos.local/schemas/knowledge-core/classification
 PROPERTY_RECORD_SCHEMA = "https://eos.local/schemas/knowledge-core/property-record.schema.json"
 OBSERVATION_SCHEMA = "https://eos.local/schemas/knowledge-core/observation.schema.json"
 UNIT_CATALOG_ENTRY_SCHEMA = "https://eos.local/schemas/catalogs/unit-catalog-entry.schema.json"
+CONDITION_TYPE_CATALOG_ENTRY_SCHEMA = "https://eos.local/schemas/catalogs/condition-type-catalog-entry.schema.json"
 
 
 def load_fixture(name: str) -> dict:
@@ -1616,6 +1617,227 @@ raise SystemExit(0 if result.wasSuccessful() else 1)
         )
         valid = load_json(VALID_CATALOG_FIXTURES / "unit-minimal-draft-valid.json")
         self.assertValid({"unitCatalogEntries": [valid]}, INDEX_SCHEMA)
+
+    def test_condition_type_catalog_entry_schema_definition_is_valid(self) -> None:
+        result = self.validator.validate_schema_definition(CONDITION_TYPE_CATALOG_ENTRY_SCHEMA)
+        self.assertTrue(result.ok, [f"{e.schemaPath}: {e.message}" for e in result.errors])
+
+    def test_valid_condition_type_catalog_fixtures_pass(self) -> None:
+        files = sorted(VALID_CATALOG_FIXTURES.glob("condition-type-*-valid.json"))
+        self.assertEqual(len(files), 8)
+        for path in files:
+            with self.subTest(path=path.name):
+                self.assertValid(load_json(path), CONDITION_TYPE_CATALOG_ENTRY_SCHEMA)
+
+    def test_invalid_condition_type_catalog_fixtures_fail(self) -> None:
+        files = sorted(INVALID_CATALOG_FIXTURES.glob("condition-type-*-invalid.json"))
+        self.assertEqual(len(files), 38)
+        for path in files:
+            with self.subTest(path=path.name):
+                self.assertInvalid(load_json(path), CONDITION_TYPE_CATALOG_ENTRY_SCHEMA)
+
+    def test_condition_type_catalog_reuses_central_cnd_and_common_metadata(self) -> None:
+        schema = self.validator.registry.by_id[CONDITION_TYPE_CATALOG_ENTRY_SCHEMA]
+        self.assertEqual(
+            schema["properties"]["id"]["$ref"],
+            "https://eos.local/schemas/common/identifiers.schema.json#/$defs/CND",
+        )
+        metadata_fields = {
+            "schemaVersion", "recordVersion", "revision", "status",
+            "createdAt", "createdBy", "updatedAt", "updatedBy",
+            "sourceLinks", "changeSummary", "notes",
+        }
+        for field in metadata_fields:
+            with self.subTest(field=field):
+                self.assertTrue(
+                    schema["properties"][field]["$ref"].startswith(
+                        "https://eos.local/schemas/common/metadata.schema.json#/properties/"
+                    )
+                )
+
+    def test_condition_type_catalog_source_link_ref_resolves(self) -> None:
+        valid = load_json(VALID_CATALOG_FIXTURES / "condition-type-source-links-valid.json")
+        self.assertValid(valid, CONDITION_TYPE_CATALOG_ENTRY_SCHEMA)
+        invalid = load_json(INVALID_CATALOG_FIXTURES / "condition-type-malformed-source-link-invalid.json")
+        result = self.validator.validate(invalid, CONDITION_TYPE_CATALOG_ENTRY_SCHEMA)
+        self.assertIn(
+            ("schema_validation.required", "$.sourceLinks[0].verificationStatus"),
+            {(e.errorCode, e.path) for e in result.errors},
+        )
+
+    def test_condition_type_catalog_name_is_required_and_nonempty(self) -> None:
+        cases = {
+            "condition-type-missing-name-invalid.json": "schema_validation.required",
+            "condition-type-empty-name-invalid.json": "schema_validation.minLength",
+            "condition-type-name-wrong-type-invalid.json": "schema_validation.type",
+        }
+        for name, code in cases.items():
+            with self.subTest(name=name):
+                result = self.validator.validate(
+                    load_json(INVALID_CATALOG_FIXTURES / name),
+                    CONDITION_TYPE_CATALOG_ENTRY_SCHEMA,
+                )
+                self.assertIn((code, "$.name"), {(e.errorCode, e.path) for e in result.errors})
+
+    def test_condition_type_catalog_allowed_value_forms_are_closed_and_unique(self) -> None:
+        schema = self.validator.registry.by_id[CONDITION_TYPE_CATALOG_ENTRY_SCHEMA]
+        value_forms = schema["properties"]["allowedValueForms"]
+        self.assertEqual(
+            set(value_forms["items"]["enum"]),
+            {"quantity", "valueRange", "textValue", "booleanValue", "referenceId"},
+        )
+        self.assertEqual(value_forms["minItems"], 1)
+        self.assertTrue(value_forms["uniqueItems"])
+        self.assertValid(
+            load_json(VALID_CATALOG_FIXTURES / "condition-type-multiple-value-forms-valid.json"),
+            CONDITION_TYPE_CATALOG_ENTRY_SCHEMA,
+        )
+        cases = {
+            "condition-type-missing-allowed-value-forms-invalid.json": "schema_validation.required",
+            "condition-type-empty-allowed-value-forms-invalid.json": "schema_validation.minItems",
+            "condition-type-unsupported-value-form-invalid.json": "schema_validation.enum",
+            "condition-type-duplicate-value-form-invalid.json": "schema_validation.uniqueItems",
+            "condition-type-allowed-value-forms-wrong-type-invalid.json": "schema_validation.type",
+        }
+        for name, code in cases.items():
+            with self.subTest(name=name):
+                result = self.validator.validate(
+                    load_json(INVALID_CATALOG_FIXTURES / name),
+                    CONDITION_TYPE_CATALOG_ENTRY_SCHEMA,
+                )
+                self.assertTrue(any(error.errorCode == code for error in result.errors), name)
+
+    def test_condition_type_catalog_reference_policy_matches_condition_union(self) -> None:
+        catalog_schema = self.validator.registry.by_id[CONDITION_TYPE_CATALOG_ENTRY_SCHEMA]
+        condition_schema = self.validator.registry.by_id[CONDITION_SCHEMA]
+        catalog_families = set(
+            catalog_schema["properties"]["allowedReferencePrefixes"]["items"]["enum"]
+        )
+        condition_families = {
+            item["$ref"].rsplit("/", 1)[-1]
+            for item in condition_schema["properties"]["referenceId"]["anyOf"]
+        }
+        self.assertEqual(catalog_families, condition_families)
+
+        valid = load_json(VALID_CATALOG_FIXTURES / "condition-type-multiple-value-forms-valid.json")
+        self.assertValid(valid, CONDITION_TYPE_CATALOG_ENTRY_SCHEMA)
+        for name in [
+            "condition-type-reference-missing-prefixes-invalid.json",
+            "condition-type-prefixes-without-reference-invalid.json",
+            "condition-type-empty-reference-prefixes-invalid.json",
+            "condition-type-unsupported-reference-prefix-invalid.json",
+            "condition-type-duplicate-reference-prefix-invalid.json",
+            "condition-type-reference-prefixes-wrong-type-invalid.json",
+        ]:
+            with self.subTest(name=name):
+                self.assertInvalid(
+                    load_json(INVALID_CATALOG_FIXTURES / name),
+                    CONDITION_TYPE_CATALOG_ENTRY_SCHEMA,
+                )
+
+    def test_condition_type_catalog_rejects_deferred_semantics(self) -> None:
+        base = load_json(VALID_CATALOG_FIXTURES / "condition-type-minimal-draft-valid.json")
+        fields = {
+            "allowedEvaluationModes": ["contextual"],
+            "defaultEvaluationMode": "contextual",
+            "fixedEvaluationMode": "contextual",
+            "allowedUnitIds": ["UNT-900001"],
+            "requiredUnitId": "UNT-900001",
+            "quantityKind": "fictional",
+            "dimension": "fictional",
+            "allowMultiple": True,
+            "uniquenessScope": "fictional",
+            "logicalOperator": "AND",
+            "allowedReferenceTypes": ["SourceReference"],
+            "aliases": ["fictional"],
+            "verificationStatus": "Approved",
+        }
+        for field, value in fields.items():
+            with self.subTest(field=field):
+                result = self.validator.validate(
+                    {**base, field: value},
+                    CONDITION_TYPE_CATALOG_ENTRY_SCHEMA,
+                )
+                self.assertIn(
+                    ("schema_validation.additionalProperties", f"$.{field}"),
+                    {(e.errorCode, e.path) for e in result.errors},
+                )
+
+    def test_condition_type_catalog_replacement_links_use_cnd(self) -> None:
+        for name in ["condition-type-replaces-valid.json", "condition-type-replaced-by-valid.json"]:
+            with self.subTest(name=name):
+                self.assertValid(
+                    load_json(VALID_CATALOG_FIXTURES / name),
+                    CONDITION_TYPE_CATALOG_ENTRY_SCHEMA,
+                )
+        for name, path in [
+            ("condition-type-invalid-replaces-invalid.json", "$.replaces"),
+            ("condition-type-invalid-replaced-by-invalid.json", "$.replacedBy"),
+        ]:
+            with self.subTest(name=name):
+                result = self.validator.validate(
+                    load_json(INVALID_CATALOG_FIXTURES / name),
+                    CONDITION_TYPE_CATALOG_ENTRY_SCHEMA,
+                )
+                self.assertIn(
+                    ("schema_validation.pattern", path),
+                    {(e.errorCode, e.path) for e in result.errors},
+                )
+
+    def test_condition_type_catalog_lifecycle_uses_record_status(self) -> None:
+        draft = load_json(VALID_CATALOG_FIXTURES / "condition-type-minimal-draft-valid.json")
+        sourced = load_json(VALID_CATALOG_FIXTURES / "condition-type-source-links-valid.json")["sourceLinks"]
+        for status in ["Draft", "Review", "Approved", "Deprecated", "Archived"]:
+            with self.subTest(status=status):
+                record = {**draft, "status": status}
+                if status in {"Review", "Approved"}:
+                    record["sourceLinks"] = sourced
+                self.assertValid(record, CONDITION_TYPE_CATALOG_ENTRY_SCHEMA)
+        self.assertInvalid({**draft, "status": "Active"}, CONDITION_TYPE_CATALOG_ENTRY_SCHEMA)
+
+    def test_condition_type_catalog_source_lifecycle_rule_is_composed(self) -> None:
+        draft = load_json(VALID_CATALOG_FIXTURES / "condition-type-minimal-draft-valid.json")
+        self.assertValid(draft, CONDITION_TYPE_CATALOG_ENTRY_SCHEMA)
+        review = {**draft, "status": "Review"}
+        direct = self.validator.validate(review, CONDITION_TYPE_CATALOG_ENTRY_SCHEMA)
+        self.assertIn(
+            ("application_validation.source_links_required", "$.sourceLinks"),
+            {(e.errorCode, e.path) for e in direct.errors},
+        )
+        nested = self.validator.validate({"conditionTypeCatalogEntries": [review]}, INDEX_SCHEMA)
+        self.assertIn(
+            (
+                "application_validation.source_links_required",
+                "$.conditionTypeCatalogEntries[0].sourceLinks",
+            ),
+            {(e.errorCode, e.path) for e in nested.errors},
+        )
+
+    def test_condition_type_catalog_rejects_unknown_root_fields(self) -> None:
+        record = load_json(INVALID_CATALOG_FIXTURES / "condition-type-unknown-root-field-invalid.json")
+        result = self.validator.validate(record, CONDITION_TYPE_CATALOG_ENTRY_SCHEMA)
+        self.assertIn(
+            ("schema_validation.additionalProperties", "$.fictionalField"),
+            {(e.errorCode, e.path) for e in result.errors},
+        )
+
+    def test_schema_index_resolves_condition_type_catalog_entry(self) -> None:
+        schema = self.validator.registry.by_id[INDEX_SCHEMA]
+        self.assertEqual(
+            schema["$defs"]["conditionTypeCatalogEntry"]["$ref"],
+            CONDITION_TYPE_CATALOG_ENTRY_SCHEMA,
+        )
+        valid = load_json(VALID_CATALOG_FIXTURES / "condition-type-minimal-draft-valid.json")
+        self.assertValid({"conditionTypeCatalogEntries": [valid]}, INDEX_SCHEMA)
+
+    def test_condition_type_catalog_does_not_validate_condition_instances_yet(self) -> None:
+        condition = {
+            "conditionTypeId": "CND-999999",
+            "evaluationMode": "contextual",
+            "textValue": "fictional context",
+        }
+        result = self.validator.validate(condition, CONDITION_SCHEMA)
+        self.assertTrue(result.ok, [f"{e.errorCode}: {e.message}" for e in result.errors])
 
 
 if __name__ == "__main__":

@@ -1,5 +1,21 @@
 # ROADMAP
 
+## Míľnik 0.2B.2.2 - Condition Type Catalog Contract
+
+Cieľ:
+
+- implementovať Condition Type Catalog ako Knowledge Catalog,
+- zaviesť samostatný Condition Type Catalog Entry Aggregate Root so stabilným `CND-xxxxxx`,
+- znovu použiť common entity metadata, lifecycle a SourceLink pravidlá,
+- definovať povinný neprázdny unique zoznam existujúcich Condition value forms,
+- pri `referenceId` vyžadovať uzavretú policy podporovaných cieľových ID rodín,
+- ponechať evaluation mode constraints, jednotky, multiplicitu, logické kombinácie a catalog-aware validáciu mimo v1,
+- používať iba fiktívne validačné fixtures bez reálnych condition types.
+
+Stav: `COMPLETE`. Kompletná sada má 152 úspešných testov.
+
+Nasleduje: `Phase 0.2B.2.3-prep - Property Catalog Pre-design Review`. Tento míľnik nebol začatý a celá Phase 0.2B.2 zostáva rozpracovaná.
+
 ## Míľnik 0.2B.2.1 - Unit Catalog Contract
 
 Cieľ:

@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## 0.2B.2.2 - 2026-09-24
+
+Status: Implemented / Review
+
+### Added
+
+- `schemas/catalogs/condition-type-catalog-entry.schema.json` pre samostatný Knowledge Catalog Entry Aggregate Root s centrálnym CND ID, common metadata, riadenými hodnotovými formami, podmienenou reference-prefix policy a provenance.
+- Registrácia `conditionTypeCatalogEntry` a `conditionTypeCatalogEntries` v schema indexe.
+- 8 platných a 38 neplatných fiktívnych fixtures a 15 unittest testov pre Condition Type Catalog v1.
+
+### Changed
+
+- CDR-0010 zvýšený na Revision 1 a doplnený o skutočný implementačný, validačný a testovací výsledok.
+- Existujúca validačná kompozícia aplikuje lifecycle/source pravidlo na Condition Type Catalog Entry priamo aj cez schema index.
+- Dokumentácia schém, testov, validátora a roadmap opisuje Knowledge Catalog rolu, CND identitu, value-form/reference policy a hranicu voči Property Catalogu.
+
+### Deferred / Not Added
+
+- Nevznikla catalog-aware validácia Condition, reference-integrity resolver, evaluation-mode policy, unit restriction, quantity-kind, dimension, multiplicity, logický výraz ani rule engine.
+- Nevznikla žiadna reálna CND položka, Property Catalog ani Classification Catalog.
+- Celá Phase 0.2B.2 nie je dokončená. Nasleduje `Phase 0.2B.2.3-prep - Property Catalog Pre-design Review`, ktorá nebola začatá.
+
 ## 0.2B.2.1 - 2026-09-10
 
 Status: Implemented / Review

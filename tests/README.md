@@ -1,5 +1,17 @@
 # tests
 
+## Míľnik 0.2B.2.2 - Condition Type Catalog v1
+
+Condition Type Catalog Entry má 8 platných a 38 neplatných fiktívnych fixtures v priečinkoch `fixtures/valid/catalogs/` a `fixtures/invalid/catalogs/`. Nepredstavujú reálne typy podmienok ani autoritatívnu populáciu katalógu.
+
+Pätnásť nových unittest testov overuje Draft 2020-12 schému, centrálny CND a common metadata refs, SourceLink, povinný name, uzavretý a unikátny `allowedValueForms`, podmienenú reference-prefix policy, jej presnú zhodu s aktuálnym Condition reference unionom, lifecycle/provenance pri priamej aj indexovej validácii, replacement CND odkazy, odmietnutie deferred polí a schema index.
+
+Kompletná sada má 152 testov. Úspešná validácia katalógovej položky nepotvrdzuje existenciu CND alebo reference targetu a validácia Condition ešte nepoužíva katalógovú kompatibilitu. Spustenie z koreňa projektu:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
 ## Míľnik 0.2B.2.1 - Unit Catalog v1
 
 Unit Catalog Entry má 8 platných a 31 neplatných fiktívnych fixtures v priečinkoch `fixtures/valid/catalogs/` a `fixtures/invalid/catalogs/`. Nepredstavujú reálne jednotky ani autoritatívnu populáciu katalógu.

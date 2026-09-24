@@ -1,5 +1,24 @@
 # schemas
 
+## Míľnik 0.2B.2.2 - Condition Type Catalog v1
+
+Condition Type Catalog je Knowledge Catalog. Jeho položka je samostatný Catalog Entry Aggregate Root:
+
+- schéma: `catalogs/condition-type-catalog-entry.schema.json`,
+- schema id: `https://eos.local/schemas/catalogs/condition-type-catalog-entry.schema.json`,
+- discovery: `index.schema.json#/$defs/conditionTypeCatalogEntry`, kolekcia `conditionTypeCatalogEntries`,
+- identita: centrálne `CND-xxxxxx`,
+- povinné sú common entity metadata, `name` a `allowedValueForms`,
+- voliteľné sú `description`, `notes`, `replaces` a `replacedBy`.
+
+`allowedValueForms` je neprázdny unique zoznam jednej alebo viacerých existujúcich Condition foriem: `quantity`, `valueRange`, `textValue`, `booleanValue`, `referenceId`. Jedna Condition stále obsahuje presne jednu formu. Ak zoznam obsahuje `referenceId`, položka musí uviesť neprázdne unique `allowedReferencePrefixes`; bez `referenceId` je toto pole zakázané. Prefixová policy presne zodpovedá aktuálnemu Condition reference unionu a nepotvrdzuje existenciu cieľa.
+
+Metadata používajú property-level `$ref` na common metadata rovnako ako Unit Catalog v1. Lifecycle je `Draft`, `Review`, `Approved`, `Deprecated`, `Archived`; root nemá `verificationStatus`. `sourceLinks` je required, Draft môže byť prázdny a Review/Approved bez provenance je aplikačne neplatný. Replacement odkazy používajú iba CND.
+
+V1 neobsahuje evaluation-mode policy, jednotkové obmedzenia, quantity kind, dimension, multiplicitu, aliases, logické výrazy ani rule engine. Catalog-aware kontrola existencie a kompatibility Condition, reference integrity a Property Catalog pravidlá zostávajú odložené. Nevznikla žiadna reálna CND položka.
+
+Phase 0.2B.2.2 je dokončená. Celá Phase 0.2B.2 zostáva rozpracovaná; nasleduje `Phase 0.2B.2.3-prep - Property Catalog Pre-design Review`.
+
 ## Míľnik 0.2B.2.1 - Unit Catalog v1
 
 Prvý Reference Catalog kontrakt je `Unit Catalog Entry`, samostatný Catalog Entry Aggregate Root:

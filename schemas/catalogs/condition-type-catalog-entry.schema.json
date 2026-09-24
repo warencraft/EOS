@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/schemas/catalogs/condition-type-catalog-entry.schema.json",
+  "title": "EOS Condition Type Catalog Entry",
+  "description": "Standalone Knowledge Catalog Entry with stable CND identity, lifecycle, controlled Condition value forms, reference-target policy, audit metadata and source provenance. Version 1 defines no evaluation-mode, unit, multiplicity or logical-expression semantics.",
+  "type": "object",
+  "required": [
+    "id",
+    "schemaVersion",
+    "recordVersion",
+    "revision",
+    "status",
+    "createdAt",
+    "createdBy",
+    "updatedAt",
+    "updatedBy",
+    "sourceLinks",
+    "changeSummary",
+    "name",
+    "allowedValueForms"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/CND",
+      "description": "Stable identity of exactly one Condition Type Catalog Entry. It is not the identity of a concrete Condition value."
+    },
+    "schemaVersion": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/schemaVersion"
+    },
+    "recordVersion": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/recordVersion"
+    },
+    "revision": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/revision"
+    },
+    "status": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/status"
+    },
+    "createdAt": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/createdAt"
+    },
+    "createdBy": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/createdBy"
+    },
+    "updatedAt": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/updatedAt"
+    },
+    "updatedBy": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/updatedBy"
+    },
+    "sourceLinks": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/sourceLinks"
+    },
+    "changeSummary": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/changeSummary"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Canonical human-readable name. It is not identity and must not replace structured catalog semantics."
+    },
+    "allowedValueForms": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "quantity",
+          "valueRange",
+          "textValue",
+          "booleanValue",
+          "referenceId"
+        ]
+      },
+      "description": "One or more Condition value fields permitted by this catalog meaning. A concrete Condition still contains exactly one value form. Array order has no priority or fallback meaning."
+    },
+    "allowedReferencePrefixes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "EOS",
+          "MET",
+          "STD",
+          "NRM",
+          "SRC",
+          "UNT",
+          "CND",
+          "MAT",
+          "POL",
+          "TEC",
+          "MAC",
+          "TOOL",
+          "SUP",
+          "JOB",
+          "JOB_OPERATION",
+          "JOB_TIME_RECORD",
+          "JOB_RISK",
+          "JOB_QUOTATION_NOTE",
+          "CAL",
+          "FRM",
+          "ADR"
+        ]
+      },
+      "description": "Closed set of currently supported Condition.referenceId target families. Required only when referenceId is an allowed value form. It does not prove target existence."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional explanation that must not encode deferred unit, evaluation, multiplicity or logical-expression semantics."
+    },
+    "notes": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/notes"
+    },
+    "replaces": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/CND",
+      "description": "Optional reference to one older Condition Type Catalog Entry replaced by this entry."
+    },
+    "replacedBy": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/CND",
+      "description": "Optional reference to one newer Condition Type Catalog Entry that replaces this entry."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "allowedValueForms": {
+            "contains": { "const": "referenceId" }
+          }
+        },
+        "required": ["allowedValueForms"]
+      },
+      "then": {
+        "required": ["allowedReferencePrefixes"]
+      },
+      "else": {
+        "not": {
+          "required": ["allowedReferencePrefixes"]
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

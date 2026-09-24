@@ -12,7 +12,7 @@ Phase: 0.2B.2.2-prep
 
 Version: 0.1
 
-Revision: 0
+Revision: 1
 
 Status: Review
 
@@ -525,10 +525,53 @@ Implementácia musí dodržať explicitné hranice: v1 riadi iba autoritatívny 
 
 Implementácia môže začať po splnení podmienok v sekcii 27. Verdikt je `READY WITH CONDITIONS`.
 
-## 29. Change History
+## 29. Implementation Outcome
+
+Phase 0.2B.2.2 implementovala odporúčaný Condition Type Catalog Entry v1 ako samostatný Knowledge Catalog Entry Aggregate Root bez zmeny Accepted architektúry.
+
+### Final v1 field model
+
+Povinné polia sú `id`, `schemaVersion`, `recordVersion`, `revision`, `status`, `createdAt`, `createdBy`, `updatedAt`, `updatedBy`, `sourceLinks`, `changeSummary`, `name` a `allowedValueForms`.
+
+Voliteľné polia sú `description`, `notes`, `replaces` a `replacedBy`. Pole `allowedReferencePrefixes` je podmienene povinné, ak `allowedValueForms` obsahuje `referenceId`, a inak je zakázané.
+
+`allowedValueForms` je neprázdne pole s unikátnymi položkami z uzavretého enumu `quantity`, `valueRange`, `textValue`, `booleanValue` a `referenceId`. Jedna konkrétna Condition naďalej obsahuje presne jednu hodnotovú formu; poradie katalógového zoznamu neurčuje prioritu ani fallback.
+
+### Schema and metadata reuse
+
+Schéma je `schemas/catalogs/condition-type-catalog-entry.schema.json` s canonical ID `https://eos.local/schemas/catalogs/condition-type-catalog-entry.schema.json`.
+
+Implementácia používa rovnaký property-level `$ref` postup ako Unit Catalog v1. Jednotlivé metadata polia odkazujú na autoritatívne vlastnosti `common/metadata.schema.json`; `id`, `replaces` a `replacedBy` používajú centrálny CND `$ref`. Nevznikol druhý metadata wrapper ani nový lifecycle model.
+
+Schema index registruje definíciu `conditionTypeCatalogEntry` a discovery kolekciu `conditionTypeCatalogEntries`. Kolekcia je integračná plocha indexu, nie samostatný storage alebo catalog-container contract.
+
+### Reference target policy
+
+`allowedReferencePrefixes` je neprázdne pole s unikátnymi hodnotami. Jeho uzavretý enum presne zodpovedá ID rodinám, ktoré aktuálne podporuje `Condition.referenceId`. `OBS`, `PRP`, `CLS` ani budúce rodiny sa nepridávajú automaticky. Katalógový záznam nepotvrdzuje existenciu cieľa a nemení existujúcu Condition schému.
+
+### Lifecycle and provenance
+
+Lifecycle používa existujúce hodnoty `Draft`, `Review`, `Approved`, `Deprecated` a `Archived`. Root nemá `verificationStatus` a `Condition.evaluationMode` zostáva samostatnou vlastnosťou konkrétnej Condition.
+
+`sourceLinks` je štrukturálne povinné pole a používa existujúci SourceLink kontrakt. Draft môže mať prázdne pole. Existujúca EOS aplikačná source kontrola sa kompozične používa pre priamo validovanú aj cez index vnorenú položku; Review alebo Approved položka bez provenance vracia `application_validation.source_links_required` s úplnou cestou.
+
+### Deferred semantics
+
+V1 neobsahuje `allowedEvaluationModes`, default alebo fixed evaluation mode, `allowedUnitIds`, `requiredUnitId`, quantity kind, dimension, multiplicitu, uniqueness scope, aliases ani logické operátory. Nevykonáva existenciu CND alebo reference targetu, kompatibilitu konkrétnej Condition s `allowedValueForms`, unit compatibility, duplicate-condition rules ani skutočné vyhodnotenie podmienky.
+
+Catalog-aware a reference-integrity validácia zostáva následným integračným krokom. Property-specific povinné podmienky, jednotky, multiplicita a kontextové evaluation obmedzenia zostávajú budúcemu Property Catalogu.
+
+### Fixtures and tests
+
+Vzniklo 8 platných a 38 neplatných fiktívnych fixtures. Pätnásť nových unittest testov pokrýva definíciu schémy, CND a common metadata refs, SourceLink, name, value-form enum a unikátnosť, podmienenú reference-prefix policy, zhodu s Condition unionom, lifecycle/provenance, replacement CND odkazy, odmietnutie deferred polí, schema index a neprítomnosť catalog-aware Condition validácie.
+
+Kompletná sada obsahuje 152 úspešných testov. Nevznikla žiadna reálna CND položka, Property Catalog ani rule engine. Implementácia nemení pôvodný verdict ani odložené hranice.
+
+## 30. Change History
 
 | Date | Version | Revision | Author | Change |
 | --- | --- | --- | --- | --- |
 | 2026-09-10 | 0.1 | 0 | Codex | Initial pre-design review of Condition Type Catalog role, CND identity, value-form and reference-target policy, lifecycle, Property Catalog boundary and implementation readiness. |
+| 2026-09-24 | 0.1 | 1 | Codex | Condition Type Catalog Entry v1 implemented as a Knowledge Catalog Aggregate Root with common metadata reuse, controlled value forms, conditional reference-prefix policy, lifecycle/source composition, fictional fixtures and regression tests. |
 
 READY WITH CONDITIONS
