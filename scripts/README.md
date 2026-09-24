@@ -1,5 +1,13 @@
 # scripts
 
+## Míľnik 0.2B.2.3 - Property Catalog v1
+
+Validátor registruje Property Catalog Entry ako samostatný kontrakt a ako položku `propertyCatalogEntries` v schema indexe. Existujúca kompozičná mapa aplikuje rovnaké lifecycle/source pravidlo na priamu aj indexom vnorenú položku: Draft môže mať prázdne `sourceLinks`, kým Review alebo Approved bez provenance vracia `application_validation.source_links_required` s presnou cestou.
+
+JSON Schema kontroluje PRP, common metadata, lifecycle, povinný name a description, neprázdne unique `allowedValueTypes`, presný UNT allow-list, voliteľný CND allow-list, SourceLink, replacement PRP odkazy a zákaz neznámych alebo deferred polí.
+
+Validátor zatiaľ nekontroluje existenciu PRP/UNT/CND záznamov ani kompatibilitu PropertyRecord alebo Observation s value-type, unit alebo condition allow-listom. Nevykonáva dimension inference, conversion, required Conditions ani MeasurementQuality policy. Nevznikla nová validačná vetva; pridaná bola iba registrácia do existujúcej kompozície.
+
 ## Míľnik 0.2B.2.2 - Condition Type Catalog v1
 
 Validátor registruje Condition Type Catalog Entry ako samostatný kontrakt a ako položku `conditionTypeCatalogEntries` v schema indexe. Existujúca kompozičná mapa aplikuje rovnaké lifecycle/source pravidlo na priamu aj indexom vnorenú položku: Draft môže mať prázdne `sourceLinks`, kým Review alebo Approved bez provenance vracia `application_validation.source_links_required` s presnou cestou.

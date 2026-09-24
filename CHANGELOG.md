@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## 0.2B.2.3 - 2026-09-24
+
+Status: Implemented / Review
+
+### Added
+
+- `schemas/catalogs/property-catalog-entry.schema.json` pre samostatný Knowledge Catalog Entry Aggregate Root s centrálnym PRP ID, common metadata, povinným významovým opisom, riadenými value types, presným UNT allow-listom, voliteľným CND allow-listom a provenance.
+- Registrácia `propertyCatalogEntry` a `propertyCatalogEntries` v schema indexe.
+- 11 platných a 44 neplatných fiktívnych fixtures a 16 unittest testov pre Property Catalog v1.
+
+### Changed
+
+- CDR-0011 zvýšený na Revision 1 a doplnený o skutočný implementačný, validačný a testovací výsledok.
+- Existujúca validačná kompozícia aplikuje lifecycle/source pravidlo na Property Catalog Entry priamo aj cez schema index.
+- Dokumentácia schém, testov, validátora a roadmap opisuje Knowledge Catalog rolu, PRP identitu a value-type/unit/condition policy.
+
+### Deferred / Not Added
+
+- Nevznikla catalog-aware validácia PropertyRecord alebo Observation, reference-integrity resolver, canonical unit, required Conditions, multiplicita, MeasurementQuality policy, classification väzba, alias, equivalence, quantity-kind, dimension ani conversion model.
+- Nevznikla žiadna reálna PRP položka ani Classification Catalog.
+- Celá Phase 0.2B.2 nie je dokončená. Nasleduje `Phase 0.2B.2.4-prep - Classification Catalog Pre-design Review`, ktorá nebola začatá.
+
 ## 0.2B.2.2 - 2026-09-24
 
 Status: Implemented / Review

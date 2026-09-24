@@ -6,7 +6,7 @@ Contract: Property Catalog
 Review type: Pre-design  
 Phase: 0.2B.2.3-prep  
 Version: 0.1  
-Revision: 0  
+Revision: 1
 Status: Review  
 Document basis: Accepted EOS architecture + implemented Unit and Condition Type catalogs
 
@@ -482,10 +482,55 @@ Property Catalog Entry v1 je možné implementovať bez opravy Accepted architek
 
 Implementácia je bezpečná iba pri explicitnom obmedzení na presné value-type, UNT a voliteľné CND allow-listy. Required Conditions, multiplicita, canonical unit, dimension/conversion, MeasurementQuality policy, classifications, aliases a equivalence zostávajú odložené. Samotná entry schéma nebude dokazovať existenciu referencií ani kompatibilitu konkrétneho PropertyRecord alebo Observation; to zostane catalog-aware aplikačnej validácii.
 
-## 32. Change History
+## 32. Implementation Outcome
+
+Phase 0.2B.2.3 implementovala odporúčaný Property Catalog Entry v1 ako samostatný Knowledge Catalog Entry Aggregate Root bez zmeny Accepted architektúry.
+
+### Final v1 field model
+
+Povinné polia sú `id`, `schemaVersion`, `recordVersion`, `revision`, `status`, `createdAt`, `createdBy`, `updatedAt`, `updatedBy`, `sourceLinks`, `changeSummary`, `name`, `description`, `allowedValueTypes` a `allowedUnitIds`.
+
+Voliteľné polia sú `allowedConditionTypeIds`, `notes`, `replaces` a `replacedBy`.
+
+`allowedValueTypes` je neprázdne pole s unikátnymi položkami z uzavretého enumu `quantity` a `valueRange`. Podporuje jednu alebo obe hodnotové formy bez priority alebo fallback významu.
+
+`allowedUnitIds` je povinný neprázdny unique zoznam centralizovaných UNT referencií. Je to presný whitelist a nevyjadruje dimension compatibility, equivalence, conversion ani display preference.
+
+`allowedConditionTypeIds` je voliteľný neprázdny unique zoznam centralizovaných CND referencií. Neprítomnosť znamená, že property nepovoľuje Conditions; samotná entry schéma ešte toto pravidlo neaplikuje na PropertyRecord alebo Observation.
+
+### Schema and metadata reuse
+
+Schéma je `schemas/catalogs/property-catalog-entry.schema.json` s canonical ID `https://eos.local/schemas/catalogs/property-catalog-entry.schema.json`.
+
+Implementácia používa property-level `$ref` na autoritatívne polia `common/metadata.schema.json`. `id`, `replaces` a `replacedBy` používajú centrálny PRP `$ref`; `allowedUnitIds` používa UNT a `allowedConditionTypeIds` používa CND. Nevznikol nový metadata wrapper ani lokálne regexy identifikátorov.
+
+Schema index registruje definíciu `propertyCatalogEntry` a discovery kolekciu `propertyCatalogEntries`. Kolekcia nie je samostatný catalog-container ani persistence contract.
+
+### Lifecycle, provenance and replacement links
+
+Lifecycle používa existujúce hodnoty `Draft`, `Review`, `Approved`, `Deprecated` a `Archived`. Root nemá `verificationStatus`.
+
+`sourceLinks` je štrukturálne povinné pole a znovu používa existujúci SourceLink kontrakt. Draft môže mať prázdne pole. Existujúca EOS aplikačná source kontrola sa kompozične používa pri priamej aj indexom vnorenej validácii; Review alebo Approved položka bez provenance vracia `application_validation.source_links_required` s úplnou cestou.
+
+`replaces` a `replacedBy` sú voliteľné priame PRP referencie. Existencia cieľa, self-reference, obojsmerná konzistencia a cykly zostávajú reference-integrity a catalog-aware validáciou.
+
+### Deferred validation and semantics
+
+V1 nekontroluje existenciu PRP, UNT alebo CND záznamov ani kompatibilitu PropertyRecord/Observation s `allowedValueTypes`, `allowedUnitIds` alebo `allowedConditionTypeIds`. Validator zmenil iba registráciu nového kontraktu do existujúcej lifecycle/source kompozície; nevznikla paralelná štrukturálna ani catalog-aware validačná logika.
+
+Canonical unit, required Conditions, multiplicita, MeasurementQuality policy, Classification Catalog väzby, aliases, equivalence, quantity kind, dimension a conversion zostávajú odložené.
+
+### Fixtures and tests
+
+Vzniklo 11 platných a 44 neplatných fiktívnych fixtures. Šestnásť nových unittest testov pokrýva definíciu schémy, PRP a common metadata refs, SourceLink, povinný name a description, uzavretý value-type enum, UNT a CND allow-listy, lifecycle/provenance, replacement PRP odkazy, odmietnutie deferred polí, schema index a neprítomnosť catalog-aware validácie PropertyRecord a Observation.
+
+Kompletná sada obsahuje 168 úspešných testov. Nevznikla žiadna reálna PRP položka, Classification Catalog, conversion model ani catalog-aware consumer validácia. Implementácia nemení pôvodný verdict ani odložené hranice.
+
+## 33. Change History
 
 | Date | Version | Revision | Author | Change |
 | --- | --- | --- | --- | --- |
 | 2026-09-24 | 0.1 | 0 | Codex | Initial pre-design review of Property Catalog role, PRP identity, value-type, unit and condition policy, lifecycle, dependencies and implementation readiness. |
+| 2026-09-24 | 0.1 | 1 | Codex | Property Catalog Entry v1 implemented as a Knowledge Catalog Aggregate Root with common metadata reuse, controlled value types, exact UNT and optional CND allow-lists, lifecycle/source composition, fictional fixtures and regression tests. |
 
 READY WITH CONDITIONS

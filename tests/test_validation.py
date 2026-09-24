@@ -30,6 +30,7 @@ PROPERTY_RECORD_SCHEMA = "https://eos.local/schemas/knowledge-core/property-reco
 OBSERVATION_SCHEMA = "https://eos.local/schemas/knowledge-core/observation.schema.json"
 UNIT_CATALOG_ENTRY_SCHEMA = "https://eos.local/schemas/catalogs/unit-catalog-entry.schema.json"
 CONDITION_TYPE_CATALOG_ENTRY_SCHEMA = "https://eos.local/schemas/catalogs/condition-type-catalog-entry.schema.json"
+PROPERTY_CATALOG_ENTRY_SCHEMA = "https://eos.local/schemas/catalogs/property-catalog-entry.schema.json"
 
 
 def load_fixture(name: str) -> dict:
@@ -1838,6 +1839,244 @@ raise SystemExit(0 if result.wasSuccessful() else 1)
         }
         result = self.validator.validate(condition, CONDITION_SCHEMA)
         self.assertTrue(result.ok, [f"{e.errorCode}: {e.message}" for e in result.errors])
+
+    def test_property_catalog_entry_schema_definition_is_valid(self) -> None:
+        result = self.validator.validate_schema_definition(PROPERTY_CATALOG_ENTRY_SCHEMA)
+        self.assertTrue(result.ok, [f"{e.schemaPath}: {e.message}" for e in result.errors])
+
+    def test_valid_property_catalog_fixtures_pass(self) -> None:
+        files = sorted(VALID_CATALOG_FIXTURES.glob("property-*-valid.json"))
+        self.assertEqual(len(files), 11)
+        for path in files:
+            with self.subTest(path=path.name):
+                self.assertValid(load_json(path), PROPERTY_CATALOG_ENTRY_SCHEMA)
+
+    def test_invalid_property_catalog_fixtures_fail(self) -> None:
+        files = sorted(INVALID_CATALOG_FIXTURES.glob("property-*-invalid.json"))
+        self.assertEqual(len(files), 44)
+        for path in files:
+            with self.subTest(path=path.name):
+                self.assertInvalid(load_json(path), PROPERTY_CATALOG_ENTRY_SCHEMA)
+
+    def test_property_catalog_reuses_central_ids_and_common_metadata(self) -> None:
+        schema = self.validator.registry.by_id[PROPERTY_CATALOG_ENTRY_SCHEMA]
+        identifiers = {
+            "id": "PRP",
+            "replaces": "PRP",
+            "replacedBy": "PRP",
+        }
+        for field, identifier in identifiers.items():
+            with self.subTest(field=field):
+                self.assertEqual(
+                    schema["properties"][field]["$ref"],
+                    f"https://eos.local/schemas/common/identifiers.schema.json#/$defs/{identifier}",
+                )
+        for field in {
+            "schemaVersion", "recordVersion", "revision", "status",
+            "createdAt", "createdBy", "updatedAt", "updatedBy",
+            "sourceLinks", "changeSummary", "notes",
+        }:
+            with self.subTest(field=field):
+                self.assertTrue(
+                    schema["properties"][field]["$ref"].startswith(
+                        "https://eos.local/schemas/common/metadata.schema.json#/properties/"
+                    )
+                )
+
+    def test_property_catalog_source_link_ref_resolves(self) -> None:
+        self.assertValid(
+            load_json(VALID_CATALOG_FIXTURES / "property-source-links-valid.json"),
+            PROPERTY_CATALOG_ENTRY_SCHEMA,
+        )
+        invalid = load_json(INVALID_CATALOG_FIXTURES / "property-malformed-source-link-invalid.json")
+        result = self.validator.validate(invalid, PROPERTY_CATALOG_ENTRY_SCHEMA)
+        self.assertIn(
+            ("schema_validation.required", "$.sourceLinks[0].verificationStatus"),
+            {(e.errorCode, e.path) for e in result.errors},
+        )
+
+    def test_property_catalog_name_and_description_are_required_and_nonempty(self) -> None:
+        cases = {
+            "property-missing-name-invalid.json": ("schema_validation.required", "$.name"),
+            "property-empty-name-invalid.json": ("schema_validation.minLength", "$.name"),
+            "property-name-wrong-type-invalid.json": ("schema_validation.type", "$.name"),
+            "property-missing-description-invalid.json": ("schema_validation.required", "$.description"),
+            "property-empty-description-invalid.json": ("schema_validation.minLength", "$.description"),
+            "property-description-wrong-type-invalid.json": ("schema_validation.type", "$.description"),
+        }
+        for name, expected in cases.items():
+            with self.subTest(name=name):
+                result = self.validator.validate(
+                    load_json(INVALID_CATALOG_FIXTURES / name),
+                    PROPERTY_CATALOG_ENTRY_SCHEMA,
+                )
+                self.assertIn(expected, {(e.errorCode, e.path) for e in result.errors})
+
+    def test_property_catalog_allowed_value_types_are_closed_nonempty_and_unique(self) -> None:
+        schema = self.validator.registry.by_id[PROPERTY_CATALOG_ENTRY_SCHEMA]
+        field = schema["properties"]["allowedValueTypes"]
+        self.assertEqual(set(field["items"]["enum"]), {"quantity", "valueRange"})
+        self.assertEqual(field["minItems"], 1)
+        self.assertTrue(field["uniqueItems"])
+        self.assertValid(
+            load_json(VALID_CATALOG_FIXTURES / "property-both-value-types-valid.json"),
+            PROPERTY_CATALOG_ENTRY_SCHEMA,
+        )
+        for name in [
+            "property-missing-allowed-value-types-invalid.json",
+            "property-empty-allowed-value-types-invalid.json",
+            "property-unsupported-allowed-value-type-invalid.json",
+            "property-duplicate-allowed-value-types-invalid.json",
+            "property-allowed-value-types-wrong-type-invalid.json",
+        ]:
+            with self.subTest(name=name):
+                self.assertInvalid(load_json(INVALID_CATALOG_FIXTURES / name), PROPERTY_CATALOG_ENTRY_SCHEMA)
+
+    def test_property_catalog_allowed_unit_ids_are_required_nonempty_unique_unt_refs(self) -> None:
+        schema = self.validator.registry.by_id[PROPERTY_CATALOG_ENTRY_SCHEMA]
+        field = schema["properties"]["allowedUnitIds"]
+        self.assertEqual(field["minItems"], 1)
+        self.assertTrue(field["uniqueItems"])
+        self.assertEqual(
+            field["items"]["$ref"],
+            "https://eos.local/schemas/common/identifiers.schema.json#/$defs/UNT",
+        )
+        self.assertValid(
+            load_json(VALID_CATALOG_FIXTURES / "property-multiple-units-valid.json"),
+            PROPERTY_CATALOG_ENTRY_SCHEMA,
+        )
+        for name in [
+            "property-missing-allowed-unit-ids-invalid.json",
+            "property-empty-allowed-unit-ids-invalid.json",
+            "property-invalid-unit-id-invalid.json",
+            "property-duplicate-allowed-unit-ids-invalid.json",
+            "property-allowed-unit-ids-wrong-type-invalid.json",
+        ]:
+            with self.subTest(name=name):
+                self.assertInvalid(load_json(INVALID_CATALOG_FIXTURES / name), PROPERTY_CATALOG_ENTRY_SCHEMA)
+
+    def test_property_catalog_condition_allowlist_is_optional_nonempty_unique_cnd_refs(self) -> None:
+        schema = self.validator.registry.by_id[PROPERTY_CATALOG_ENTRY_SCHEMA]
+        field = schema["properties"]["allowedConditionTypeIds"]
+        self.assertNotIn("allowedConditionTypeIds", schema["required"])
+        self.assertEqual(field["minItems"], 1)
+        self.assertTrue(field["uniqueItems"])
+        self.assertEqual(
+            field["items"]["$ref"],
+            "https://eos.local/schemas/common/identifiers.schema.json#/$defs/CND",
+        )
+        self.assertValid(
+            load_json(VALID_CATALOG_FIXTURES / "property-minimal-draft-valid.json"),
+            PROPERTY_CATALOG_ENTRY_SCHEMA,
+        )
+        self.assertValid(
+            load_json(VALID_CATALOG_FIXTURES / "property-conditions-valid.json"),
+            PROPERTY_CATALOG_ENTRY_SCHEMA,
+        )
+        for name in [
+            "property-empty-allowed-condition-type-ids-invalid.json",
+            "property-invalid-condition-type-id-invalid.json",
+            "property-duplicate-allowed-condition-type-ids-invalid.json",
+            "property-allowed-condition-type-ids-wrong-type-invalid.json",
+        ]:
+            with self.subTest(name=name):
+                self.assertInvalid(load_json(INVALID_CATALOG_FIXTURES / name), PROPERTY_CATALOG_ENTRY_SCHEMA)
+
+    def test_property_catalog_rejects_deferred_semantics_and_verification_status(self) -> None:
+        base = load_json(VALID_CATALOG_FIXTURES / "property-minimal-draft-valid.json")
+        fields = {
+            "verificationStatus": "Approved",
+            "canonicalUnitId": "UNT-900001",
+            "requiredConditionTypeIds": ["CND-910001"],
+            "classifications": [],
+            "aliases": ["Fictional alias"],
+            "quantityKind": "fictional",
+            "dimension": "fictional",
+            "conversion": {},
+        }
+        for field, value in fields.items():
+            with self.subTest(field=field):
+                result = self.validator.validate({**base, field: value}, PROPERTY_CATALOG_ENTRY_SCHEMA)
+                self.assertIn(
+                    ("schema_validation.additionalProperties", f"$.{field}"),
+                    {(e.errorCode, e.path) for e in result.errors},
+                )
+
+    def test_property_catalog_replacement_links_use_prp(self) -> None:
+        for name in ["property-replaces-valid.json", "property-replaced-by-valid.json"]:
+            with self.subTest(name=name):
+                self.assertValid(load_json(VALID_CATALOG_FIXTURES / name), PROPERTY_CATALOG_ENTRY_SCHEMA)
+        for name, path in [
+            ("property-invalid-replaces-invalid.json", "$.replaces"),
+            ("property-invalid-replaced-by-invalid.json", "$.replacedBy"),
+        ]:
+            with self.subTest(name=name):
+                result = self.validator.validate(
+                    load_json(INVALID_CATALOG_FIXTURES / name),
+                    PROPERTY_CATALOG_ENTRY_SCHEMA,
+                )
+                self.assertIn(
+                    ("schema_validation.pattern", path),
+                    {(e.errorCode, e.path) for e in result.errors},
+                )
+
+    def test_property_catalog_lifecycle_uses_record_status(self) -> None:
+        draft = load_json(VALID_CATALOG_FIXTURES / "property-minimal-draft-valid.json")
+        sourced = load_json(VALID_CATALOG_FIXTURES / "property-source-links-valid.json")["sourceLinks"]
+        for status in ["Draft", "Review", "Approved", "Deprecated", "Archived"]:
+            with self.subTest(status=status):
+                record = {**draft, "status": status}
+                if status in {"Review", "Approved"}:
+                    record["sourceLinks"] = sourced
+                self.assertValid(record, PROPERTY_CATALOG_ENTRY_SCHEMA)
+        self.assertInvalid({**draft, "status": "Active"}, PROPERTY_CATALOG_ENTRY_SCHEMA)
+
+    def test_property_catalog_source_lifecycle_rule_is_composed(self) -> None:
+        draft = load_json(VALID_CATALOG_FIXTURES / "property-minimal-draft-valid.json")
+        self.assertValid(draft, PROPERTY_CATALOG_ENTRY_SCHEMA)
+        review = {**draft, "status": "Review"}
+        direct = self.validator.validate(review, PROPERTY_CATALOG_ENTRY_SCHEMA)
+        self.assertIn(
+            ("application_validation.source_links_required", "$.sourceLinks"),
+            {(e.errorCode, e.path) for e in direct.errors},
+        )
+        nested = self.validator.validate({"propertyCatalogEntries": [review]}, INDEX_SCHEMA)
+        self.assertIn(
+            ("application_validation.source_links_required", "$.propertyCatalogEntries[0].sourceLinks"),
+            {(e.errorCode, e.path) for e in nested.errors},
+        )
+
+    def test_property_catalog_rejects_unknown_root_fields(self) -> None:
+        record = load_json(INVALID_CATALOG_FIXTURES / "property-unknown-root-field-invalid.json")
+        result = self.validator.validate(record, PROPERTY_CATALOG_ENTRY_SCHEMA)
+        self.assertIn(
+            ("schema_validation.additionalProperties", "$.fictionalField"),
+            {(e.errorCode, e.path) for e in result.errors},
+        )
+
+    def test_schema_index_resolves_property_catalog_entry(self) -> None:
+        schema = self.validator.registry.by_id[INDEX_SCHEMA]
+        self.assertEqual(
+            schema["$defs"]["propertyCatalogEntry"]["$ref"],
+            PROPERTY_CATALOG_ENTRY_SCHEMA,
+        )
+        valid = load_json(VALID_CATALOG_FIXTURES / "property-minimal-draft-valid.json")
+        self.assertValid({"propertyCatalogEntries": [valid]}, INDEX_SCHEMA)
+
+    def test_property_catalog_does_not_validate_consumers_yet(self) -> None:
+        property_record = load_json(
+            VALID_KNOWLEDGE_CORE_FIXTURES / "property-record-quantity-valid.json"
+        )
+        property_record["propertyId"] = "PRP-999999"
+        property_record["quantity"]["unitId"] = "UNT-999999"
+        self.assertValid(property_record, PROPERTY_RECORD_SCHEMA)
+
+        observation = load_json(
+            VALID_KNOWLEDGE_CORE_FIXTURES / "observation-global-quantity-valid.json"
+        )
+        observation["propertyId"] = "PRP-999999"
+        observation["quantity"]["unitId"] = "UNT-999999"
+        self.assertValid(observation, OBSERVATION_SCHEMA)
 
 
 if __name__ == "__main__":

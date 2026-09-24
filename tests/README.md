@@ -1,5 +1,17 @@
 # tests
 
+## Míľnik 0.2B.2.3 - Property Catalog v1
+
+Property Catalog Entry má 11 platných a 44 neplatných fiktívnych fixtures v priečinkoch `fixtures/valid/catalogs/` a `fixtures/invalid/catalogs/`. Nepredstavujú reálne properties, jednotky, condition types ani autoritatívnu populáciu katalógu.
+
+Šestnásť nových unittest testov overuje Draft 2020-12 schému, centrálne PRP/UNT/CND a common metadata refs, SourceLink, povinný name a description, uzavretý a unikátny `allowedValueTypes`, povinný UNT allow-list, voliteľný CND allow-list, lifecycle/provenance pri priamej aj indexovej validácii, replacement PRP odkazy, odmietnutie deferred polí a registráciu v schema indexe.
+
+Kompletná sada má 168 testov. Úspešná validácia katalógovej položky nepotvrdzuje existenciu PRP, UNT alebo CND cieľa ani kompatibilitu PropertyRecord/Observation s katalógovou policy. Spustenie z koreňa projektu:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
 ## Míľnik 0.2B.2.2 - Condition Type Catalog v1
 
 Condition Type Catalog Entry má 8 platných a 38 neplatných fiktívnych fixtures v priečinkoch `fixtures/valid/catalogs/` a `fixtures/invalid/catalogs/`. Nepredstavujú reálne typy podmienok ani autoritatívnu populáciu katalógu.

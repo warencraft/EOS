@@ -1,5 +1,22 @@
 # schemas
 
+## Míľnik 0.2B.2.3 - Property Catalog v1
+
+Property Catalog je Knowledge Catalog. Jeho položka je samostatný Catalog Entry Aggregate Root:
+
+- schéma: `catalogs/property-catalog-entry.schema.json`,
+- schema id: `https://eos.local/schemas/catalogs/property-catalog-entry.schema.json`,
+- discovery: `index.schema.json#/$defs/propertyCatalogEntry`, kolekcia `propertyCatalogEntries`,
+- identita: centrálne `PRP-xxxxxx`,
+- povinné sú common metadata, `name`, `description`, `allowedValueTypes` a `allowedUnitIds`,
+- voliteľné sú `allowedConditionTypeIds`, `notes`, `replaces` a `replacedBy`.
+
+`allowedValueTypes` je neprázdny unique zoznam jednej alebo oboch aktuálnych číselných foriem `quantity` a `valueRange`. `allowedUnitIds` je neprázdny unique zoznam UNT a predstavuje iba presný whitelist; nevyjadruje rozmerovú kompatibilitu, konverziu ani canonical unit. Voliteľné `allowedConditionTypeIds` je neprázdny unique CND allow-list. Jeho neprítomnosť znamená, že Conditions nie sú pre property povolené, ale vynútenie voči PropertyRecord a Observation zostáva catalog-aware validácii.
+
+Metadata, lifecycle a SourceLink sa znovu používajú rovnakým spôsobom ako pri Unit a Condition Type katalógu. Draft môže mať prázdne `sourceLinks`; Review/Approved bez provenance je aplikačne neplatný. Root nemá `verificationStatus`. Replacement odkazy používajú iba PRP.
+
+V1 nemá canonical unit, required Conditions, multiplicitu, MeasurementQuality policy, classifications, aliases, equivalence, quantity kind, dimension ani conversion. Nevznikla žiadna reálna PRP položka. Phase 0.2B.2.3 je dokončená; celá Phase 0.2B.2 zostáva rozpracovaná a nasleduje `Phase 0.2B.2.4-prep - Classification Catalog Pre-design Review`.
+
 ## Míľnik 0.2B.2.2 - Condition Type Catalog v1
 
 Condition Type Catalog je Knowledge Catalog. Jeho položka je samostatný Catalog Entry Aggregate Root:

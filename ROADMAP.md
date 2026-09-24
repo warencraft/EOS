@@ -1,5 +1,21 @@
 # ROADMAP
 
+## Míľnik 0.2B.2.3 - Property Catalog Contract
+
+Cieľ:
+
+- implementovať Property Catalog ako Knowledge Catalog,
+- zaviesť samostatný Property Catalog Entry Aggregate Root so stabilným `PRP-xxxxxx`,
+- znovu použiť common entity metadata, lifecycle a SourceLink pravidlá,
+- definovať povinný neprázdny unique zoznam podporovaných číselných value types,
+- definovať presný povinný UNT allow-list a voliteľný CND allow-list,
+- ponechať canonical unit, required Conditions, multiplicitu, MeasurementQuality policy, classifications, aliases, dimension a conversion mimo v1,
+- používať iba fiktívne validačné fixtures bez reálnych properties.
+
+Stav: `COMPLETE`. Kompletná sada má 168 úspešných testov.
+
+Nasleduje: `Phase 0.2B.2.4-prep - Classification Catalog Pre-design Review`. Tento míľnik nebol začatý a celá Phase 0.2B.2 zostáva rozpracovaná.
+
 ## Míľnik 0.2B.2.2 - Condition Type Catalog Contract
 
 Cieľ:
