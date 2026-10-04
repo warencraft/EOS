@@ -1,5 +1,21 @@
 # ROADMAP
 
+## Míľnik 0.2B.2.5 - Catalog-aware / Reference-integrity Integration
+
+Cieľ:
+
+- zaviesť immutable in-memory registry pre UNT, CND, PRP a CLS;
+- vyžadovať explicitný ValidationContext pre plnú katalógovú validáciu;
+- oddeliť existence/type `reference_integrity` od významovej `catalog_validation`;
+- zdieľať UNT, CND a PRP validačné pravidlá vo všetkých relevantných Knowledge Core kontraktoch;
+- uplatniť explicitnú default a authoring lifecycle policy;
+- zachovať contract-only API, JSON Schema kontrakty a Accepted architektúru;
+- používať iba fiktívne test-only catalog entries.
+
+Stav: `COMPLETE`. Kompletná sada má 214 úspešných testov a CDR-0013 Revision 1 má verdict `READY FOR 0.2B.2 CLOSURE`.
+
+Nasleduje: `Phase 0.2B.2-close - Knowledge Catalog Integration Closure Review`. Phase 0.2C nebola začatá.
+
 ## Míľnik 0.2B.2.4 - Classification Catalog Contract
 
 Cieľ:
@@ -15,7 +31,7 @@ Cieľ:
 
 Stav: `COMPLETE`. Kompletná sada má 182 úspešných testov.
 
-Nasleduje: `Phase 0.2B.2.5-prep - Catalog-aware / Reference-integrity Integration Review`. Tento míľnik nebol začatý a celá Phase 0.2B.2 zostáva rozpracovaná.
+Nasledoval dokončený `Phase 0.2B.2.5 - Catalog-aware / Reference-integrity Integration`. Celá Phase 0.2B.2 čaká na krátke closure review.
 
 ## Míľnik 0.2B.2.3 - Property Catalog Contract
 

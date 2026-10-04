@@ -1,5 +1,24 @@
 # scripts
 
+## Míľnik 0.2B.2.5 - Catalog-aware / Reference-integrity Integration
+
+`scripts/validation/catalog_context.py` zavádza immutable in-memory `CatalogRegistry` so samostatnými read-only mapami pre UNT, CND, PRP a CLS. Registry nepristupuje k súborom ani databáze a očakáva, že vstupné položky už prešli vlastným katalógovým kontraktom. Duplicate stable ID a registrácia položky pod nesprávnou katalógovou rodinou zlyhajú fail-closed.
+
+`ValidationContext` nesie registry snapshot a explicitnú `CatalogLifecyclePolicy`. Default policy povoľuje Approved, povoľuje Deprecated s warningom a odmieta Draft, Review a Archived. Authoring policy navyše povoľuje Draft a Review; Archived zostáva odmietnutý.
+
+Pôvodné `validate(...)` a `validate_json_file(...)` zostávajú contract-only. Plná katalógová kontrola používa výhradne explicitné:
+
+```python
+validator.validate_with_context(instance, schema_id, context)
+validator.validate_json_file_with_context(path, schema_id, context)
+```
+
+Bez contextu tieto entry pointy vrátia `catalog_validation.context_required`; kontroly sa ticho nepreskočia. `ValidationResult.executedLayers` rozlišuje vykonané vrstvy a `ValidationError.referencedId` nesie cieľové ID. Warning na Deprecated položku je dostupný cez `ValidationResult.warnings` a sám nespôsobí neplatný výsledok.
+
+`reference_integrity` overuje existenciu a katalógový typ UNT/CND/PRP/CLS. `catalog_validation` overuje lifecycle, Property value type, result unit allow-list, Condition allow-list, CND value form a reference prefix. PropertyRecord a Observation používajú spoločnú property compatibility implementáciu; samostatné aj vnorené Conditions používajú spoločnú CND implementáciu. MeasurementQuality jednotky podliehajú UNT existencii, nie Property unit allow-listu.
+
+Condition `referenceId` sa v tejto fáze kontroluje iba podľa povoleného prefixu. Entity, SourceReference a všeobecná existencia takéhoto cieľa zostávajú odložené do 0.2C. Implementácia neobsahuje loader, persistence, konverzie, dimenzionálnu inferenciu ani reálne katalógové dáta.
+
 ## Míľnik 0.2B.2.4 - Classification Catalog v1
 
 Validátor registruje Classification Catalog Entry ako samostatný kontrakt a ako položku `classificationCatalogEntries` v schema indexe. Existujúca kompozičná mapa aplikuje rovnaké lifecycle/source pravidlo na priamu aj indexom vnorenú položku: Draft môže mať prázdne `sourceLinks`, kým Review alebo Approved bez definition provenance vracia `application_validation.source_links_required` s presnou cestou.

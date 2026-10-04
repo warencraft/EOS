@@ -1,5 +1,19 @@
 # tests
 
+## Míľnik 0.2B.2.5 - Catalog-aware / Reference-integrity Integration
+
+Súbor `test_catalog_validation.py` pridáva 32 `unittest` integračných testov. Pokrýva immutable registry, všetky štyri katalógové rodiny, duplicate a type mismatch, explicitný context, contract-only kompatibilitu, presné vrstvy a cesty chýb, UNT/CND/PRP/CLS resolution, lifecycle policy, shared PropertyRecord/Observation pravidlá, shared Condition pravidlá a dependency-aware potlačenie odvodených chýb.
+
+`fixtures/catalog-context/fictional-catalog-context.json` obsahuje 15 výhradne fiktívnych testovacích položiek vo vysokom ID rozsahu. Každá položka pred registráciou prechádza vlastným katalógovým kontraktom. Fixture nie je produkčný katalóg, autoritatívny technický zdroj ani vstup pre automatický loader.
+
+Kompletná sada má 214 testov: 182 pôvodných regresií a 32 nových integračných testov. Contract-only `validate(...)` naďalej nekontroluje katalógy; catalog-aware výsledok možno tvrdiť iba po úspešnom `validate_with_context(...)` s explicitným `ValidationContext`.
+
+Spustenie z koreňa projektu:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
 ## Míľnik 0.2B.2.4 - Classification Catalog v1
 
 Classification Catalog Entry má 9 platných a 34 neplatných fiktívnych fixtures v priečinkoch `fixtures/valid/catalogs/` a `fixtures/invalid/catalogs/`. Nepredstavujú reálne classifications, externé klasifikačné systémy ani autoritatívnu populáciu katalógu.

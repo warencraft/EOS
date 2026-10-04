@@ -4,9 +4,9 @@ Project: EOS – Engineering Operating System
 Contract Review ID: CDR-0013  
 Review: Catalog-aware / Reference-integrity Integration  
 Review type: Pre-design  
-Phase: 0.2B.2.5-prep  
+Phase: 0.2B.2.5
 Version: 0.1  
-Revision: 0  
+Revision: 1
 Status: Review  
 Document basis: Accepted EOS architecture + four implemented catalog contracts
 
@@ -511,10 +511,33 @@ Implementácia však musí zostať catalog-only, vyžadovať explicitný context
 
 Implementácia Phase 0.2B.2.5 môže začať po prijatí týchto podmienok.
 
-## 37. Change History
+## 37. Implementation Outcome
+
+Phase 0.2B.2.5 implementovala review bez zmeny Accepted RFC, ADR alebo JSON schém:
+
+- `scripts/validation/catalog_context.py` poskytuje immutable `CatalogRegistry`, typované UNT/CND/PRP/CLS mapy, `CatalogRecord`, `ValidationContext` a explicitnú `CatalogLifecyclePolicy`;
+- registry prijíma už kontraktovo validované záznamy, nevykonáva I/O a pri duplicate ID alebo nesprávnej ID rodine zlyhá ešte pred vytvorením snapshotu;
+- `EosValidator.validate_with_context(...)` a `validate_json_file_with_context(...)` zachovávajú pôvodné `validate(...)` ako contract-only API a reportujú vykonané vrstvy cez `executedLayers`;
+- chýbajúci context vracia `catalog_validation.context_required` a catalog-aware validácia sa potichu nepreskočí;
+- `ValidationError` bol spätne kompatibilne rozšírený o `referencedId`; Deprecated cieľ vytvára warning a nemení `ValidationResult.ok` na false;
+- UNT, CND, PRP a CLS lookup používa `reference_integrity`; lifecycle a allow-list pravidlá používajú `catalog_validation`;
+- Quantity, ValueRange a vnorené Quantity zdieľajú UNT kontrolu; Condition zdieľa CND/value-form/prefix kontrolu; PropertyRecord a Observation zdieľajú jednu property compatibility implementáciu;
+- Condition `referenceId` v tejto verzii kontroluje iba povolený prefix. Ani UNT/CND cieľ v tomto poli sa nerozlišuje, pretože všeobecná existencia entity referencie zostáva odložená do 0.2C;
+- property unit allow-list sa vzťahuje iba na hlavný výsledok, nie na MeasurementQuality;
+- default policy povoľuje Approved, povoľuje Deprecated s warningom a odmieta Draft, Review a Archived; authoring policy navyše povoľuje Draft a Review;
+- implementovaný kód duplicate chyby je `reference_integrity.duplicate_catalog_id`, čo presnejšie odlišuje registry construction od všeobecnej entity identity;
+- fiktívny snapshot s 15 entries je iba v `tests/fixtures/catalog-context/`; nevznikli produkčné katalógové dáta ani loader;
+- 32 nových integračných testov a všetkých 182 pôvodných testov prešlo, spolu 214 testov bez zlyhania alebo chyby.
+
+Vedome odložené zostávajú entity a SourceReference resolution, persistence, načítanie katalógov, replacement graph integrity, reálna catalog population, conversion, dimension inference, classification applicability a workflow validation. Implementácia nevytvorila generic resolver ani žiadny 0.2C kontrakt.
+
+Phase 0.2B.2.5 je `COMPLETE`. Celá Phase 0.2B.2 čaká na krátky míľnik `Phase 0.2B.2-close - Knowledge Catalog Integration Closure Review`.
+
+## 38. Change History
 
 | Date | Version | Revision | Author | Change |
 | --- | --- | --- | --- | --- |
 | 2026-09-29 | 0.1 | 0 | Codex | Initial pre-design review defining validation-layer boundaries, catalog-only reference integrity, semantic compatibility, explicit context and registry ownership, lifecycle policy, error behavior and Phase 0.2B.2 completion criteria. |
+| 2026-10-04 | 0.1 | 1 | Codex | Recorded the implemented immutable registry and context, explicit API, validation layers, lifecycle behavior, fictional integration fixtures, 214 passing tests and deferred 0.2C boundaries. |
 
-READY WITH CONDITIONS
+READY FOR 0.2B.2 CLOSURE

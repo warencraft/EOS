@@ -1,5 +1,29 @@
 # CHANGELOG
 
+## 0.2B.2.5 - 2026-10-04
+
+Status: Complete / Ready for closure review
+
+### Added
+
+- Immutable in-memory `CatalogRegistry`, `ValidationContext` a explicitná default/authoring lifecycle policy pre UNT, CND, PRP a CLS.
+- Context-aware API `validate_with_context(...)` a `validate_json_file_with_context(...)` s reportom vykonaných vrstiev.
+- `reference_integrity` kontroly existencie a typu a oddelené `catalog_validation` kontroly lifecycle a katalógovej kompatibility.
+- 15 fiktívnych test-only catalog entries a 32 integračných unittest testov.
+
+### Changed
+
+- `ValidationError` podporuje voliteľné `referencedId`; `ValidationResult` rozlišuje warnings a `executedLayers`.
+- Quantity, ValueRange a vnorené Quantity zdieľajú UNT lookup; Condition zdieľa CND/value-form/prefix pravidlá; PropertyRecord a Observation zdieľajú PRP/value/unit/condition compatibility.
+- CDR-0013 zvýšený na Revision 1 s výsledkom `READY FOR 0.2B.2 CLOSURE`.
+- Kompletná sada má 214 úspešných testov vrátane všetkých 182 pôvodných regresií.
+
+### Deferred / Not Added
+
+- Nevznikol generic entity resolver, SourceReference repository, persistence, production loader, conversion, dimension inference, classification applicability ani workflow engine.
+- Condition `referenceId` kontroluje iba katalógom povolený prefix; existencia cieľa zostáva pre 0.2C.
+- Nevznikli reálne katalógové dáta ani nový 0.2C kontrakt. Phase 0.2B.2 čaká na `0.2B.2-close` review.
+
 ## 0.2B.2.4 - 2026-09-24
 
 Status: Implemented / Review
