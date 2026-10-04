@@ -6,7 +6,7 @@ Contract: Material
 Review type: Pre-design  
 Phase: 0.2C.1-prep  
 Version: 0.1  
-Revision: 0  
+Revision: 1
 Status: Review  
 Document basis: Accepted EOS architecture + completed Phase 0.2B
 
@@ -503,10 +503,31 @@ Material má autoritatívne určený význam, MAT identitu, aggregate boundary, 
 
 Implementácia je bezpečná iba ako obmedzený condition-neutral profil bez designation, root MaterialCondition, structured norm linkage, špecializovanej chémie a reálnych materiálových dát. Tieto obmedzenia sú explicitné a nevyžadujú zmenu Accepted architektúry; ich porušenie by však vytvorilo nekompatibilné identity modely.
 
-## 52. Change History
+## 52. Implementation Outcome
+
+Phase 0.2C.1 implementovala obmedzený Material v1 profil bez odchýlky od pre-design odporúčania:
+
+- schéma je v `schemas/entities/material.schema.json`; nový priečinok `schemas/entities/` je konvencia pre first-class Knowledge Entity schémy a nevytvára spoločný entity framework;
+- Material je Entity a Aggregate Root so stabilným `id` cez centrálny `MAT-xxxx` `$ref` a s property-level reuse common metadata;
+- povinné sú common entity metadata, `sourceLinks` a neprázdny `name`;
+- voliteľné sú `description`, `properties`, `classifications`, `notes`, `replaces` a `replacedBy`;
+- Draft môže mať prázdne root `sourceLinks`; Review a Approved vyžadujú root provenance cez existujúcu EOS application validation;
+- `properties` vlastní embedded PropertyRecord claims a `classifications` vlastní embedded Classification assignments; ich zmena je zmenou Material aggregate;
+- opakované PRP aj konfliktné claims zostávajú povolené a zachované, bez automatického zlúčenia alebo výberu;
+- Observation ostáva samostatný Aggregate Root a Material odmieta `observations` aj `observationIds`;
+- root Conditions, designation, chemistry, structured NormReference relation, Supplier, StockMaterial a process/machine/tool compatibility zostali mimo v1;
+- `replaces` a `replacedBy` sú iba štrukturálne MAT odkazy; existencia cieľa, self-reference a cykly sa bez generic entity resolvera nekontrolujú;
+- context-aware validácia rekurzívne používa existujúce PropertyRecord, Classification, PRP, CND, UNT a CLS helpery a zachováva úplné Material-prefixed error paths;
+- vzniklo 16 platných a 42 neplatných výhradne fiktívnych fixtures; 22 nových unittest metód zvýšilo kompletnú sadu z 214 na 236 úspešných testov;
+- nevznikli reálne Material záznamy, iná entity schéma, generic entity resolver ani zmena Accepted RFC alebo ADR.
+
+Implementácia potvrdila condition-neutral hranicu a neodhalila nový blocker. Material v1 je pripravený na samostatné integračné closure review; tento dokument sám míľnik ešte formálne neuzatvára.
+
+## 53. Change History
 
 | Date | Version | Revision | Author | Change |
 | --- | --- | --- | --- | --- |
 | 2026-10-04 | 0.1 | 0 | Codex | Initial Material entity pre-design review defining the restricted v1 aggregate, ownership, provenance, catalog-validation reuse, StockMaterial boundary and deferred condition/designation semantics. |
+| 2026-10-04 | 0.1 | 1 | Codex | Recorded the Material v1 schema, entity-directory convention, final fields, provenance and ownership behavior, context-aware validation, fictional fixtures, passing test result and deferred boundaries. |
 
-READY WITH CONDITIONS
+READY FOR MATERIAL CLOSURE REVIEW

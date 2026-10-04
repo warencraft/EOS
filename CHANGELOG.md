@@ -1,5 +1,32 @@
 # CHANGELOG
 
+## 0.2C.1 - 2026-10-04
+
+Status: Implemented / Ready for closure review
+
+### Added
+
+- `schemas/entities/material.schema.json` ako prvá Knowledge Entity schéma pre condition-neutral Material Aggregate Root so stabilným centrálnym `MAT-xxxx`.
+- Registrácia Materialu v schema indexe a 16 platných plus 42 neplatných výhradne fiktívnych entity fixtures.
+- 22 unittest metód pre štruktúru, lifecycle provenance, vlastníctvo PropertyRecord a Classification, paralelné a konfliktné claims, context-aware PRP/CND/UNT/CLS validáciu a presné vnorené error paths.
+
+### Changed
+
+- Validačná kompozícia rekurzívne deleguje vnorené Material claims a classifications existujúcim helperom bez nového resolvera alebo duplicitných pravidiel.
+- CDR-0015 je Revision 1 s implementačným výsledkom `READY FOR MATERIAL CLOSURE REVIEW`.
+- Dokumentácia schém, validátora, testov a roadmap opisuje prvú entity schému a jej hranice.
+
+### Deferred / Not Added
+
+- Nevznikol Designation, root MaterialCondition, chemical composition, structured NormReference relation, StockMaterial, Supplier ani process/machine/tool compatibility model.
+- `replaces` a `replacedBy` sú iba štrukturálne MAT odkazy; generic entity resolver, replacement graph integrity a persistence zostávajú deferred.
+- Nevznikli reálne Material dáta ani iná 0.2C entita; Accepted RFC a ADR zostali nezmenené.
+
+### Validated
+
+- Kompletných 236 unittest testov prešlo vrátane všetkých pôvodných 214 regresií.
+- Phase 0.2C.1 je `IMPLEMENTED`; nasleduje `Phase 0.2C.1-close - Material Entity Integration Closure Review`.
+
 ## 0.2B.2-close.1 - 2026-10-04
 
 Status: Completed

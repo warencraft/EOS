@@ -83,6 +83,7 @@ UNIT_CATALOG_ENTRY_SCHEMA_ID = "https://eos.local/schemas/catalogs/unit-catalog-
 CONDITION_TYPE_CATALOG_ENTRY_SCHEMA_ID = "https://eos.local/schemas/catalogs/condition-type-catalog-entry.schema.json"
 PROPERTY_CATALOG_ENTRY_SCHEMA_ID = "https://eos.local/schemas/catalogs/property-catalog-entry.schema.json"
 CLASSIFICATION_CATALOG_ENTRY_SCHEMA_ID = "https://eos.local/schemas/catalogs/classification-catalog-entry.schema.json"
+MATERIAL_SCHEMA_ID = "https://eos.local/schemas/entities/material.schema.json"
 INDEX_SCHEMA_ID = "https://eos.local/schemas/index.schema.json"
 
 EMBEDDED_CONTRACT_FIELDS: dict[str, dict[str, tuple[str, bool]]] = {
@@ -106,6 +107,10 @@ EMBEDDED_CONTRACT_FIELDS: dict[str, dict[str, tuple[str, bool]]] = {
         "measurementQuality": (MEASUREMENT_QUALITY_SCHEMA_ID, False),
         "conditions": (CONDITION_SCHEMA_ID, True),
     },
+    MATERIAL_SCHEMA_ID: {
+        "properties": (PROPERTY_RECORD_SCHEMA_ID, True),
+        "classifications": (CLASSIFICATION_SCHEMA_ID, True),
+    },
     INDEX_SCHEMA_ID: {
         "propertyRecords": (PROPERTY_RECORD_SCHEMA_ID, True),
         "observations": (OBSERVATION_SCHEMA_ID, True),
@@ -113,6 +118,7 @@ EMBEDDED_CONTRACT_FIELDS: dict[str, dict[str, tuple[str, bool]]] = {
         "conditionTypeCatalogEntries": (CONDITION_TYPE_CATALOG_ENTRY_SCHEMA_ID, True),
         "propertyCatalogEntries": (PROPERTY_CATALOG_ENTRY_SCHEMA_ID, True),
         "classificationCatalogEntries": (CLASSIFICATION_CATALOG_ENTRY_SCHEMA_ID, True),
+        "materials": (MATERIAL_SCHEMA_ID, True),
     },
 }
 
@@ -512,6 +518,13 @@ class EosValidator:
                 has_verifiable_claims=True,
                 path=path,
             )
+        elif schema_id == MATERIAL_SCHEMA_ID:
+            self._validate_source_links_rule(
+                instance,
+                result,
+                has_verifiable_claims=True,
+                path=path,
+            )
 
         for field_name, (child_schema_id, is_array) in EMBEDDED_CONTRACT_FIELDS.get(schema_id, {}).items():
             child = instance.get(field_name)
@@ -569,6 +582,24 @@ class EosValidator:
                 f"{path}.classificationId",
                 record_id,
             )
+        elif schema_id == MATERIAL_SCHEMA_ID:
+            embedded_contracts = {
+                "properties": PROPERTY_RECORD_SCHEMA_ID,
+                "classifications": CLASSIFICATION_SCHEMA_ID,
+            }
+            for field_name, child_schema_id in embedded_contracts.items():
+                children = instance.get(field_name)
+                if not isinstance(children, list):
+                    continue
+                for index, child in enumerate(children):
+                    self._validate_catalog_contract(
+                        child,
+                        result,
+                        schema_id=child_schema_id,
+                        context=context,
+                        path=f"{path}.{field_name}[{index}]",
+                        record_id=record_id,
+                    )
         elif schema_id == INDEX_SCHEMA_ID:
             indexed_contracts = {
                 "quantities": QUANTITY_SCHEMA_ID,
@@ -578,6 +609,7 @@ class EosValidator:
                 "classifications": CLASSIFICATION_SCHEMA_ID,
                 "propertyRecords": PROPERTY_RECORD_SCHEMA_ID,
                 "observations": OBSERVATION_SCHEMA_ID,
+                "materials": MATERIAL_SCHEMA_ID,
             }
             for field_name, child_schema_id in indexed_contracts.items():
                 children = instance.get(field_name)

@@ -1,5 +1,19 @@
 # tests
 
+## Míľnik 0.2C.1 - Material Entity v1
+
+Material má 16 platných a 42 neplatných fiktívnych fixtures v priečinkoch `fixtures/valid/entities/` a `fixtures/invalid/entities/`. Neobsahujú reálne materiály, označenia, normové väzby, chemické zloženie ani technické odporúčania.
+
+Nových 22 unittest metód overuje Draft 2020-12 schému, centrálny MAT `$ref`, common metadata, SourceLink, PropertyRecord a Classification refs, schema index, minimum bez voliteľných znalostí, paralelné a konfliktné claims, root lifecycle provenance, condition-neutral root, zákaz Observation ownership a deferred polí a štrukturálne replacement odkazy.
+
+Context-aware testy používajú existujúci fiktívny CatalogRegistry a dokazujú PRP/CND/UNT/CLS resolution, lifecycle a compatibility bez Material-local duplikácie. Overujú kategórie aj úplné cesty vrátane `$.properties[0].quantity.unitId`, `$.properties[0].conditions[0].conditionTypeId` a `$.classifications[0].classificationId`. Platný, ale neexistujúci MAT replacement odkaz zámerne nevyvolá `reference_integrity`, pretože generic entity resolver zatiaľ neexistuje.
+
+Kompletná sada má 236 testov vrátane všetkých pôvodných 214 regresií. Spustenie z koreňa projektu:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
 ## Míľnik 0.2B.2.5 - Catalog-aware / Reference-integrity Integration
 
 Súbor `test_catalog_validation.py` pridáva 32 `unittest` integračných testov. Pokrýva immutable registry, všetky štyri katalógové rodiny, duplicate a type mismatch, explicitný context, contract-only kompatibilitu, presné vrstvy a cesty chýb, UNT/CND/PRP/CLS resolution, lifecycle policy, shared PropertyRecord/Observation pravidlá, shared Condition pravidlá a dependency-aware potlačenie odvodených chýb.

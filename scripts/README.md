@@ -1,5 +1,13 @@
 # scripts
 
+## Míľnik 0.2C.1 - Material Entity v1
+
+Validátor registruje `https://eos.local/schemas/entities/material.schema.json` ako prvú Knowledge Entity schému. Existing contract composition rekurzívne aplikuje vnorené ValueRange a MeasurementQuality pravidlá na `properties[]`; root lifecycle/source helper povoľuje prázdne zdroje v Draft a vyžaduje ich v Review/Approved.
+
+Context-aware cesta deleguje každý `properties[index]` existujúcej PropertyRecord/PRP/CND/UNT validácii a každý `classifications[index]` existujúcej Classification/CLS validácii. Kategórie `reference_integrity`, `catalog_validation` a `application_validation` sa nemenia a cesty zostávajú Material-prefixed.
+
+Nevznikol Material-local compatibility engine ani generic entity resolver. `replaces` a `replacedBy` sa kontrolujú iba štrukturálne ako centrálne MAT identifikátory; existencia cieľa, cykly a obojsmerná konzistencia zostávajú budúcej persistence/entity vrstve.
+
 ## Míľnik 0.2B.2.5 - Catalog-aware / Reference-integrity Integration
 
 `scripts/validation/catalog_context.py` zavádza immutable in-memory `CatalogRegistry` so samostatnými read-only mapami pre UNT, CND, PRP a CLS. Registry nepristupuje k súborom ani databáze a očakáva, že vstupné položky už prešli vlastným katalógovým kontraktom. Duplicate stable ID a registrácia položky pod nesprávnou katalógovou rodinou zlyhajú fail-closed.

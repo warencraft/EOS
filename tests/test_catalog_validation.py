@@ -27,6 +27,7 @@ CONDITION_SCHEMA = "https://eos.local/schemas/knowledge-core/condition.schema.js
 CLASSIFICATION_SCHEMA = "https://eos.local/schemas/knowledge-core/classification.schema.json"
 PROPERTY_RECORD_SCHEMA = "https://eos.local/schemas/knowledge-core/property-record.schema.json"
 OBSERVATION_SCHEMA = "https://eos.local/schemas/knowledge-core/observation.schema.json"
+MATERIAL_SCHEMA = "https://eos.local/schemas/entities/material.schema.json"
 INDEX_SCHEMA = "https://eos.local/schemas/index.schema.json"
 
 CATALOG_SCHEMAS = {
@@ -127,6 +128,36 @@ def observation(
     }
     if conditions is not None:
         record["conditions"] = conditions
+    return record
+
+
+def classification(classification_id: str = "CLS-980001") -> dict:
+    return {"classificationId": classification_id}
+
+
+def material(
+    *,
+    properties: list[dict] | None = None,
+    classifications: list[dict] | None = None,
+) -> dict:
+    record = {
+        "id": "MAT-9801",
+        "schemaVersion": "0.1.0",
+        "recordVersion": "0.1.0",
+        "revision": 0,
+        "status": "Draft",
+        "createdAt": "2026-01-01T00:00:00Z",
+        "createdBy": "test-suite",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "updatedBy": "test-suite",
+        "sourceLinks": [],
+        "changeSummary": "Initial fictional test Material.",
+        "name": "Example Material Context",
+    }
+    if properties is not None:
+        record["properties"] = properties
+    if classifications is not None:
+        record["classifications"] = classifications
     return record
 
 
@@ -556,6 +587,169 @@ class CatalogAwareValidationTests(unittest.TestCase):
             result,
             "reference_integrity.reference_not_found",
             "$.propertyRecords[0].quantity.unitId",
+        )
+
+    def test_material_reuses_valid_property_and_classification_context(self) -> None:
+        records = [
+            material(properties=[property_record()]),
+            material(classifications=[classification()]),
+            material(properties=[property_record()], classifications=[classification()]),
+            material(properties=[property_record(), property_record()]),
+        ]
+        for index, record in enumerate(records):
+            with self.subTest(case=index):
+                result = self.validator.validate_with_context(record, MATERIAL_SCHEMA, self.context)
+                self.assertTrue(result.ok, [(error.errorCode, error.path) for error in result.errors])
+
+    def test_material_surfaces_missing_property_reference(self) -> None:
+        result = self.validator.validate_with_context(
+            material(properties=[property_record("PRP-999999")]),
+            MATERIAL_SCHEMA,
+            self.context,
+        )
+        self.assertError(
+            result,
+            "reference_integrity.reference_not_found",
+            "$.properties[0].propertyId",
+            category="reference_integrity",
+        )
+
+    def test_material_surfaces_property_value_type_and_unit_policy(self) -> None:
+        wrong_type = material(properties=[property_record("PRP-980001", value_type="valueRange")])
+        wrong_unit = material(properties=[property_record("PRP-980001", unit_id="UNT-980002")])
+        type_result = self.validator.validate_with_context(wrong_type, MATERIAL_SCHEMA, self.context)
+        unit_result = self.validator.validate_with_context(wrong_unit, MATERIAL_SCHEMA, self.context)
+        self.assertError(
+            type_result,
+            "catalog_validation.value_type_not_allowed",
+            "$.properties[0].valueType",
+            category="catalog_validation",
+        )
+        self.assertError(
+            unit_result,
+            "catalog_validation.unit_not_allowed",
+            "$.properties[0].quantity.unitId",
+            category="catalog_validation",
+        )
+
+    def test_material_surfaces_forbidden_and_disallowed_conditions(self) -> None:
+        forbidden = material(properties=[property_record(conditions=[condition()])])
+        disallowed = material(
+            properties=[
+                property_record(
+                    "PRP-980003",
+                    conditions=[condition("CND-980004", field="valueRange")],
+                )
+            ]
+        )
+        forbidden_result = self.validator.validate_with_context(forbidden, MATERIAL_SCHEMA, self.context)
+        disallowed_result = self.validator.validate_with_context(disallowed, MATERIAL_SCHEMA, self.context)
+        self.assertError(
+            forbidden_result,
+            "catalog_validation.condition_not_allowed",
+            "$.properties[0].conditions[0].conditionTypeId",
+            category="catalog_validation",
+        )
+        self.assertError(
+            disallowed_result,
+            "catalog_validation.condition_not_allowed",
+            "$.properties[0].conditions[0].conditionTypeId",
+            category="catalog_validation",
+        )
+
+    def test_material_surfaces_missing_condition_and_value_form_mismatch(self) -> None:
+        missing = material(
+            properties=[property_record("PRP-980003", conditions=[condition("CND-999999")])]
+        )
+        mismatch = material(
+            properties=[
+                property_record(
+                    "PRP-980003",
+                    conditions=[condition("CND-980001", field="textValue")],
+                )
+            ]
+        )
+        missing_result = self.validator.validate_with_context(missing, MATERIAL_SCHEMA, self.context)
+        mismatch_result = self.validator.validate_with_context(mismatch, MATERIAL_SCHEMA, self.context)
+        self.assertError(
+            missing_result,
+            "reference_integrity.reference_not_found",
+            "$.properties[0].conditions[0].conditionTypeId",
+            category="reference_integrity",
+        )
+        self.assertError(
+            mismatch_result,
+            "catalog_validation.condition_value_form_not_allowed",
+            "$.properties[0].conditions[0]",
+            category="catalog_validation",
+        )
+
+    def test_material_surfaces_missing_nested_unit(self) -> None:
+        claim = property_record()
+        claim["measurementQuality"] = {"uncertainty": quantity("UNT-999999")}
+        result = self.validator.validate_with_context(
+            material(properties=[claim]), MATERIAL_SCHEMA, self.context
+        )
+        self.assertError(
+            result,
+            "reference_integrity.reference_not_found",
+            "$.properties[0].measurementQuality.uncertainty.unitId",
+            category="reference_integrity",
+        )
+
+    def test_material_surfaces_classification_reference_and_lifecycle(self) -> None:
+        missing = self.validator.validate_with_context(
+            material(classifications=[classification("CLS-999999")]),
+            MATERIAL_SCHEMA,
+            self.context,
+        )
+        rejected = self.validator.validate_with_context(
+            material(classifications=[classification("CLS-980002")]),
+            MATERIAL_SCHEMA,
+            self.context,
+        )
+        self.assertError(
+            missing,
+            "reference_integrity.reference_not_found",
+            "$.classifications[0].classificationId",
+            category="reference_integrity",
+        )
+        self.assertError(
+            rejected,
+            "catalog_validation.catalog_status_not_allowed",
+            "$.classifications[0].classificationId",
+            category="catalog_validation",
+        )
+
+    def test_material_replacement_reference_is_not_entity_resolved(self) -> None:
+        record = {**material(), "replaces": "MAT-9999", "replacedBy": "MAT-9998"}
+        result = self.validator.validate_with_context(record, MATERIAL_SCHEMA, self.context)
+        self.assertTrue(result.ok, [(error.errorCode, error.path) for error in result.errors])
+        self.assertNotIn("reference_integrity", {error.category for error in result.errors})
+
+    def test_material_preserves_nested_application_error_path(self) -> None:
+        claim = property_record("PRP-980002", value_type="valueRange")
+        claim["valueRange"] = {"minValue": 2, "maxValue": 1, "unitId": "UNT-980001"}
+        result = self.validator.validate_with_context(
+            material(properties=[claim]), MATERIAL_SCHEMA, self.context
+        )
+        self.assertError(
+            result,
+            "application_validation.value_range_reversed_bounds",
+            "$.properties[0].valueRange.minValue",
+            category="application_validation",
+        )
+
+    def test_schema_index_preserves_material_catalog_error_path(self) -> None:
+        record = material(properties=[property_record("PRP-999999")])
+        result = self.validator.validate_with_context(
+            {"materials": [record]}, INDEX_SCHEMA, self.context
+        )
+        self.assertError(
+            result,
+            "reference_integrity.reference_not_found",
+            "$.materials[0].properties[0].propertyId",
+            category="reference_integrity",
         )
 
 

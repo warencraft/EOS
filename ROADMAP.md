@@ -1,5 +1,21 @@
 # ROADMAP
 
+## Míľnik 0.2C.1 - Material Entity v1
+
+Cieľ:
+
+- implementovať prvú Knowledge Entity a Aggregate Root so stabilným centrálnym `MAT-xxxx`;
+- znovu použiť common entity metadata, lifecycle a root SourceLink provenance;
+- vlastniť voliteľné PropertyRecord claims a Classification assignments bez vnorenia Observation;
+- zachovať paralelné a konfliktné claims a condition-neutral v1 hranicu;
+- kompozične použiť existujúcu PRP/CND/UNT/CLS context-aware validáciu;
+- ponechať designation, root material condition, chémiu, normovú väzbu, StockMaterial, Supplier a výrobnú kompatibilitu mimo v1;
+- používať iba fiktívne validačné fixtures bez reálnych Material dát.
+
+Stav: `IMPLEMENTED`. Kompletná sada má 236 úspešných testov a CDR-0015 Revision 1 má verdict `READY FOR MATERIAL CLOSURE REVIEW`. Material milestone ešte nie je formálne uzatvorený.
+
+Nasleduje: `Phase 0.2C.1-close - Material Entity Integration Closure Review`. Supplier ani iná entity nebola začatá.
+
 ## Míľnik 0.2B.2-close.1 - Knowledge Catalog Closure Documentation Alignment
 
 Cieľ:

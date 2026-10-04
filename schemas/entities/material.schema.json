@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/schemas/entities/material.schema.json",
+  "title": "EOS Material",
+  "description": "Condition-neutral Material Knowledge Entity and Aggregate Root. It owns PropertyRecord claims and Classification assignments but does not own Observation, StockMaterial, Supplier or manufacturing compatibility data.",
+  "type": "object",
+  "required": [
+    "id",
+    "schemaVersion",
+    "recordVersion",
+    "revision",
+    "status",
+    "createdAt",
+    "createdBy",
+    "updatedAt",
+    "updatedBy",
+    "sourceLinks",
+    "changeSummary",
+    "name"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/MAT",
+      "description": "Stable identity of exactly one Material entity. Name and future designations are not identity."
+    },
+    "schemaVersion": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/schemaVersion"
+    },
+    "recordVersion": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/recordVersion"
+    },
+    "revision": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/revision"
+    },
+    "status": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/status"
+    },
+    "createdAt": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/createdAt"
+    },
+    "createdBy": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/createdBy"
+    },
+    "updatedAt": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/updatedAt"
+    },
+    "updatedBy": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/updatedBy"
+    },
+    "sourceLinks": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/sourceLinks",
+      "description": "Root provenance for the Material identity and definition. It does not replace claim, assignment or evidence provenance."
+    },
+    "changeSummary": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/changeSummary"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Canonical human-readable EOS label. It is not identity, designation or structurally unique."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional explanation of the Material concept boundary; it does not replace structured claims or classifications."
+    },
+    "properties": {
+      "type": "array",
+      "items": {
+        "$ref": "https://eos.local/schemas/knowledge-core/property-record.schema.json"
+      },
+      "description": "Parent-owned technical claims. Multiple or conflicting claims for one propertyId are preserved."
+    },
+    "classifications": {
+      "type": "array",
+      "items": {
+        "$ref": "https://eos.local/schemas/knowledge-core/classification.schema.json"
+      },
+      "description": "Parent-owned classification assignments. The Material does not own Classification Catalog Entries."
+    },
+    "notes": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/notes"
+    },
+    "replaces": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/MAT",
+      "description": "Optional structural reference to one older Material replaced by this entity. Target existence is deferred."
+    },
+    "replacedBy": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/MAT",
+      "description": "Optional structural reference to one newer Material replacing this entity. Target existence is deferred."
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,5 +1,23 @@
 # schemas
 
+## Míľnik 0.2C.1 - Material Entity v1
+
+Prvá first-class Knowledge Entity schéma je `entities/material.schema.json`. Priečinok `entities/` je konvencia pre samostatné entity kontrakty; tento míľnik nevytvára generic entity framework ani collection/container schému.
+
+Material je condition-neutral Entity a Aggregate Root:
+
+- schema id: `https://eos.local/schemas/entities/material.schema.json`,
+- discovery: `index.schema.json#/$defs/material`, indexová kolekcia `materials`,
+- stabilné `id` používa výhradne centrálny `common/identifiers.schema.json#/$defs/MAT` vo formáte `MAT-xxxx`,
+- povinné sú common entity metadata, `sourceLinks` a neprázdny `name`,
+- voliteľné sú `description`, `properties`, `classifications`, `notes`, `replaces` a `replacedBy`.
+
+`properties` obsahuje rodičom vlastnené PropertyRecord claims a `classifications` rodičom vlastnené Classification assignments. Opakované PRP aj konfliktné claims sú povolené. Conditions sú prípustné iba vo vnútri PropertyRecord, nie na Material root. Material nevlastní Observation ani StockMaterial.
+
+Draft môže mať prázdne root `sourceLinks`; Review a Approved vyžadujú root provenance cez EOS aplikačnú vrstvu. Claim a assignment provenance zostávajú na vnorených objektoch. Replacement MAT odkazy sú zatiaľ iba štrukturálne a ich existencia sa nekontroluje.
+
+V1 neobsahuje designation, root material condition, chemical composition, structured NormReference väzbu, Supplier údaje, stock form ani process/machine/tool compatibility. Fixtures neobsahujú reálne Material znalosti. Phase 0.2C.1 je implementovaná a čaká na samostatné closure review.
+
 ## Aktuálny stav po Phase 0.2B.2
 
 EOS má sedem implementovaných Knowledge Core kontraktov: `Quantity`, `ValueRange`, `MeasurementQuality`, `Condition`, `Classification`, `PropertyRecord` a `Observation`. Katalógovú vrstvu tvoria štyri samostatné Catalog Entry Aggregate Roots: Unit Catalog Entry a Classification Catalog Entry ako Reference Catalog položky a Condition Type Catalog Entry a Property Catalog Entry ako Knowledge Catalog položky. Všetky kontrakty sú dostupné cez `index.schema.json`.

@@ -15,6 +15,8 @@ VALID_KNOWLEDGE_CORE_FIXTURES = FIXTURES / "knowledge-core"
 INVALID_KNOWLEDGE_CORE_FIXTURES = ROOT / "tests" / "fixtures" / "invalid" / "knowledge-core"
 VALID_CATALOG_FIXTURES = FIXTURES / "catalogs"
 INVALID_CATALOG_FIXTURES = ROOT / "tests" / "fixtures" / "invalid" / "catalogs"
+VALID_ENTITY_FIXTURES = FIXTURES / "entities"
+INVALID_ENTITY_FIXTURES = ROOT / "tests" / "fixtures" / "invalid" / "entities"
 
 
 SOURCE_SCHEMA = "https://eos.local/schemas/source-reference.schema.json"
@@ -32,6 +34,7 @@ UNIT_CATALOG_ENTRY_SCHEMA = "https://eos.local/schemas/catalogs/unit-catalog-ent
 CONDITION_TYPE_CATALOG_ENTRY_SCHEMA = "https://eos.local/schemas/catalogs/condition-type-catalog-entry.schema.json"
 PROPERTY_CATALOG_ENTRY_SCHEMA = "https://eos.local/schemas/catalogs/property-catalog-entry.schema.json"
 CLASSIFICATION_CATALOG_ENTRY_SCHEMA = "https://eos.local/schemas/catalogs/classification-catalog-entry.schema.json"
+MATERIAL_SCHEMA = "https://eos.local/schemas/entities/material.schema.json"
 
 
 def load_fixture(name: str) -> dict:
@@ -2295,6 +2298,172 @@ raise SystemExit(0 if result.wasSuccessful() else 1)
             "sourceLinks": [],
         }
         self.assertValid(classification, CLASSIFICATION_SCHEMA)
+
+    def test_material_schema_definition_is_valid(self) -> None:
+        result = self.validator.validate_schema_definition(MATERIAL_SCHEMA)
+        self.assertTrue(result.ok, [(error.path, error.message) for error in result.errors])
+
+    def test_valid_material_fixtures_pass(self) -> None:
+        fixtures = sorted(VALID_ENTITY_FIXTURES.glob("material-*-valid.json"))
+        self.assertEqual(len(fixtures), 16)
+        for fixture in fixtures:
+            with self.subTest(fixture=fixture.name):
+                result = self.validator.validate_json_file(fixture, MATERIAL_SCHEMA)
+                self.assertTrue(result.ok, [(error.path, error.message) for error in result.errors])
+
+    def test_invalid_material_fixtures_fail(self) -> None:
+        fixtures = sorted(INVALID_ENTITY_FIXTURES.glob("material-*-invalid.json"))
+        self.assertEqual(len(fixtures), 42)
+        for fixture in fixtures:
+            with self.subTest(fixture=fixture.name):
+                result = self.validator.validate_json_file(fixture, MATERIAL_SCHEMA)
+                self.assertFalse(result.ok, fixture.name)
+
+    def test_material_reuses_central_mat_and_common_metadata(self) -> None:
+        schema = self.validator.registry.by_id[MATERIAL_SCHEMA]
+        self.assertEqual(
+            schema["properties"]["id"]["$ref"],
+            "https://eos.local/schemas/common/identifiers.schema.json#/$defs/MAT",
+        )
+        self.assertNotIn("pattern", schema["properties"]["id"])
+        for field_name in [
+            "schemaVersion",
+            "recordVersion",
+            "revision",
+            "status",
+            "createdAt",
+            "createdBy",
+            "updatedAt",
+            "updatedBy",
+            "sourceLinks",
+            "changeSummary",
+            "notes",
+        ]:
+            with self.subTest(field=field_name):
+                self.assertTrue(
+                    schema["properties"][field_name]["$ref"].startswith(
+                        "https://eos.local/schemas/common/metadata.schema.json#/properties/"
+                    )
+                )
+
+    def test_material_reuses_property_record_classification_and_source_link(self) -> None:
+        schema = self.validator.registry.by_id[MATERIAL_SCHEMA]
+        self.assertEqual(
+            schema["properties"]["properties"]["items"]["$ref"],
+            PROPERTY_RECORD_SCHEMA,
+        )
+        self.assertEqual(
+            schema["properties"]["classifications"]["items"]["$ref"],
+            CLASSIFICATION_SCHEMA,
+        )
+        record = load_json(VALID_ENTITY_FIXTURES / "material-populated-source-links-valid.json")
+        self.assertValid(record, MATERIAL_SCHEMA)
+
+    def test_material_minimum_keeps_knowledge_fields_optional(self) -> None:
+        record = load_json(VALID_ENTITY_FIXTURES / "material-minimal-draft-valid.json")
+        for field_name in ["properties", "classifications", "description", "notes"]:
+            with self.subTest(field=field_name):
+                self.assertNotIn(field_name, record)
+        self.assertValid(record, MATERIAL_SCHEMA)
+
+    def test_material_preserves_duplicate_and_conflicting_claims(self) -> None:
+        for name in [
+            "material-same-property-multiple-valid.json",
+            "material-conflicting-claims-valid.json",
+        ]:
+            with self.subTest(name=name):
+                record = load_json(VALID_ENTITY_FIXTURES / name)
+                self.assertEqual(record["properties"][0]["propertyId"], record["properties"][1]["propertyId"])
+                self.assertValid(record, MATERIAL_SCHEMA)
+
+    def test_material_source_lifecycle_rule_is_composed(self) -> None:
+        draft = load_json(VALID_ENTITY_FIXTURES / "material-minimal-draft-valid.json")
+        self.assertValid(draft, MATERIAL_SCHEMA)
+        for status in ["Review", "Approved"]:
+            with self.subTest(status=status):
+                record = {**draft, "status": status}
+                direct = self.validator.validate(record, MATERIAL_SCHEMA)
+                self.assertIn(
+                    ("application_validation.source_links_required", "$.sourceLinks"),
+                    {(error.errorCode, error.path) for error in direct.errors},
+                )
+                indexed = self.validator.validate({"materials": [record]}, INDEX_SCHEMA)
+                self.assertIn(
+                    ("application_validation.source_links_required", "$.materials[0].sourceLinks"),
+                    {(error.errorCode, error.path) for error in indexed.errors},
+                )
+
+    def test_material_replacement_links_are_structural_mat_references(self) -> None:
+        for name in ["material-replaces-valid.json", "material-replaced-by-valid.json"]:
+            with self.subTest(name=name):
+                self.assertValid(load_json(VALID_ENTITY_FIXTURES / name), MATERIAL_SCHEMA)
+        for name, path in [
+            ("material-invalid-replaces-prefix-invalid.json", "$.replaces"),
+            ("material-invalid-replaced-by-prefix-invalid.json", "$.replacedBy"),
+        ]:
+            with self.subTest(name=name):
+                result = self.validator.validate(load_json(INVALID_ENTITY_FIXTURES / name), MATERIAL_SCHEMA)
+                self.assertIn(
+                    ("schema_validation.pattern", path),
+                    {(error.errorCode, error.path) for error in result.errors},
+                )
+
+    def test_material_rejects_deferred_and_foreign_root_fields(self) -> None:
+        names = [
+            "material-verification-status-invalid.json",
+            "material-designation-invalid.json",
+            "material-designations-invalid.json",
+            "material-material-condition-invalid.json",
+            "material-delivery-condition-invalid.json",
+            "material-heat-treatment-invalid.json",
+            "material-chemical-composition-invalid.json",
+            "material-norm-reference-ids-invalid.json",
+            "material-supplier-id-invalid.json",
+            "material-stock-forms-invalid.json",
+            "material-observation-ids-invalid.json",
+            "material-observations-invalid.json",
+            "material-family-invalid.json",
+            "material-type-invalid.json",
+            "material-machine-ids-invalid.json",
+            "material-cutting-tool-ids-invalid.json",
+            "material-compatible-processes-invalid.json",
+        ]
+        for name in names:
+            with self.subTest(name=name):
+                result = self.validator.validate(load_json(INVALID_ENTITY_FIXTURES / name), MATERIAL_SCHEMA)
+                self.assertIn("schema_validation.additionalProperties", [error.errorCode for error in result.errors])
+
+    def test_material_rejects_root_conditions_but_allows_nested_condition(self) -> None:
+        record = load_json(VALID_ENTITY_FIXTURES / "material-minimal-draft-valid.json")
+        for field_name in ["condition", "conditions", "materialCondition", "deliveryCondition", "heatTreatment"]:
+            with self.subTest(field=field_name):
+                result = self.validator.validate({**record, field_name: []}, MATERIAL_SCHEMA)
+                self.assertIn(
+                    ("schema_validation.additionalProperties", f"$.{field_name}"),
+                    {(error.errorCode, error.path) for error in result.errors},
+                )
+        nested = {
+            **record,
+            "properties": [{
+                "propertyId": "PRP-980003",
+                "valueType": "quantity",
+                "quantity": {"value": 1, "unitId": "UNT-980001"},
+                "conditions": [{
+                    "conditionTypeId": "CND-980001",
+                    "evaluationMode": "contextual",
+                    "quantity": {"value": 1, "unitId": "UNT-980001"},
+                }],
+                "verificationStatus": "Draft",
+                "sourceLinks": [],
+            }],
+        }
+        self.assertValid(nested, MATERIAL_SCHEMA)
+
+    def test_schema_index_resolves_material(self) -> None:
+        schema = self.validator.registry.by_id[INDEX_SCHEMA]
+        self.assertEqual(schema["$defs"]["material"]["$ref"], MATERIAL_SCHEMA)
+        record = load_json(VALID_ENTITY_FIXTURES / "material-minimal-draft-valid.json")
+        self.assertValid({"materials": [record]}, INDEX_SCHEMA)
 
 
 if __name__ == "__main__":
