@@ -1,5 +1,13 @@
 # schemas
 
+## Aktuálny stav po Phase 0.2B.2
+
+EOS má sedem implementovaných Knowledge Core kontraktov: `Quantity`, `ValueRange`, `MeasurementQuality`, `Condition`, `Classification`, `PropertyRecord` a `Observation`. Katalógovú vrstvu tvoria štyri samostatné Catalog Entry Aggregate Roots: Unit Catalog Entry a Classification Catalog Entry ako Reference Catalog položky a Condition Type Catalog Entry a Property Catalog Entry ako Knowledge Catalog položky. Všetky kontrakty sú dostupné cez `index.schema.json`.
+
+JSON Schema naďalej overuje iba štruktúru dátových kontraktov. Runtime existencia a typ UNT, CND, PRP a CLS cieľov sa overujú vo vrstve `reference_integrity`; lifecycle a významová kompatibilita sa overujú vo vrstve `catalog_validation` s explicitným `ValidationContext` a immutable `CatalogRegistry`. Contract-only validácia tieto runtime tvrdenia neposkytuje.
+
+Repozitár neobsahuje reálne produkčné katalógové dáta, persistence ani všeobecný entity resolver. Phase 0.2B.2 je technicky dokončená; Phase 0.2C nebola implementovaná. Nasledujúce sekcie zachovávajú historický stav jednotlivých míľnikov v čase ich dokončenia.
+
 ## Míľnik 0.2B.2.4 - Classification Catalog v1
 
 Classification Catalog je Reference Catalog. Jeho položka je samostatný Catalog Entry Aggregate Root:

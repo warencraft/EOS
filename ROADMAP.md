@@ -1,5 +1,17 @@
 # ROADMAP
 
+## Míľnik 0.2B.2-close.1 - Knowledge Catalog Closure Documentation Alignment
+
+Cieľ:
+
+- zosúladiť backlog a dokumentáciu schém so skutočne dokončenou implementáciou Phase 0.2B.2;
+- uzavrieť dokumentačné findings KCC-0001 a KCC-0002 bez zmeny implementácie alebo Accepted architektúry;
+- potvrdiť 17/17 completion criteria a 214/214 úspešných testov.
+
+Stav: `COMPLETE`. Phase 0.2B.2 je formálne uzatvorená a pripravená na prechod do Phase 0.2C.
+
+Nasleduje: `Phase 0.2C.1-prep - Material Entity Pre-design Review`. Phase 0.2C zatiaľ nebola implementovaná.
+
 ## Míľnik 0.2B.2.5 - Catalog-aware / Reference-integrity Integration
 
 Cieľ:

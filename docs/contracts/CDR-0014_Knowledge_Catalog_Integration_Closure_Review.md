@@ -6,7 +6,7 @@ Review: Knowledge Catalog Integration Closure
 Review type: Closure
 Phase: 0.2B.2-close
 Version: 0.1
-Revision: 0
+Revision: 1
 Status: Review
 Document basis: Accepted EOS architecture + completed Phase 0.2B.2 implementation
 
@@ -429,10 +429,60 @@ Phase 0.2B.2 je architektonicky a implementačne uzavretá: všetky štyri katal
 
 Formálny status COMPLETE sa však v tomto review ešte neudeľuje, pretože autoritatívny pracovný register `BACKLOG.md` odporuje skutočnému stavu a schema README nemá aktuálnu integračnú vrstvu. Ide o malú, konečnú dokumentačnú korekciu bez zmeny architektúry alebo implementácie.
 
-## 35. Change History
+## 35. Corrective Closure Outcome
+
+Phase 0.2B.2-close.1 vykonala výhradne dokumentačné zosúladenie. Implementácia, JSON schémy, testy, fixtures, Accepted RFC a Accepted ADR zostali nezmenené.
+
+### 35.1 Documentation alignment
+
+- `BACKLOG.md` už neuvádza implementované katalógy, `CatalogRegistry`, `ValidationContext` ani katalógovú validáciu ako otvorenú prácu. Zachováva quantity/dimension/conversion, condition policy, property policy, classification semantics, generic entity resolver, persistence, reálne populácie a Observation rozšírenia ako explicitne deferred.
+- `schemas/README.md` má aktuálnu sekciu so siedmimi Knowledge Core kontraktmi, štyrmi Catalog Entry kontraktmi, schema/runtime hranicou a potvrdením, že neexistujú reálne katalógové dáta ani generic entity resolver.
+- `ROADMAP.md` označuje Phase 0.2B.2 ako dokončenú a ako ďalší krok uvádza iba `Phase 0.2C.1-prep - Material Entity Pre-design Review`; žiadna 0.2C implementácia nevznikla.
+- `CHANGELOG.md` eviduje korektívne uzatvorenie podľa existujúcej closure konvencie.
+- Aktuálne horné sekcie `scripts/README.md` a `tests/README.md` už pred korekciou presne opisovali runtime a testovací stav, preto neboli menené.
+
+### 35.2 Finding closure
+
+#### KCC-0001
+
+- Previous state: Medium, blocking formal transition to Phase 0.2C.
+- Status: `CLOSED`.
+- Corrective files: `BACKLOG.md`, `ROADMAP.md`.
+- Corrective action: dokončené v1 katalógové a integračné položky boli oddelené od skutočne deferred práce a ďalší míľnik bol nastavený na Material pre-design.
+- Verification evidence: backlog už neplánuje opakovanú implementáciu štyroch katalógov ani catalog-aware runtime; roadmap ukazuje uzatvorenú Phase 0.2B.2 a neimplementovanú Phase 0.2C.
+- Blocks Phase 0.2C: No.
+
+#### KCC-0002
+
+- Previous state: Low, non-blocking documentation ambiguity.
+- Status: `CLOSED`.
+- Corrective file: `schemas/README.md`.
+- Corrective action: pridaný stručný current-state prehľad a historické milestone tvrdenia boli explicitne označené ako časový záznam.
+- Verification evidence: README rozlišuje štrukturálnu JSON Schema validáciu od existujúcej runtime `reference_integrity` a `catalog_validation`, pričom netvrdí existenciu produkčných dát, persistence alebo generic entity resolvera.
+- Future owner: žiadny; rozšírenia ostávajú samostatnými backlog položkami podľa príslušnej budúcej fázy.
+- Blocks Phase 0.2C: No.
+
+### 35.3 Completion-criteria recheck
+
+Všetkých 17 kritérií z časti 29 bolo opätovne overených proti aktuálnemu repozitáru: `17 PASS`, `0 FAIL`, `0 CONDITIONAL`. Štyri katalógové schémy a sedem Knowledge Core schém zostávajú dostupné cez schema index; `CatalogRegistry`, `ValidationContext`, `reference_integrity` a `catalog_validation` zostávajú implementované s pôvodnými hranicami.
+
+Kompletná unittest sada skončila `214/214 OK`. Repozitár obsahuje 20 JSON schém, z toho sedem Knowledge Core a štyri katalógové. Všetky JSON súbory sa načítali, všetkých 20 schém prešlo `Draft202012Validator.check_schema`, lokálne a cross-file `$ref` sa vyriešili a schema index je platný. Python zdroje sa skompilovali. Duplicate-ID fail-closed a missing-context fail-closed správanie zostalo pokryté úspešnými regresnými testami.
+
+Dokumentačný cross-check `BACKLOG.md`, `ROADMAP.md`, `schemas/README.md`, `scripts/README.md`, `tests/README.md`, `CHANGELOG.md`, CDR-0013 a CDR-0014 nenašiel zostávajúci rozpor v aktuálnom stave. Phase 0.2B.2 je technicky aj formálne dokončená, neobsahuje reálne produkčné katalógové dáta ani všeobecný entity resolver a Phase 0.2C ešte nebola implementovaná.
+
+### 35.4 Final phase status
+
+- Phase 0.2B.2: `COMPLETE`.
+- Final blocking findings: none.
+- Final non-blocking findings: none.
+- Next recommended milestone: `Phase 0.2C.1-prep - Material Entity Pre-design Review`.
+- Recommended later order remains `Material`, `Supplier`, `ManufacturingProcess`, `Machine`, `CuttingTool`, `StockMaterial`, `Job`.
+
+## 36. Change History
 
 | Date | Version | Revision | Author | Change |
 | --- | --- | --- | --- | --- |
 | 2026-10-04 | 0.1 | 0 | Codex | Initial closure review of four catalog contracts, runtime integration, validation boundaries, lifecycle, tests, deferred work and 0.2C readiness. |
+| 2026-10-04 | 0.1 | 1 | Codex | Documentation-only corrective closure: aligned backlog, schema current state and roadmap; closed KCC-0001 and KCC-0002; rechecked all completion criteria and advanced the final verdict without architecture or implementation changes. |
 
-READY WITH CONDITIONS
+PHASE 0.2B.2 COMPLETE – READY FOR 0.2C

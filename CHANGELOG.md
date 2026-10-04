@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## 0.2B.2-close.1 - 2026-10-04
+
+Status: Completed
+
+### Changed
+
+- `BACKLOG.md` rozlišuje dokončený v1 rozsah Phase 0.2B.2 od odložených katalógových a runtime rozšírení a označuje Material pre-design ako nasledujúci míľnik.
+- `schemas/README.md` obsahuje aktuálny prehľad siedmich Knowledge Core kontraktov, štyroch katalógov a hranice medzi JSON Schema, `reference_integrity` a `catalog_validation`.
+- CDR-0014 Revision 1 uzatvára KCC-0001 a KCC-0002 s verifikačnými dôkazmi.
+
+### Validated
+
+- Všetkých 17 completion criteria zostáva PASS a kompletných 214 unittest testov prešlo.
+- Phase 0.2B.2 je `COMPLETE`; nasleduje `Phase 0.2C.1-prep - Material Entity Pre-design Review`.
+- Nezmenili sa JSON schémy, Python implementácia, testy, fixtures ani Accepted RFC a ADR; nevznikli reálne katalógové dáta ani 0.2C entita.
+
 ## 0.2B.2.5 - 2026-10-04
 
 Status: Complete / Ready for closure review
