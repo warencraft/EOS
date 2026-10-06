@@ -6,9 +6,11 @@ Review: Material Entity Integration Closure
 Review type: Closure  
 Phase: 0.2C.1-close  
 Version: 0.1  
-Revision: 0  
+Revision: 1
 Status: Review  
 Document basis: Accepted EOS architecture + CDR-0015 + Material v1 implementation
+
+Aktuálny stav: Phase 0.2C.1 COMPLETE. Sekcie 1 až 52 zachovávajú pôvodný review a jeho vtedajšie findings; ich konečné dispositions a aktuálny verdict určuje corrective closure v sekcii 54. Supplier pre-design nezačal a vyžaduje najprv prechod na Phase 0.2C vetvu.
 
 ## 1. Purpose
 
@@ -375,5 +377,74 @@ Phase 0.2C.1 však zatiaľ nemožno formálne označiť COMPLETE, pretože `BACK
 | Date | Version | Revision | Author | Change |
 | --- | --- | --- | --- | --- |
 | 2026-10-06 | 0.1 | 0 | Codex | Initial Material Entity Integration Closure Review; verified Material v1 architecture, validation integration, regression baseline and deferred boundaries, and recorded one blocking documentation finding plus two non-blocking hygiene findings. |
+| 2026-10-06 | 0.1 | 1 | Codex | Korektívne uzatvorenie MEC-0001 a MEC-0003, definovanie prechodu vetvy pre MEC-0002, opakovaná kontrola 25 kritérií a regresií bez zmeny implementácie. |
 
-READY WITH CONDITIONS
+## 54. Corrective Closure Outcome
+
+Phase 0.2C.1-close.1 začala na čistej vetve `feature/phase-0.2b-knowledge-contracts`, HEAD `8b5c67e8f49eec14c30d8a5da509578566c90c93`. Vstupná sada obsahovala 236 úspešných testov a Material bol jedinou entity schémou.
+
+### 54.1 MEC-0001
+
+- Previous state: Medium, blocking formal transition.
+- Final state: CLOSED.
+- Correction: BACKLOG uvádza Material pre-design, v1 implementáciu a closure medzi dokončenými; next milestone je Supplier pre-design. Zachováva designation, material condition, chemistry, normové väzby, equivalence, reálne dáta, resolver, replacement integrity, history a Decision témy ako deferred.
+- Evidence: ROADMAP označuje Material COMPLETE; CHANGELOG obsahuje samostatný corrective closure záznam. Supplier zostáva nezačatý.
+
+### 54.2 MEC-0002
+
+- Previous state: Low, non-blocking.
+- Final state: CLOSED – TRANSITION DEFINED.
+- Mandatory sequence: dokončiť corrective commit na existujúcej vetve, overiť čistý strom, potom vytvoriť/prepnúť na `feature/phase-0.2c-knowledge-entities`; až následne možno začať Supplier pre-design.
+- Command for absent target branch: `git switch -c feature/phase-0.2c-knowledge-entities`.
+- Ak cieľová vetva existuje, nesmie sa prepísať; najprv treba overiť jej históriu a prítomnosť corrective commitu. Prepnutie existujúcej vetvy je prípustné až po tejto kontrole.
+- Review nevyžaduje premenovanie starej vetvy, prepis histórie, merge ani vymazanie vetvy. Uzavretie findingu znamená schválený explicitný prechod, nie tvrdenie, že bol už vykonaný.
+
+### 54.3 MEC-0003 investigation and correction
+
+- Previous state: Low, non-blocking.
+- Final state: CLOSED.
+- Pred úpravou boli tri textové výskyty pôvodnej hodnoty: jeden v `tests/fixtures/invalid/knowledge-core/property-record-invalid-prp-prefix-invalid.json` a dva historické opisy v sekciách 5 a 50 tohto dokumentu. Historické opisy sa zachovávajú.
+- Účel fixture: overiť nesprávnu identifikačnú rodinu v `PropertyRecord.propertyId`, nie nesprávny Material entity formát.
+- Pôvodná hodnota vyvolala práve `schema_validation.pattern`, category `schema_validation`, path `$.propertyId`. Nešlo o zlyhanie na inom poli ani o falošný výsledok celej fixture; šesťmiestny tvar však zbytočne kombinoval wrong-prefix zámer s neplatným MAT formátom.
+- Hodnota bola zúžená na fiktívne `MAT-9001`. Fixture naďalej vyvoláva iba tú istú PRP pattern chybu. Nahradenie `propertyId` hodnotou `PRP-000001` vytvorí platný PropertyRecord, čím sa potvrdzuje neprítomnosť ďalšej neplatnosti.
+- Existujúca testovacia metóda teraz kontroluje presný zoznam kategórie/kódu/cesty, štvormiestny MAT tvar a pozitívny kontrolný prípad. Nevznikla nová metóda a počet testov sa nemení.
+- Audit ostatných MAT hodnôt našiel iba tri ďalšie nekanonické hodnoty: `MAT-901` v `material-incomplete-padding-invalid.json`, `MAT-90A1` v `material-malformed-id-invalid.json` a `MAT-1` v `observation-malformed-subject-id-invalid.json`. Všetky zámerne testujú malformed identifier; zostali nezmenené. Ďalšia kontaminácia sa nenašla.
+
+### 54.4 Documentation cross-check
+
+BACKLOG, ROADMAP a aktuálny CHANGELOG záznam uvádzajú dokončený Material a nasledujúci Supplier pre-design. CDR-0015 Revision 1 a implementačné sekcie schemas/scripts/tests README zostávajú záznamom pôvodného implementačného míľnika: condition-neutral Material, fiktívne dáta, chýbajúci generic entity resolver a odložené rozšírenia.
+
+Veta schema README, že implementácia čaká na closure review, je zachovaný snapshot míľnika 0.2C.1, nie aktuálny transition status. Aktuálny stav explicitne určuje tento corrective closure, ROADMAP a nový CHANGELOG záznam; README nie je v povolenom rozsahu zmien. CDR-0015 pôvodný verdict sa nemení. Supplier nebol navrhnutý ani implementovaný.
+
+### 54.5 Completion criteria recheck
+
+Všetkých 25 kritérií v sekcii 46 bolo znovu posúdených voči nezmenenej schéme, runtime a aktuálnym testom:
+
+| Kritériá | Opakovaný dôkaz | Výsledok |
+| --- | --- | --- |
+| 1–6 | Material schema, central MAT/common metadata refs, minimum a source lifecycle testy | 6 PASS |
+| 7–10 | Embedded kontrakty a úspešné duplicate/conflicting claim a Classification testy | 4 PASS |
+| 11–18 | Uzavretá root schéma, deferred-field testy, samostatná Observation, pre-design hranice | 8 PASS |
+| 19–20 | Context-aware PRP/CND/UNT/CLS testy a presné error paths/categories | 2 PASS |
+| 21–22 | Nezmenený runtime bez entity resolvera, nezmenené fiktívne Material fixtures | 2 PASS |
+| 23–24 | Pôvodných 214 aj 22 Material testov v úspešnej 236-test sade | 2 PASS |
+| 25 | Žiadny diff Accepted RFC/ADR | 1 PASS |
+
+Výsledok: 25 PASS, 0 FAIL, 0 CONDITIONAL. Počet testov zostal 236; 236 passed, 0 failed, 0 errors. Závislosti zostali Python 3.12.14, jsonschema 4.26.0 a referencing 0.37.0.
+
+### 54.6 Validation and scope evidence
+
+- Všetkých 21 schém prešlo Draft202012Validator.check_schema; Knowledge Core 7, catalogs 4, entities 1.
+- Všetkých 187 lokálnych a cross-file `$ref` sa vyriešilo a schema index validuje Material.
+- JSON parsing, UTF-8 a Python compile prešli.
+- ADR 17 a RFC 4 zostali nezmenené. Material fixtures zostali 16 valid a 42 invalid; celkové počty fixtures zostali 109 valid a 392 invalid.
+- Schémy, schema index, validátor, závislosti, Accepted architektúra a Material semantics zostali nezmenené. Jediná testová zmena je MEC-0003 fixture a presné assertions v existujúcej metóde.
+- Nevznikli reálne dáta, nová entita, Supplier návrh, persistence, API ani UI.
+
+### 54.7 Final disposition
+
+MEC-0001 CLOSED; MEC-0002 CLOSED – TRANSITION DEFINED; MEC-0003 CLOSED. Nezostáva otvorený blocking ani non-blocking finding. Povinný prechod vetvy pred Supplier prácou je naďalej explicitnou vykonávacou podmienkou.
+
+Phase 0.2C.1 je COMPLETE. Nasleduje samostatný `Phase 0.2C.2-prep – Supplier Entity Pre-design Review` po corrective commite, kontrole čistého stromu a bezpečnom prechode na Phase 0.2C vetvu.
+
+PHASE 0.2C.1 COMPLETE – READY FOR 0.2C.2

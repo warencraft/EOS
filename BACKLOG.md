@@ -1,11 +1,13 @@
 # BACKLOG
 
-## Nasledujúce: Phase 0.2C.1-prep - Material Entity Pre-design Review
+## Nasledujúce: Phase 0.2C.2-prep - Supplier Entity Pre-design Review
 
-- Preskúmať autoritatívne hranice entity `Material`, jej aggregate ownership, lifecycle, identitu, PropertyRecord, Classification, Condition a source traceability bez implementácie schémy.
-- Určiť najmenší bezpečný kontrakt a validačné hranice pre následný samostatný implementačný míľnik.
+- Supplier pre-design zatiaľ nezačal. Pred jeho začatím dokončiť corrective commit a pri čistom pracovnom strome prejsť na `feature/phase-0.2c-knowledge-entities` podľa CDR-0016 Revision 1.
 
 ## Ďalšie otvorené položky
+
+- Pre Material odložiť designation, MaterialCondition / delivery-state, chemistry/composition, structured NormReference linkage, equivalence a riadený onboarding reálnych dát.
+- Pre Material odložiť replacement target resolution, persistence/history a Decision-based claim promotion/conflict resolution; generic entity resolver zostáva samostatnou runtime úlohou.
 
 - Definovať rodičovský lifecycle kontext pre povinnosť neprázdnych `sourceLinks` vo vnorenom PropertyRecord.
 - Navrhnúť budúci requirement/tolerance kontrakt pre výrobné, konštrukčné, rozmerové, geometrické a akceptačné tolerancie; finálny názov, prefix a implementácia zatiaľ nie sú prijaté.
@@ -20,6 +22,8 @@
 - Pre runtime odložiť všeobecný entity resolver, referenčnú integritu entít, persistence a načítanie reálnych katalógových dát.
 
 ## Dokončené položky
+
+- Dokončený Material pre-design, implementácia condition-neutral Material v1 a corrective closure Phase 0.2C.1 podľa CDR-0016 Revision 1: 25/25 criteria PASS, 236/236 testov, bez reálnych Material dát a generic entity resolvera.
 
 - Dokončená a integračne skontrolovaná `Phase 0.2B.1 - Knowledge Core Contracts` so siedmimi schémami: `Quantity`, `ValueRange`, `MeasurementQuality`, `Condition`, `Classification`, `PropertyRecord` a `Observation`.
 - Dokončená `Phase 0.2B.2 - Knowledge Catalogs` so štyrmi katalógovými kontraktmi: Unit Catalog, Condition Type Catalog, Property Catalog a Classification Catalog.

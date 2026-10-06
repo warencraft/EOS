@@ -1065,6 +1065,15 @@ raise SystemExit(0 if result.wasSuccessful() else 1)
             with self.subTest(path=path.name):
                 result = self.validator.validate_json_file(path, PROPERTY_RECORD_SCHEMA)
                 self.assertFalse(result.ok, path.name)
+                if path.name == "property-record-invalid-prp-prefix-invalid.json":
+                    self.assertEqual(
+                        [(error.category, error.errorCode, error.path) for error in result.errors],
+                        [("schema_validation", "schema_validation.pattern", "$.propertyId")],
+                    )
+                    record = load_json(path)
+                    self.assertRegex(record["propertyId"], r"^MAT-[0-9]{4}$")
+                    record["propertyId"] = "PRP-000001"
+                    self.assertValid(record, PROPERTY_RECORD_SCHEMA)
 
     def test_property_record_uses_central_prp_identifier(self) -> None:
         schema = self.validator.registry.by_id[PROPERTY_RECORD_SCHEMA]

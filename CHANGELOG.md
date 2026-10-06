@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## 0.2C.1-close.1 - 2026-10-06
+
+Status: Completed
+
+### Changed
+
+- BACKLOG a ROADMAP zosúladené s dokončeným Material v1 a nasledujúcim, zatiaľ nezačatým Supplier pre-designom.
+- CDR-0016 Revision 1 uzatvára MEC-0001 a MEC-0003; MEC-0002 má stav CLOSED – TRANSITION DEFINED s povinným prechodom na Phase 0.2C vetvu pred Supplier prácou.
+- Legacy wrong-PRP-prefix fixture používa platné fiktívne `MAT-9001`; existujúci test overuje jedinú pattern chybu na `$.propertyId` a úspech po nahradení platným PRP. Pôvodný výsledok nebol spôsobený iným poľom.
+
+### Validated
+
+- 236/236 testov, 25/25 Material completion criteria a 21 platných schém; schémy, validátor a Accepted architektúra zostali nezmenené.
+- Phase 0.2C.1 je COMPLETE. Supplier ani ďalšia entita nezačali; nevznikli reálne Material dáta.
+- Staršie changelog a implementačné README sekcie zachovávajú stav svojho míľnika; aktuálny closure stav určuje CDR-0016 Revision 1 a ROADMAP.
+
 ## 0.2C.1 - 2026-10-04
 
 Status: Implemented / Ready for closure review

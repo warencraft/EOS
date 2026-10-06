@@ -12,9 +12,9 @@ Cieľ:
 - ponechať designation, root material condition, chémiu, normovú väzbu, StockMaterial, Supplier a výrobnú kompatibilitu mimo v1;
 - používať iba fiktívne validačné fixtures bez reálnych Material dát.
 
-Stav: `IMPLEMENTED`. Kompletná sada má 236 úspešných testov a CDR-0015 Revision 1 má verdict `READY FOR MATERIAL CLOSURE REVIEW`. Material milestone ešte nie je formálne uzatvorený.
+Stav: `COMPLETE`. Phase 0.2C.1-close.1 uzavrela Material podľa CDR-0016 Revision 1: 25/25 completion criteria PASS a 236 úspešných testov. CDR-0015 Revision 1 zostáva historickým záznamom implementácie pred closure.
 
-Nasleduje: `Phase 0.2C.1-close - Material Entity Integration Closure Review`. Supplier ani iná entity nebola začatá.
+Nasleduje: `Phase 0.2C.2-prep - Supplier Entity Pre-design Review`. Supplier nezačal. Pred jeho začatím musí po corrective commite a kontrole čistého stromu prebehnúť prechod na `feature/phase-0.2c-knowledge-entities` podľa CDR-0016. Nasledujúce staršie milestone sekcie zachovávajú historický stav.
 
 ## Míľnik 0.2B.2-close.1 - Knowledge Catalog Closure Documentation Alignment
 
