@@ -6,9 +6,11 @@ Contract: Supplier
 Review type: Pre-design
 Phase: 0.2C.2-prep
 Version: 0.1
-Revision: 0
+Revision: 1
 Status: Review
 Document basis: Accepted EOS architecture + completed Material entity phase
+
+Aktuálny výsledok: SI-0001 CLOSED; Supplier v1 READY FOR IMPLEMENTATION. Sekcie 1 až 58 zachovávajú pôvodný pre-design a jeho vtedajší blocker. Aktuálne identity rozhodnutie, rozsah v1 a opakované posúdenie pripravenosti sú v sekcii 60; staršie formulácie OPEN/NOT READY sa čítajú ako história Revision 0.
 
 ## 1. Purpose
 
@@ -482,5 +484,151 @@ Implementácia teraz nesmie začať: jedna materiálna identity otázka vedie k 
 | Date | Version | Revision | Author | Change |
 | --- | --- | --- | --- | --- |
 | 2026-10-06 | 0.1 | 0 | Codex | Pre-design Supplier review: autoritatívne SUP a aggregate hranice, navrhnutý minimálny profil B, provenance a ownership matice, deferred domény a blokujúca identity granularita SI-0001. |
+| 2026-10-14 | 0.1 | 1 | Codex | Phase 0.2C.2-prep.1: výber právne samostatnej organizácie v dodávateľskej roli, rozlíšenie sites a commercial relationships, uzavretie SI-0001 a opakované posúdenie Supplier v1 bez zmeny Accepted architektúry. |
 
-NOT READY
+## 60. Supplier Identity Boundary Decision
+
+### 60.1 Baseline and reconstructed problem
+
+Rozhodnutie vychádza z commitnutého CDR-0017 Revision 0, HEAD `aceaf27dcc4a078da81ae1cbff2baf469f8141fc`. Vetva je `feature/phase-0.2c-knowledge-entities`, tracking `origin/feature/phase-0.2c-knowledge-entities`; vstupný pracovný strom bol čistý.
+
+SI-0001 vznikol preto, že RFC-0002 §4.6 určuje Supplier ako obchodného alebo servisného partnera a G-0049 ako dodávateľa alebo obchodného partnera, ale neurčuje, či SUP patrí právne samostatnej organizácii, prevádzke alebo obchodnému vzťahu. Rovnaká schéma by potom mohla niesť nekompatibilné identity. Dopad sa týka deduplikácie, StockMaterial, sites, capabilities, subcontractingu, procurement, offers, certifikácií, assessments, customers/partners, external mappings a entity relationships.
+
+Pôvodné odporúčanie jednej právne samostatnej organizácie bolo návrhom, nie pravidlom odvodeným z regexu. Tento samostatný rozhodovací míľnik ho preveruje na konkrétnych scenároch a uzatvára pre obmedzený implementačný profil v1.
+
+### 60.2 Candidate comparison
+
+| Kandidát | Výhody | Nevýhody | Rozhodnutie |
+| --- | --- | --- | --- |
+| A: právne samostatná organizácia v dodávateľskej roli | Stabilita cez názvy, prevádzky, účty a roly; jasný subjekt referencií a provenance | Potrebuje identity dôkaz; site-scoped fakty a account data vyžadujú ďalší context; budúca Organization integrácia | SELECTED pre v1 |
+| B: operational organization / establishment / site | Blízko miestnej capability, skladov a certifikačného scope | Neurčitá prevádzková hranica; viac SUP pre jednu právnu organizáciu; duplikované právne údaje a nejednoznačné procurement/accounting mapping | REJECTED ako SUP identita; site koncept zostáva deferred |
+| C: commercial relationship / vendor account | Priame napojenie na buyer-specific účty, meny a podmienky | Rôzne účty by vytvárali rôzne SUP pre ten istý subjekt; zmena vzťahu by menila identity evidence; capability a certifikácia sa viažu na nesprávny account objekt | REJECTED ako SUP identita; commercial context zostáva deferred |
+
+Variant A nevyžaduje, aby všetky certifikácie alebo služby platili pre celú organizáciu. Vyžaduje práve opačne, aby budúce scoped tvrdenia neboli odvodené iba z organizačného SUP.
+
+### 60.3 Selected normative identity statement
+
+**V Supplier v1 identifikuje jedno SUP jednu právne samostatnú organizáciu reprezentovanú v EOS v dodávateľskej roli.** Viac prevádzok, rolí, vendor účtov, capabilities alebo offers samo osebe NESMIE vytvoriť ďalšiu SUP identitu. Iná právne samostatná organizácia vyžaduje odlišné SUP; ak pre ňu už SUP existuje, použije sa existujúce ID namiesto nového duplikátu.
+
+SUP NEIDENTIFIKUJE site, pobočku bez samostatnej právnej identity, warehouse, brand, trade name, vendor account, offer, capability, certification, contact, stock item ani commercial relationship. Je internou stabilnou identitou Supplier aggregate, nie všeobecným Organization ID, registračným číslom ani globálnym identifikátorom všetkých rolí v EOS.
+
+Formát zostáva `SUP-xxxx`, presne štyri číslice, centrálne `^SUP-[0-9]{4}$` cez existujúci `$ref`. Pole zostáva `id`. Žiadny nový prefix alebo lokálny regex nevzniká.
+
+### 60.4 Operational legal boundary
+
+Pre v1 je právne samostatná organizácia subjekt, pri ktorom spoľahlivý zdroj potvrdzuje oddelenú organizačnú právnu identitu od iných evidovaných subjektov. Samostatné registračné údaje môžu byť dôkazom, ale samotné odlišné číslo, VAT, adresa, názov alebo interný účet nie sú automatickým algoritmom na založenie nového SUP.
+
+| Prípad | Pravidlo v1 |
+| --- | --- |
+| Samostatná dcérska právna organizácia | Vlastný SUP, aj keď má spoločného vlastníka alebo značku |
+| Pobočka bez samostatnej právnej identity | Nie nové SUP; neskôr site/location context |
+| Corporate group | Nie spoločné SUP pre členov; konkrétna samostatná organizácia skupiny môže mať vlastný SUP |
+| Trade name / brand | Nemení identity subjektu |
+| Internal division | Nevytvára vlastné SUP |
+| Fyzická osoba podnikateľ / sole trader | Mimo obmedzeného v1 profilu; nezamieňať s právne samostatnou organizáciou a nevkladať ad-hoc osobné údaje |
+| Nejasná právna samostatnosť | Nezakladať nový subjekt ako potvrdenú Supplier identitu; najprv vyriešiť identity dôkaz |
+
+Toto je doménová hranica EOS v1, nie medzinárodná právna taxonómia. Rozšírenie na iné druhy counterparties vyžaduje samostatný návrh. Draft povoľuje inkrementálny zápis a prázdne sourceLinks, ale nie vedomé miešanie site, account a organization významov.
+
+### 60.5 Organization and role
+
+Supplier predstavuje organizáciu konkrétne v dodávateľskej roli. Nie je organizačne neutrálnym registrom všetkých subjektov. Manufacturer, Distributor, Service Provider, Subcontractor a Material Supplier sú súbežné možné roly; Vendor zostáva informatívny obchodný termín.
+
+Pre rovnaký subjekt NESMIE vzniknúť ďalšie SUP iba pre inú rolu. Generic Classification assignments môžu neskôr vyjadrovať kategórie; konkrétna výroba produktu, subcontract vzťah alebo distributor authorization vyžadujú vlastný context a provenance. Jediný povinný role enum sa nezavádza.
+
+Ak organizácia neskôr vystupuje aj ako Customer, toto rozhodnutie nepredpisuje Customer kontrakt ani nové ID. Budúci návrh musí riešiť zdieľanú organizačnú identitu a mappings; nesmie pretypovať SUP na Customer alebo predpokladať zhodu podľa názvu.
+
+### 60.6 Sites, capabilities and certifications
+
+Jedna právne samostatná organizácia môže mať viac plants, warehouses, branches a service locations. Fyzická odlišnosť sama nevytvára ďalšie SUP. SupplierSite alebo Location zostáva budúcim konceptom bez novej schémy či prefixu.
+
+Certifikácia jedného závodu, capability konkrétneho stroja/site alebo skladová dodávka z warehouse sa nesmie povýšiť na organizačne univerzálnu vlastnosť. Budúce capability/certification/stock records budú potrebovať explicitný subject a site/scope/time context. Ak tento model nie je dostupný, v1 taký údaj neserializuje do Supplier root, PropertyRecord, notes ani generic capability array.
+
+### 60.7 Commercial relationship and identifier placement
+
+Vendor code, payment terms, currency, price lists, commercial status, MOQ, delivery terms a buyer-specific account number sú budúce commercial/relationship údaje. Nedefinujú SUP a zmena týchto hodnôt nevytvára novú Supplier identitu.
+
+| Identifier context | Budúce priradenie |
+| --- | --- |
+| Company registration identity | Organizácia/Supplier profil, so scheme a provenance |
+| Establishment/location identifier | Site/location, nie náhradná SUP identita |
+| ERP vendor code / buyer account | External system mapping alebo commercial relationship |
+
+Všetky mappings musia rešpektovať skutočný význam externého systému; nemožno z názvu vendor code usúdiť, že identifikuje právny subjekt. ExternalIdentifier sa teraz neimplementuje.
+
+### 60.8 Rename, merger and duplicate scenarios
+
+| Scenár | Identity výsledok | Hranica |
+| --- | --- | --- |
+| A: rovnaký právny subjekt mení názov | Zachovať SUP; auditovaná zmena záznamu | Continuity musí byť doložená, nie odvodená z podobného názvu |
+| B: trade name sa mení | Zachovať SUP | Brand nie je identita |
+| C: pobočka sa zatvorí | Zachovať organizačné SUP | Site stav neznamená zánik organizácie |
+| D: jedna firma nadobudne druhú | Oba SUP ostávajú, ak oba subjekty právne pokračujú | Acquisition je ownership relationship, nie record replacement |
+| E: dve entity sa zlúčia do nového právneho subjektu | Nový subjekt má odlišné SUP; staré referencie a história sa zachovajú | Bez automatického prenesenia kvalifikácií, zmlúv a evidence |
+| E doplnenie: jeden pôvodný subjekt právne pokračuje | Jeho SUP pokračuje; druhý sa neprepisuje naň | Skutočnú continuity treba overiť zo zdrojov |
+| F: objaví sa duplicitný EOS record pre rovnaký subjekt | Nezakladať tretie SUP; určiť canonical záznam budúcim auditovaným dedup postupom | Bez mazania histórie alebo tichého prepisu existujúcich odkazov |
+
+`replaces`/`replacedBy` môže byť neskôr relevantné pre náhradu duplicitného záznamu, ale nie ako univerzálna reprezentácia merger, acquisition alebo právneho nástupníctva. Vo v1 zostáva odložené, pretože chýba dedup/replacement workflow a resolver. Povolenie supersession v RFC neznamená povinnosť publikovať tieto polia v prvom profile.
+
+### 60.9 Provenance consequences
+
+Supplier.root.sourceLinks podporuje identitu, existenciu a definíciu reprezentovanej organizácie. Automaticky nepreukazuje qualification, capability, certification, commercial terms alebo site attributes. Každé budúce takéto tvrdenie musí mať vlastný scope a zdroj.
+
+Common metadata/source lifecycle zostáva bez zmeny: sourceLinks je required, Draft povoľuje prázdne pole, Review/Approved overiteľnej identity vyžaduje zdroj. Validita source odkazu nie je automatickým dôkazom právnej identity alebo kvalifikácie.
+
+### 60.10 Future Organization risk
+
+Riziko: **MEDIUM**. Supplier ako rolový aggregate môže neskôr zdieľať organizáciu s Customer alebo Partner profilom. Prijatá granularita umožňuje budúce explicitné prepojenie Supplier profilu na Organization bez zmeny významu existujúceho SUP.
+
+Možná migračná zásada, nie nový model: zachovať SUP a historické referencie, vytvoriť overené mappings na budúcu organizačnú identitu a premiestňovať shared identity údaje iba auditovane. Supplier môže zostať supplier-role profilom odkazujúcim na Organization. Nesmie sa vymazať SUP ani odvodiť one-to-one mapping automaticky z názvu.
+
+Budúca duplicita rolových profilov je riaditeľná; deštruktívna duplicita by vznikla najmä miešaním site/account/organization identity. Vybrané pravidlo ju obmedzuje. Organization sa teraz nezavádza a SI-0001 preto nezostáva otvorené pre túto budúcu abstrakciu.
+
+### 60.11 RFC / ADR impact
+
+Výsledok: **A – spresnenie obmedzeného v1 profilu existujúceho Supplier konceptu**. RFC-0002 §4.6 a §16 aj G-0049 ponechávajú Supplier ako obchodného/servisného partnera, Entity a Aggregate Root so SUP. Žiadny Accepted text neurčuje site alebo account ako povinnú SUP granularitu ani nevyžaduje zahrnúť všetky typy counterparties do v1.
+
+Rozhodnutie nemení entity kategóriu, aggregate ownership, lifecycle, provenance, ID formát ani význam iných kontraktov. Vyberá explicitný identity profil v rámci prijatého partner konceptu pre prvú implementáciu, podobne ako Material v1 explicitne obmedzuje širší koncept. Nie je univerzálnou redefiníciou všetkých budúcich Supplier prípadov.
+
+Preto sa nemení Accepted RFC/ADR, governance ani EOS-003. Ak sa neskôr bude meniť význam SUP, povoľovať site/account ako SUP alebo nahrádzať Supplier všeobecným Organization aggregate, už to nebude toto spresnenie a bude potrebný príslušný architektonický proces.
+
+### 60.12 Supplier v1 preconditions re-evaluation
+
+Identity kandidát A a serializačný model B zo sekcie 43 sú rôzne osi rozhodnutia: vyberá sa organizačná identita A a minimal identity + optional Classification profil B.
+
+| Predpoklad | Výsledok pre v1 |
+| --- | --- |
+| Domain meaning, object type, SUP | Jedna právne samostatná organizácia v dodávateľskej roli; Knowledge Entity/Aggregate Root; central SUP |
+| Organization / legal boundary | Definovaná v 60.3–60.4; sole traders mimo v1 |
+| Site boundary | Žiadne nové SUP iba pre site; structured sites deferred |
+| Manufacturer/vendor/distributor | Viac rolí jednej identity; bez hard-coded type enum |
+| Naming | Required neprázdny `name`; nie unique identity; legalName/tradingName deferred |
+| Provenance / lifecycle | Required common metadata/sourceLinks; common RecordStatus; nie qualified-vendor status |
+| Classification | Optional multiple embedded assignments; CLS existence/lifecycle cez existing context; applicability nevyriešená a nepredstieraná |
+| PropertyRecord | V1 neobsahuje `properties`; žiadny business key/value register |
+| Address/contact/person/website | Deferred; nie free-text náhrady |
+| Qualification/certification/capability | Deferred scoped models; nie root Approved ani boolean |
+| Commercial data | Price, leadTime, terms, accounts, offers mimo root |
+| Material/StockMaterial/process/tool | Samostatné aggregates/future context; bez root zoznamov a embedding |
+| Observation | Môže SUP referencovať; Supplier ju nevlastní |
+| Minimum valid Supplier | Common required metadata, SUP `id`, `name`, `sourceLinks`; optional description/classifications/notes |
+| Root verificationStatus | Nepridáva sa |
+| Replacement | `replaces`/`replacedBy` deferred; žiadne implicitné corporate semantics |
+| Resolver | Generic entity resolver nie je predpoklad v1; CLS kontext sa reuse-ne |
+| Real data | Budúci samostatný onboarding s identity dôkazom; teraz iba návrh |
+
+Nezostáva ďalšia nejednoznačnosť vyžadujúca nekompatibilné v1 schémy. Odložené kontrakty nie sú skryté optional fields. Pri následnej implementácii sa musí zachovať presný field list sekcie 44, closed shape, central `$ref`, uvedené lifecycle pravidlá a oddelenie schema/application/reference/catalog výsledkov. Žiadna výnimka z obmedzení v1 sa nesmie doplniť ako voľný string alebo catch-all array.
+
+### 60.13 SI-0001 closure and readiness
+
+- Previous state: High, blocking Supplier implementation; NOT READY.
+- Final state: **SI-0001 CLOSED**.
+- Rationale: Jedna identity granularita bola vybraná po porovnaní A/B/C a preverená na rename, sites, accounts, multi-role, merger, acquisition, duplicate a future Organization scenároch. Corporate a relationship semantics sa neprekrývajú so SUP; otvorené rozšírenia sú explicitne mimo v1.
+- Remaining Supplier implementation blockers: **0** pre presne definovaný v1 profil.
+- Readiness: **READY FOR IMPLEMENTATION** v samostatnom následnom míľniku, bez začatia implementácie v tomto rozhodnutí.
+
+### 60.14 Verification and unchanged scope
+
+Kompletná existujúca sada: 236 passed, 0 failed, 0 errors. Schémy zostávajú 21, Knowledge Core 7, catalogs 4, entity schemas 1 (iba Material); ADR 17 a RFC dokumenty 4. Supplier schéma neexistuje. Jediná zmena tohto míľnika je CDR-0017 Revision 1. Material, schémy, Python, tests, fixtures, katalógy, Accepted RFC/ADR, governance, BACKLOG, ROADMAP a CHANGELOG zostávajú nezmenené. Nevznikli reálne Supplier dáta.
+
+READY FOR IMPLEMENTATION
