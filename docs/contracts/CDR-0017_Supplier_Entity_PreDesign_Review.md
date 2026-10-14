@@ -4,13 +4,13 @@ Project: EOS – Engineering Operating System
 Contract Review ID: CDR-0017
 Contract: Supplier
 Review type: Pre-design
-Phase: 0.2C.2-prep
+Phase: 0.2C.2
 Version: 0.1
-Revision: 1
+Revision: 2
 Status: Review
 Document basis: Accepted EOS architecture + completed Material entity phase
 
-Aktuálny výsledok: SI-0001 CLOSED; Supplier v1 READY FOR IMPLEMENTATION. Sekcie 1 až 58 zachovávajú pôvodný pre-design a jeho vtedajší blocker. Aktuálne identity rozhodnutie, rozsah v1 a opakované posúdenie pripravenosti sú v sekcii 60; staršie formulácie OPEN/NOT READY sa čítajú ako história Revision 0.
+Aktuálny výsledok: SI-0001 CLOSED; Supplier v1 IMPLEMENTED; READY FOR SUPPLIER CLOSURE REVIEW. Implementačný outcome je v sekcii 61; sekcia 60 zachováva readiness rozhodnutie Revision 1. Sekcie 1 až 58 zachovávajú pôvodný pre-design a jeho vtedajší blocker. Aktuálne identity rozhodnutie, rozsah v1 a opakované posúdenie pripravenosti sú v sekcii 60; staršie formulácie OPEN/NOT READY sa čítajú ako história Revision 0.
 
 ## 1. Purpose
 
@@ -485,6 +485,7 @@ Implementácia teraz nesmie začať: jedna materiálna identity otázka vedie k 
 | --- | --- | --- | --- | --- |
 | 2026-10-06 | 0.1 | 0 | Codex | Pre-design Supplier review: autoritatívne SUP a aggregate hranice, navrhnutý minimálny profil B, provenance a ownership matice, deferred domény a blokujúca identity granularita SI-0001. |
 | 2026-10-14 | 0.1 | 1 | Codex | Phase 0.2C.2-prep.1: výber právne samostatnej organizácie v dodávateľskej roli, rozlíšenie sites a commercial relationships, uzavretie SI-0001 a opakované posúdenie Supplier v1 bez zmeny Accepted architektúry. |
+| 2026-10-14 | 0.1 | 2 | Codex | Phase 0.2C.2: implementovaný Supplier v1, central SUP/common metadata, CLS validácia, fiktívne fixtures a 260 úspešných testov; pripravené na samostatné closure review. |
 
 ## 60. Supplier Identity Boundary Decision
 
@@ -632,3 +633,57 @@ Nezostáva ďalšia nejednoznačnosť vyžadujúca nekompatibilné v1 schémy. O
 Kompletná existujúca sada: 236 passed, 0 failed, 0 errors. Schémy zostávajú 21, Knowledge Core 7, catalogs 4, entity schemas 1 (iba Material); ADR 17 a RFC dokumenty 4. Supplier schéma neexistuje. Jediná zmena tohto míľnika je CDR-0017 Revision 1. Material, schémy, Python, tests, fixtures, katalógy, Accepted RFC/ADR, governance, BACKLOG, ROADMAP a CHANGELOG zostávajú nezmenené. Nevznikli reálne Supplier dáta.
 
 READY FOR IMPLEMENTATION
+
+
+## 61. Supplier v1 Implementation Outcome
+
+### 61.1 Baseline and scope
+
+Vstup: vetva `feature/phase-0.2c-knowledge-entities`, tracking `origin/feature/phase-0.2c-knowledge-entities`, HEAD `736820b` (Resolve Supplier identity boundary), čistý strom, CDR-0017 Revision 1, SI-0001 CLOSED. Baseline: 236 passed, 0 failures, 0 errors, 21 schém, 7 Knowledge Core, 4 catalogs, iba Material entity. Supplier, StockMaterial, generic entity resolver a reálne Supplier dáta neexistovali. Nebol zistený blokujúci rozpor s Accepted architektúrou.
+
+### 61.2 Contract and final fields
+
+Schéma: `schemas/entities/supplier.schema.json`; canonical ID `https://eos.local/schemas/entities/supplier.schema.json`; Draft 2020-12; closed object (`additionalProperties: false`). Existujúci priečinok `schemas/entities/` je konvencia, nie nový framework. Discovery je `schemas/index.schema.json#/$defs/supplier`. Podľa zadania nevznikla entity kolekcia `suppliers` ani nová collection schema; plná aplikačná validácia sa volá cez canonical Supplier schema ID.
+
+Supplier je Knowledge Entity, Entity a Aggregate Root so stabilným SUP, vlastnou revision, lifecycle a root provenance. Jeden SUP reprezentuje jednu právne samostatnú organizáciu v dodávateľskej roli. Ďalší site, pobočka bez samostatnej právnej identity, warehouse, rola, vendor account alebo offer sám nevytvára novú SUP identitu. Iná právna organizácia vyžaduje iné SUP. Rename pri zachovaní právnej identity nemení SUP; acquisition sama nemusí meniť SUP. Sole traders zostávajú mimo v1.
+
+Autoritatívny tvar `SUP-xxxx`, presne štyri číslice, regex `^SUP-[0-9]{4}$`. Schéma reuse-nuje `https://eos.local/schemas/common/identifiers.schema.json#/$defs/SUP`; EOS-003, RFC-0002 §16, RFC-0003 G-0049 a §60 tohto CDR sú konzistentné. Identifiers ani governance sa nemenili.
+
+Povinné polia: `id`, `schemaVersion`, `recordVersion`, `revision`, `status`, `createdAt`, `createdBy`, `updatedAt`, `updatedBy`, `sourceLinks`, `changeSummary`, `name`.
+
+Voliteľné polia: `description`, `classifications`, `notes`. Žiadne ďalšie root polia. Metadata sú property-level common `$ref` podľa Material precedentu; nevzniká lokálna lifecycle definícia. Name je neprázdny ľudsky čitateľný label, nie globálne unikátna identita, registration ID alebo dedup algoritmus. Description je neprázdny vysvetľujúci text; notes je common text a môže byť prázdny. Textové polia nie sú skrytým obchodným ani site/contact modelom.
+
+### 61.3 Lifecycle, provenance and ownership
+
+`sourceLinks` je required a reuse-nuje SourceLink cez common metadata. Draft povoľuje prázdne pole. Review/Approved vyžaduje root zdroj cez existujúci aplikačný helper bez caller opt-in. Root provenance podporuje identitu/existenciu/definíciu organizácie, nie qualification, capability, certification, ceny alebo site attributes. EOS RecordStatus nie je business ani legal-company operating status.
+
+Classification[] je optional, povoľuje nulu, jedno aj viac priradení. Ide o embedded owned assignments, nie embedded Classification Catalog Entry. Assignment provenance, root identity provenance a catalog-definition provenance zostávajú oddelené. Rôzne priradenia ani viac rolí nerozdeľujú SUP; single supplierType enum nevzniká. Reálna role applicability sa nepredstiera.
+
+Supplier nevlastní Observation, neukladá `observations` ani `observationIds`. Existing Observation subject contract prijíma SUP a zostal nezmenený; overená bola iba regresia. Supplier v1 odmieta `properties`; PropertyRecord nie je univerzálny business key/value kontajner.
+
+### 61.4 Deferred boundaries
+
+Bez implementácie zostávajú site/location/address/branch/warehouse, contacts/Person, legal a external identifiers, qualification/approval business status, capability, certification, commercial relationships/offers a customer account. V1 nemá Material/StockMaterial/process/machine/tool ownership ani referenčné zoznamy, prices, leadTime, terms, MOQ, rating/performance ani `replaces`/`replacedBy` a corporate successor semantics.
+
+Organization abstraction risk zostáva MEDIUM. Budúce mappings musia zachovať stabilné SUP a historické odkazy, oddeliť organization identity od sites/accounts/offers a nesmú odvodiť zhodu iba z názvu. Organization, migračný kód, generic entity resolver, persistence, API a UI nevznikli. Neobjavila sa nová deferred úloha, preto BACKLOG zostal nezmenený.
+
+### 61.5 Validation composition
+
+Jediný menený runtime súbor je `scripts/validation/validator.py`: explicitný Supplier schema ID, embedded Classification traversal a znovupoužitie root source helpera. Context-aware cesta rekurzívne používa existujúcu CLS kontrolu existencie, typu a lifecycle. Nie je Supplier-specific applicability ani nová obchodná validácia.
+
+Contract-only `validate` nepotrebuje CatalogRegistry. Existujúce context-aware API stále vyžaduje explicitný ValidationContext; pre Supplier bez klasifikácií postačuje prázdny registry. Zachované sú default/authoring policy, Deprecated warnings, `schema_validation`, `application_validation`, `reference_integrity`, `catalog_validation`, presné cesty `$.id`, `$.sourceLinks`, `$.classifications[0].classificationId` aj ďalšie indexy, recordId a referencedId. Schema chyby zastavia kontextové kontroly. Validátor nedokazuje skutočnú právnu identitu organizácie ani existenciu SRC záznamov.
+
+### 61.6 Evidence and regression
+
+- 12 valid a 131 invalid výhradne fiktívnych Supplier fixtures; 24 nových unittest metód v `tests/test_supplier_validation.py`.
+- Úplný príkaz `.\.venv\Scripts\python.exe -m unittest discover -s tests -v`: 260 passed, 0 failures, 0 errors, 0 skipped. Pôvodných 236 regresií nezmenených a úspešných.
+- Všetkých 22 schém prešlo Draft202012Validator.check_schema a schema keyword kontrolou; všetkých 201 `$ref` sa vyriešilo. Indexová discovery definícia Supplier má pozitívny aj negatívny test.
+- JSON parsing, UTF-8 a Python compile PASS. Python 3.12.14, jsonschema 4.26.0, referencing 0.37.0; bez dependency zmien.
+- Schémy 21 -> 22; entity schémy 1 -> 2; Knowledge Core 7, catalogs 4, ADR 17, RFC dokumenty 4 vrátane cross-review.
+- Material schéma a fixtures, Observation, shared metadata/identifiers, katalogový kontext, Accepted RFC/ADR a governance zostali nezmenené. Nevznikli reálne Supplier dáta ani ďalšia entity schéma.
+
+### 61.7 Disposition
+
+Bez odchýlky od finálneho field listu a identity profilu CDR-0017 Revision 1. Nový blocker sa nezistil. Phase 0.2C.2 Supplier Entity v1 je **IMPLEMENTED**, nie plne uzatvorená. Nasleduje samostatná **Phase 0.2C.2-close - Supplier Entity Integration Closure Review**. ManufacturingProcess sa nezačína.
+
+READY FOR SUPPLIER CLOSURE REVIEW

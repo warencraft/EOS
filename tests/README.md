@@ -1,5 +1,15 @@
 # tests
 
+## Míľnik 0.2C.2 - Supplier Entity v1
+
+`test_supplier_validation.py` obsahuje 24 nových unittest metód. Supplier má 12 valid a 131 invalid fiktívnych fixtures s prefixom `supplier-` v existujúcich `fixtures/valid/entities/` a `fixtures/invalid/entities/`. Nové Supplier záznamy nie sú reálne dáta.
+
+Testy overujú central SUP, common metadata, SourceLink a Classification refs, required/optional polia, Draft a Review/Approved provenance, vrstvy root/assignment provenance, viac priradení, odmietnutie každého zahrnutého deferred poľa ako additionalProperties a pozitívnu kontrolu po jeho odstránení. Indexový `$defs.supplier` sa overuje bez pridania kolekcie. Regression Observation so SUP subjectId nepridáva novú sémantiku.
+
+Existujúci `fixtures/catalog-context/fictional-catalog-context.json` sa nemení. Kontextové testy používajú jeho Classification entries a overujú CLS existenciu, type mismatch, default/authoring lifecycle, Deprecated warning a presné error paths vrátane indexu 1. Nezavádzajú Supplier-specific applicability. Contract-only cesta nevyžaduje registry; explicitná context cesta zachováva pôvodné API.
+
+Výsledok 14.10.2026: 260 passed, 0 failures, 0 errors, 0 skipped; všetkých pôvodných 236 regresií zostáva úspešných a nezmenených. Všetkých 22 schém a 201 `$ref` prešlo kontrolou. Python 3.12.14, jsonschema 4.26.0, referencing 0.37.0. Staršie počty nižšie patria historickým míľnikom.
+
 ## Míľnik 0.2C.1 - Material Entity v1
 
 Material má 16 platných a 42 neplatných fiktívnych fixtures v priečinkoch `fixtures/valid/entities/` a `fixtures/invalid/entities/`. Neobsahujú reálne materiály, označenia, normové väzby, chemické zloženie ani technické odporúčania.

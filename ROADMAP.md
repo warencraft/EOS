@@ -1,5 +1,13 @@
 # ROADMAP
 
+## Míľnik 0.2C.2 - Supplier Entity v1
+
+Stav: `IMPLEMENTED`, nie CLOSED. CDR-0017 Revision 2: `READY FOR SUPPLIER CLOSURE REVIEW`.
+
+Supplier je druhá Knowledge Entity a Aggregate Root pre jednu právne samostatnú organizáciu v dodávateľskej roli. Identity rozhodnutie SI-0001 je CLOSED; common metadata, root provenance a optional Classification[] sú implementované bez odložených modelov. Schémy 21 -> 22; entity schémy 1 -> 2; 24 nových testov, spolu 260 úspešných. Material zostáva COMPLETE.
+
+Nasleduje: `Phase 0.2C.2-close - Supplier Entity Integration Closure Review`. ManufacturingProcess sa nezačína. Staršie sekcie ROADMAP a nezmenený BACKLOG sú historické záznamy predchádzajúcich míľnikov; aktuálny transition status určuje táto sekcia a CDR-0017 Revision 2. BACKLOG sa v tomto míľniku nemení, keďže nevznikla nová deferred úloha.
+
 ## Míľnik 0.2C.1 - Material Entity v1
 
 Cieľ:

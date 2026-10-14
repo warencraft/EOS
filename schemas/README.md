@@ -1,5 +1,24 @@
 # schemas
 
+## Míľnik 0.2C.2 - Supplier Entity v1
+
+Aktuálne: 22 schém, 7 Knowledge Core, 4 katalógové a 2 entity schémy (Material a Supplier). Supplier je IMPLEMENTED a čaká na samostatné integračné closure review. Staršie sekcie nižšie opisujú stav svojich míľnikov.
+
+`entities/supplier.schema.json` je druhá first-class Knowledge Entity schéma v existujúcej entity konvencii. Supplier je Entity a Aggregate Root: jedno SUP reprezentuje jednu právne samostatnú organizáciu v dodávateľskej roli podľa CDR-0017 §60. Viac sites, rolí alebo vendor účtov samo nevytvára ďalšie SUP. Sole traders sú mimo v1. Premenovanie pri zachovaní právnej identity nemení SUP; acquisition sama nemusí meniť identitu.
+
+- Canonical schema ID: `https://eos.local/schemas/entities/supplier.schema.json`.
+- Discovery: `index.schema.json#/$defs/supplier`. Nevzniká indexová kolekcia `suppliers` ani collection/container schéma.
+- `id`: existujúci `common/identifiers.schema.json#/$defs/SUP`, `SUP-xxxx`, presne `^SUP-[0-9]{4}$`; centrálna schéma sa nemení.
+- Povinné: `id`, `schemaVersion`, `recordVersion`, `revision`, `status`, `createdAt`, `createdBy`, `updatedAt`, `updatedBy`, `sourceLinks`, `changeSummary`, `name`.
+- Voliteľné: `description`, `classifications`, `notes`. Žiadne ďalšie root polia; `additionalProperties: false`.
+- Common metadata sa zdieľajú cez property-level `$ref` rovnako ako pri Material. `name` je neprázdny ľudsky čitateľný label bez identity, unique alebo dedup sémantiky. Description je neprázdny vysvetľujúci text, notes používa common textovú definíciu; ani jedno nie je úložisko deferred modelov.
+
+Root `sourceLinks` podporuje identitu, existenciu a definíciu organizácie. Je required; Draft povoľuje prázdne pole, Review/Approved vyžaduje zdroj cez existujúci aplikačný helper. Common RecordStatus znamená iba EOS lifecycle, nie kvalifikáciu alebo obchodný stav. Root provenance nenahrádza assignment provenance Classification ani definition provenance Classification Catalog Entry.
+
+Voliteľné Classification[] sú owned values s možnosťou viacerých priradení. Používajú existujúci kontrakt; Supplier nevlastní katalógové položky a nemá single-role enum. Kontext kontroluje CLS existenciu, typ a lifecycle, nie Supplier applicability.
+
+V1 neobsahuje PropertyRecord, Observation ani reverse observation IDs, address/site/contact/person model, external/legal identifiers, qualification, capability, certification, Material/StockMaterial/process/machine/tool vzťahy, commercial data, price/leadTime, rating ani replacement/corporate odkazy. Observation môže naďalej nezávisle referencovať SUP. Generic entity resolver a Organization sú odložené. Future Organization risk zostáva MEDIUM; stabilná SUP identita a historické referencie sa musia zachovať pri budúcich explicitných mappings. Nevznikli reálne Supplier dáta ani zmeny Accepted architektúry.
+
 ## Míľnik 0.2C.1 - Material Entity v1
 
 Prvá first-class Knowledge Entity schéma je `entities/material.schema.json`. Priečinok `entities/` je konvencia pre samostatné entity kontrakty; tento míľnik nevytvára generic entity framework ani collection/container schému.

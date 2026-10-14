@@ -1,5 +1,26 @@
 # CHANGELOG
 
+## 0.2C.2 - 2026-10-14
+
+Status: IMPLEMENTED / READY FOR SUPPLIER CLOSURE REVIEW
+
+### Added
+
+- Supplier v1 ako druhá Knowledge Entity, Entity a Aggregate Root v `schemas/entities/supplier.schema.json`, s existujúcim centrálnym `SUP-xxxx` pre jednu právne samostatnú organizáciu v dodávateľskej roli.
+- Indexová discovery definícia `$defs.supplier` bez novej entity kolekcie, 12 valid a 131 invalid fiktívnych fixtures a 24 unittest metód.
+
+### Changed
+
+- Existujúci runtime komponuje root lifecycle/source helper a CLS context-aware validáciu bez zmeny common kontraktov alebo nového resolvera.
+- CDR-0017 Revision 2 zachováva pre-design aj SI-0001 history a dopĺňa implementačný outcome. README a ROADMAP zachytávajú aktuálny stav a hranice v1.
+
+### Validated
+
+- 260 passed, 0 failures, 0 errors, 0 skipped vrátane všetkých 236 pôvodných regresií; 22 schém, 201 vyriešených `$ref`, UTF-8, JSON a Python compile PASS.
+- Material, Observation, ostatné schémy okrem indexu, Accepted RFC/ADR, governance a závislosti zostali nezmenené.
+- Bez reálnych Supplier dát, deferred modelov, generic entity resolvera, merge alebo tagu.
+- Nasleduje `Phase 0.2C.2-close - Supplier Entity Integration Closure Review`; Supplier fáza ešte nie je uzatvorená. ManufacturingProcess nezačal.
+
 ## 0.2C.1-close.1 - 2026-10-06
 
 Status: Completed

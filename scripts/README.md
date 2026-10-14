@@ -1,5 +1,13 @@
 # scripts
 
+## Míľnik 0.2C.2 - Supplier validácia
+
+`validator.py` explicitne registruje Supplier schema ID a embedded Classification[] traversal. Root lifecycle/source pravidlo zdieľa existujúci `_validate_source_links_rule` s `has_verifiable_claims=True`: Draft môže byť bez zdrojov, Review/Approved nie. Classification používa existujúcu CLS resolution a lifecycle policy; nevzniká duplikovaná klasifikačná logika, applicability pravidlo ani generic entity resolver.
+
+`validate(record, supplier_schema_id)` zostáva contract-only a nevyžaduje CatalogRegistry, vrátane Supplier bez klasifikácií. `validate_with_context(...)` naďalej vyžaduje explicitný ValidationContext podľa existujúceho API; prázdny registry postačuje pri neprítomných/prázdnych klasifikáciách. Kontextové kontroly nesmú byť predstierané contract-only validáciou.
+
+Chyby zachovávajú `$.id`, `$.sourceLinks`, `$.classifications[0].classificationId`, príslušné indexy, Supplier recordId a referencedId. Vrstvy sú `schema_validation`, `application_validation`, `reference_integrity`, `catalog_validation`. Neplatná štruktúra zastaví kontextové kontroly; Deprecated CLS ostáva warning. Supplier sa v indexe registruje iba cez `$defs.supplier`, bez novej entity kolekcie. Existujúce Material a Knowledge Core správanie zostáva nezmenené.
+
 ## Míľnik 0.2C.1 - Material Entity v1
 
 Validátor registruje `https://eos.local/schemas/entities/material.schema.json` ako prvú Knowledge Entity schému. Existing contract composition rekurzívne aplikuje vnorené ValueRange a MeasurementQuality pravidlá na `properties[]`; root lifecycle/source helper povoľuje prázdne zdroje v Draft a vyžaduje ich v Review/Approved.

@@ -21,7 +21,8 @@
     "conditionTypeCatalogEntry": { "$ref": "https://eos.local/schemas/catalogs/condition-type-catalog-entry.schema.json" },
     "propertyCatalogEntry": { "$ref": "https://eos.local/schemas/catalogs/property-catalog-entry.schema.json" },
     "classificationCatalogEntry": { "$ref": "https://eos.local/schemas/catalogs/classification-catalog-entry.schema.json" },
-    "material": { "$ref": "https://eos.local/schemas/entities/material.schema.json" }
+    "material": { "$ref": "https://eos.local/schemas/entities/material.schema.json" },
+    "supplier": { "$ref": "https://eos.local/schemas/entities/supplier.schema.json" }
   },
   "properties": {
     "sourceReferences": {
