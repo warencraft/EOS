@@ -1,5 +1,13 @@
 # ROADMAP
 
+## Míľnik 0.2C.2-close.1 - Supplier Closure Corrective Alignment
+
+Stav: `COMPLETE`. Phase 0.2C.2 Supplier je COMPLETE podľa CDR-0018 Revision 1. SEC-0001/0002/0003 sú CLOSED: BACKLOG je zosúladený, source diagnostika sa pri explicitnom flagu neduplikuje a Supplier CLS test trvalo vykonáva všetkých päť stavov pri default aj authoring politike. Automatická provenance a doménové hranice Material/Supplier zostali nezmenené.
+
+Overené: 35/35 kritérií PASS, 263/263 testov (pôvodná baseline 260 + 3 nové metódy), 22 schém a 201 referencií. Nasleduje povolený `Phase 0.2C.3-prep - ManufacturingProcess Entity Pre-design Review`; zatiaľ nezačal. Nevznikla ďalšia entita, reálne dáta ani zmena Accepted architektúry.
+
+Táto sekcia a aktuálny BACKLOG určujú transition stav. Nasledujúce milestone sekcie zachovávajú historický stav svojho dokončenia; ich vtedajšie pending/next výroky nie sú aktuálnym plánom.
+
 ## Míľnik 0.2C.2 - Supplier Entity v1
 
 Stav: `IMPLEMENTED`, nie CLOSED. CDR-0017 Revision 2: `READY FOR SUPPLIER CLOSURE REVIEW`.

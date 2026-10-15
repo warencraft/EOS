@@ -218,17 +218,42 @@ class SupplierValidationTests(unittest.TestCase):
                          [("reference_integrity.reference_type_mismatch", "$.classifications[0].classificationId")])
 
     def test_context_cls_lifecycle_default_and_authoring(self) -> None:
-        for entry in self.entries:
+        for status in ("Draft", "Review", "Approved", "Deprecated", "Archived"):
+            entry = {**copy.deepcopy(self.entries[0]), "status": status}
+            self.assertTrue(self.validator.validate(
+                entry, BASE + "catalogs/classification-catalog-entry.schema.json"
+            ).ok)
+            catalogs = CatalogRegistry(classification_entries=[entry])
             for policy in (CatalogLifecyclePolicy.DEFAULT, CatalogLifecyclePolicy.AUTHORING):
-                with self.subTest(status=entry["status"], policy=policy):
+                with self.subTest(status=status, policy=policy):
                     record = {**fixture(), "classifications": [{"classificationId": entry["id"]}]}
-                    result = self.validator.validate_with_context(record, SUPPLIER, ValidationContext(self.context.catalogs, policy))
-                    self.assertEqual(result.ok, policy.allows(entry["status"]))
-                    if not result.ok:
-                        self.assertEqual([(e.category, e.path) for e in result.errors],
-                                         [("catalog_validation", "$.classifications[0].classificationId")])
-                    if entry["status"] == "Deprecated":
-                        self.assertEqual([e.errorCode for e in result.warnings], ["catalog_validation.deprecated_reference"])
+                    result = self.validator.validate_with_context(record, SUPPLIER, ValidationContext(catalogs, policy))
+                    expected_ok = policy.allows(status)
+                    self.assertEqual(result.ok, expected_ok)
+                    expected = []
+                    if not expected_ok or status == "Deprecated":
+                        code = "catalog_validation.deprecated_reference" if status == "Deprecated" else "catalog_validation.catalog_status_not_allowed"
+                        severity = "warning" if status == "Deprecated" else "error"
+                        expected = [("catalog_validation", code, "$.classifications[0].classificationId",
+                                     record["id"], entry["id"], severity)]
+                    self.assertEqual(
+                        [(e.category, e.errorCode, e.path, e.recordId, e.referencedId, e.severity) for e in result.errors],
+                        expected,
+                    )
+                    self.assertEqual(len(result.warnings), 1 if status == "Deprecated" else 0)
+
+    def test_supplier_root_source_rule_runs_once_with_explicit_flag(self) -> None:
+        for status in ("Draft", "Review", "Approved"):
+            for populated in (False, True):
+                record = {**fixture("populated-source-links" if populated else "minimal-draft"), "status": status}
+                for kwargs in ({}, {"has_verifiable_claims": False}, {"has_verifiable_claims": True}):
+                    with self.subTest(status=status, populated=populated, kwargs=kwargs):
+                        result = self.validator.validate(record, SUPPLIER, **kwargs)
+                        expected = [] if populated or status == "Draft" else [
+                            ("application_validation", "application_validation.source_links_required", "$.sourceLinks", record["id"])
+                        ]
+                        self.assertEqual([(e.category, e.errorCode, e.path, e.recordId) for e in result.errors], expected)
+                        self.assertEqual(result.ok, not expected)
 
     def test_nested_schema_errors_preserve_exact_paths(self) -> None:
         record = fixture("one-classification")

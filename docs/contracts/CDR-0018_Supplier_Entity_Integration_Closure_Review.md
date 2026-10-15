@@ -6,11 +6,13 @@ Review: Supplier Entity Integration Closure
 Review type: Closure
 Phase: 0.2C.2-close
 Version: 0.1
-Revision: 0
+Revision: 1
 Status: Review
 Document basis: Accepted EOS architecture + CDR-0017 + Supplier v1 implementation
 Author: Codex
 Review date: 2026-10-14
+
+Aktuálny stav Revision 1: SEC-0001/0002/0003 CLOSED; Phase 0.2C.2 COMPLETE. Corrective dôkazy a opakované kritériá sú v §62. Sekcie 1–60 a pôvodný riadok histórie zachovávajú Review Revision 0 vrátane vtedajších otvorených findings a verdictu; nejde o aktuálne otvorené úlohy.
 
 ## 1. Purpose
 
@@ -417,5 +419,115 @@ Phase 0.2C.2 zatiaľ nemožno označiť COMPLETE pre konečný dokumentačný tr
 | Date | Version | Revision | Author | Change |
 | --- | --- | --- | --- | --- |
 | 2026-10-14 | 0.1 | 0 | Codex | Prvý Supplier closure review na adbc8c7; 35 PASS, 260 úspešných testov, jeden dokumentačný transition blocker a dva neblokujúce runtime/test findings. Bez zmeny implementácie. |
+| 2026-10-14 | 0.1 | 1 | Codex | Phase 0.2C.2-close.1: reprodukované a uzavreté SEC-0001/0002/0003, minimálna source composition oprava, trvalé regresie, 263 úspešných testov a 35 PASS bez zmeny doménových kontraktov. |
 
-READY WITH CONDITIONS
+## 62. Corrective Closure Outcome
+
+### 62.1 Baseline and scope
+
+Vstup: čistá vetva `feature/phase-0.2c-knowledge-entities`, tracking origin rovnakej vetvy, HEAD `dd23d5455007533927299b80d1a0bff166229337`; lokálny tracking ref zhodný s HEAD. Supplier implementačný commit adbc8c7 je predkom. CDR-0018 Rev. 0 mal historický verdict READY WITH CONDITIONS. Baseline vykonaný pred editáciou: 260 tests, 29.664 s, OK; 0 failures/errors/skipped.
+
+Rozsah: odstrániť tri doložené findings, zachovať automatic provenance, API, schemas a architecture freeze. Žiadny nový framework, post-hoc deduplication, entity resolver alebo ManufacturingProcess návrh. Authority z predchádzajúceho review zostáva nezmenená: CDR-0017 Rev. 2, CDR-0016 corrective precedent, EOS-003/006/007 a relevantné Accepted RFC/ADR.
+
+### 62.2 SEC-0001 — CLOSED
+
+Previous status: Medium, blocking. Pred opravou BACKLOG samostatne uvádzal Supplier pre-design ako nasledujúci a nezačatý. BACKLOG teraz uvádza completed pre-design, SI-0001 CLOSED, v1 aj corrective closure; všetky pôvodné otvorené/deferred témy zostali a Supplier deferred scope z §55 je explicitne doplnený. Aktuálne ROADMAP/CHANGELOG sekcie zhodne uvádzajú Phase 0.2C.2 COMPLETE a nasledujúci, zatiaľ nezačatý ManufacturingProcess pre-design. Historické milestone texty sú zachované a označené ako história.
+
+Final status: CLOSED na základe obsahového porovnania samostatných planning dokumentov, nie iba zelených testov.
+
+### 62.3 SEC-0002 — CLOSED
+
+Previous status: Low, non-blocking. Reprodukcia pred editáciou validatora použila platné `material-minimal-draft-valid.json` a `supplier-minimal-draft-valid.json`; zmenil sa iba status na Review/Approved, sourceLinks ostal prázdny. Presná diagnostická tuple bola `(application_validation, application_validation.source_links_required, $.sourceLinks, MAT-9001)` alebo rovnaká s `SUP-9001`.
+
+| Entita | Status | Default/False pred opravou | Explicit True pred opravou | Po oprave omitted/False/True |
+| --- | --- | --- | --- | --- |
+| Material | Review | 1 identická tuple | 2 identické tuples | 1 / 1 / 1 |
+| Material | Approved | 1 | 2 | 1 / 1 / 1 |
+| Supplier | Review | 1 | 2 | 1 / 1 / 1 |
+| Supplier | Approved | 1 | 2 | 1 / 1 / 1 |
+
+Root cause: `_validate_application_rules` najprv volá `_validate_contract_rules`, kde Material/Supplier automaticky volajú `_validate_source_links_rule(True)`. Následne explicitný caller flag aktivoval druhé volanie toho istého helpera na tom istom root/path. Štyri katalógové kontrakty mali rovnakú kompozíciu; Observation už malo výnimku.
+
+Oprava je jeden composition guard: caller-driven helper sa nevolá pre sedem kontraktov, ktorých automatic traversal už túto root povinnosť pokrýva (Observation, štyri katalógy, Material, Supplier). Automatické contract rules, rekurzia, source policy ani error equality sa nemenia. Žiadne globálne skrývanie alebo deduplikácia výsledkov. SourceReference a ostatní opt-in consumers aj CLI argument ostávajú funkčné. Vyhľadanie všetkých `has_verifiable_claims` použití preverilo file/context entry point forwarding, CLI a existujúce SourceReference/Classification testy.
+
+Permanent evidence: nové `test_material_root_source_rule_runs_once_with_explicit_flag`, `test_supplier_root_source_rule_runs_once_with_explicit_flag` a `test_source_flag_preserves_catalog_observation_and_opt_in_consumers`. Prvé dve skúšajú každý Draft/Review/Approved × empty/populated × omitted/False/True prípad s presným celým zoznamom category/code/path/recordId a ok výsledkom. Draft empty aj populated zdroje ostávajú platné. Tretí test chráni všetky štyri katalógy, Observation a SourceReference opt-in s rovnakými presnými assertions.
+
+Pred opravou nové entity metódy zlyhali presne v štyroch Review/Approved explicit-True subtestoch. Po oprave všetky cielené prípady aj plná sada prešli. Final status: CLOSED; automatická provenance nie je podmienená caller flagom.
+
+### 62.4 SEC-0003 — CLOSED
+
+Previous status: Low, non-blocking. Pôvodný permanent test iteroval iba Approved `CLS-980001` a Draft `CLS-980002`; Deprecated assertion sa nemohol vykonať. Skontrolovaná skutočná CatalogLifecyclePolicy DEFAULT/AUTHORING zodpovedá nasledujúcej matici, bez rozporu so zadaním.
+
+| CLS stav | default | authoring |
+| --- | --- | --- |
+| Draft | error | OK |
+| Review | error | OK |
+| Approved | OK | OK |
+| Deprecated | OK + warning | OK + warning |
+| Archived | error | error |
+
+Existujúca `test_context_cls_lifecycle_default_and_authoring` teraz vytvára nezávislé test-local kópie platnej fiktívnej CLS pre všetkých päť stavov. Každý variant najprv overí katalógovým kontraktom a vloží do nového immutable registry. Skutočná Supplier context-aware cesta vykoná obe policies, spolu 10 kombinácií; pôvodná shared fixture sa nemení a testy nezávisia od poradia.
+
+Pri odmietnutí presne assertuje `catalog_validation.catalog_status_not_allowed`, category `catalog_validation`, severity error; pri Deprecated presne `catalog_validation.deprecated_reference`, rovnakú category, severity warning, ok=True a práve jeden warning. V oboch prípadoch path `$.classifications[0].classificationId`, recordId `SUP-9001`, referencedId `CLS-980001`; ostatné povolené stavy majú prázdny zoznam diagnostiky. Expected acceptance používa existujúcu policy po jej vecnom overení, nie nový Supplier enum.
+
+Final status: CLOSED; všetky stavy, obe policies, warning aj nested identifikátory sú trvalými vykonávanými assertions.
+
+### 62.5 Completion criteria recheck
+
+Všetkých 35 kritérií z §54 bolo opakovane porovnaných s nezmenenými doménovými schémami, zúženým runtime diffom a úspešnou regresiou. Nasledujúca tabuľka je aktuálny výsledok Revision 1.
+
+| # | Kritérium | Výsledok | Opakovaný dôkaz |
+| --- | --- | --- | --- |
+| 1 | Supplier domain semantics preserved | PASS | Nezmenený kontrakt a regresie; §4, closed organization profile |
+| 2 | SI-0001 boundary preserved | PASS | Nezmenený kontrakt a regresie; §6, CDR-0017 §60 |
+| 3 | Knowledge Entity / Entity / Aggregate Root | PASS | Nezmenený kontrakt a regresie; §7 |
+| 4 | SUP centralized | PASS | Nezmenený kontrakt a regresie; §5, §47 |
+| 5 | Common metadata reused | PASS | Nezmenený kontrakt a regresie; §8, property refs |
+| 6 | Root provenance semantics correct | PASS | §62.3–62.4, presné source/CLS regresie |
+| 7 | Lifecycle not overloaded | PASS | Nezmenený kontrakt a regresie; §9 |
+| 8 | Incremental minimum Supplier | PASS | Nezmenený kontrakt a regresie; §11, minimal Draft |
+| 9 | Name semantics correct | PASS | Nezmenený kontrakt a regresie; §12 |
+| 10 | Description/notes non-structural | PASS | Nezmenený kontrakt a regresie; §13 |
+| 11 | Multi-role supported | PASS | Nezmenený kontrakt a regresie; §15, distinct CLS probe |
+| 12 | Classification ownership/integration | PASS | Nezmenený kontrakt a regresie; §14–16 |
+| 13 | PropertyRecord absent | PASS | Nezmenený kontrakt a regresie; §17, precise rejection |
+| 14 | Observation separate | PASS | Nezmenený kontrakt a regresie; §18 |
+| 15 | Site/location boundary | PASS | Nezmenený kontrakt a regresie; §19 |
+| 16 | Address boundary | PASS | Nezmenený kontrakt a regresie; §20 |
+| 17 | Contact/person boundary | PASS | Nezmenený kontrakt a regresie; §21 |
+| 18 | External identifier boundary | PASS | Nezmenený kontrakt a regresie; §22 |
+| 19 | Qualification boundary | PASS | Nezmenený kontrakt a regresie; §23 |
+| 20 | Certification boundary | PASS | Nezmenený kontrakt a regresie; §24 |
+| 21 | Capability boundary | PASS | Nezmenený kontrakt a regresie; §25 |
+| 22 | Material/StockMaterial boundaries | PASS | Nezmenený kontrakt a regresie; §26–27 |
+| 23 | Process/Machine/Tool boundaries | PASS | Nezmenený kontrakt a regresie; §28–29 |
+| 24 | Commercial data excluded | PASS | Nezmenený kontrakt a regresie; §30 |
+| 25 | Price/lead-time excluded | PASS | Nezmenený kontrakt a regresie; §30–31 |
+| 26 | Rating/performance excluded | PASS | Nezmenený kontrakt a regresie; §32 |
+| 27 | Corporate/replacement deferred | PASS | Nezmenený kontrakt a regresie; §33 |
+| 28 | Organization risk not worsened | PASS | Nezmenený kontrakt a regresie; §34 |
+| 29 | Generic resolver absent | PASS | Nezmenený kontrakt a regresie; §35 |
+| 30 | Context-aware validation correct | PASS | §62.3–62.4, presné source/CLS regresie |
+| 31 | Paths/categories preserved | PASS | §62.3–62.4, presné source/CLS regresie |
+| 32 | Fixtures isolated/fictional | PASS | Nezmenený kontrakt a regresie; §41, §49 |
+| 33 | Previous 236 regressions pass | PASS | Pôvodných 236 aj kompletných 260 pred opravou zachovaných v sade |
+| 34 | Supplier tests pass | PASS | 25/25 Supplier metód; všetkých 10 CLS kombinácií |
+| 35 | Accepted architecture unchanged | PASS | Nezmenený kontrakt a regresie; Git diff |
+
+Súčet: **35 PASS, 0 FAIL, 0 CONDITIONAL**. SEC-0001 už neblokuje formálny transition. Otvorené SEC findings: 0; blockers: 0; nové blokujúce zistenie sa neobjavilo. Pôvodné findings v §57–58 zostávajú historickým dôkazom.
+
+### 62.6 Validation and scope evidence
+
+- Plná sada: 263 tests, 30.485 s, OK; 263 passed, 0 failures, 0 errors, 0 skipped. Baseline 260 zachovaná; 3 nové metódy, jedna existujúca rozšírená. Rozdelenie 196 general, 42 catalog, 25 Supplier.
+- JSON parsing PASS: 667 JSON súborov. Draft202012Validator.check_schema aj schema keyword audit PASS: 22 schém; 201 refs vyriešených, index regresie zelené.
+- UTF-8 PASS: 745 tracked textových súborov; Python compile PASS: 9 Python súborov. Python 3.12.14, jsonschema 4.26.0, referencing 0.37.0.
+- Schémy bez zmeny: 22 total, 7 Knowledge Core, 4 catalogs, 2 entities (Material/Supplier). ADR 17 vrátane template; RFC 4 dokumenty vrátane cross-review.
+- Fixtures bez zmeny: 121 valid/523 invalid; Supplier 12/131; Material 16/42. Shared catalog-context fixture nezmenená. Nevznikli reálne dáta.
+- Doménové Material/Supplier a všetky ostatné schémy, common identifiers, catalog_context policy, governance, Accepted RFC/ADR a dependency súbory nezmenené. Zmena runtime je iba composition guard; žiadny nový resolver/framework a žiadne ManufacturingProcess artifacts.
+- Intended files: BACKLOG.md, ROADMAP.md, CHANGELOG.md, tento CDR, scripts/validation/validator.py, tests/test_validation.py, tests/test_supplier_validation.py, tests/README.md. Historické CDR-0017 a CDR-0016 zostali nezmenené.
+
+### 62.7 Final disposition
+
+SEC-0001 CLOSED, SEC-0002 CLOSED, SEC-0003 CLOSED na základe konkrétnej korekcie a dôkazov. Phase 0.2C.2 Supplier je COMPLETE. Nasledujúci povolený míľnik je `Phase 0.2C.3-prep — ManufacturingProcess Entity Pre-design Review`; tento corrective krok ho nezačal. Žiadny merge, tag alebo release.
+
+PHASE 0.2C.2 COMPLETE – READY FOR 0.2C.3

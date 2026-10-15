@@ -467,7 +467,16 @@ class EosValidator:
             return
         self._validate_finite_numbers(instance, result)
         self._validate_contract_rules(instance, result, schema_id=schema_id)
-        if schema_id != OBSERVATION_SCHEMA_ID:
+        # These contracts already enforce root provenance during contract traversal.
+        if schema_id not in {
+            OBSERVATION_SCHEMA_ID,
+            UNIT_CATALOG_ENTRY_SCHEMA_ID,
+            CONDITION_TYPE_CATALOG_ENTRY_SCHEMA_ID,
+            PROPERTY_CATALOG_ENTRY_SCHEMA_ID,
+            CLASSIFICATION_CATALOG_ENTRY_SCHEMA_ID,
+            MATERIAL_SCHEMA_ID,
+            SUPPLIER_SCHEMA_ID,
+        }:
             self._validate_source_links_rule(instance, result, has_verifiable_claims=has_verifiable_claims)
         self._validate_hierarchical_ids(instance, result)
         self._validate_document_record_versions(instance, result)

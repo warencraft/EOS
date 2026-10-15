@@ -1,5 +1,15 @@
 # tests
 
+## Míľnik 0.2C.2-close.1 - Corrective Supplier regresie
+
+Aktuálne 263 úspešných unittest metód (196 v test_validation.py, 42 v test_catalog_validation.py, 25 v test_supplier_validation.py), 0 failures/errors/skipped. Pôvodných 260 metód zachovaných, 3 nové; existujúca CLS metóda je rozšírená, nie započítaná ako nová.
+
+Nové entity source testy overujú Material aj Supplier pre Draft/Review/Approved, empty/populated sourceLinks a omitted/False/True flag: celý zoznam diagnostiky vrátane kategórie, kódu, cesty a recordId musí obsahovať presne jednu očakávanú chybu alebo byť prázdny. Tretia metóda chráni štyri katalógy, Observation a opt-in SourceReference. Pred runtime opravou entity testy zlyhali presne v štyroch explicit-True prípadoch.
+
+Supplier nested CLS lifecycle test vytvorí izolovaný deep-copy platnej fiktívnej položky pre Draft, Review, Approved, Deprecated a Archived. Pred registráciou overí jej katalógový kontrakt; obe policies potom vykoná cez skutočný validate_with_context. Assertuje presný zoznam chýb/warningov, severity, nested path, Supplier recordId, CLS referencedId a počet warningov. Deprecated vetva sa vykoná pri oboch politikách. Shared fixture a fixture počty zostali nezmenené: 121 valid/523 invalid, Supplier 12/131.
+
+Python 3.12.14, jsonschema 4.26.0, referencing 0.37.0. Historická sekcia 0.2C.2 nižšie opisuje implementačný míľnik; jej vtedajšie tvrdenie o Deprecated pokrytí opravuje tento corrective záznam a CDR-0018 Rev. 1.
+
 ## Míľnik 0.2C.2 - Supplier Entity v1
 
 `test_supplier_validation.py` obsahuje 24 nových unittest metód. Supplier má 12 valid a 131 invalid fiktívnych fixtures s prefixom `supplier-` v existujúcich `fixtures/valid/entities/` a `fixtures/invalid/entities/`. Nové Supplier záznamy nie sú reálne dáta.

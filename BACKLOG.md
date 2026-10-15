@@ -1,10 +1,14 @@
 # BACKLOG
 
-## Nasledujúce: Phase 0.2C.2-prep - Supplier Entity Pre-design Review
+## Nasledujúce: Phase 0.2C.3-prep - ManufacturingProcess Entity Pre-design Review
 
-- Supplier pre-design zatiaľ nezačal. Pred jeho začatím dokončiť corrective commit a pri čistom pracovnom strome prejsť na `feature/phase-0.2c-knowledge-entities` podľa CDR-0016 Revision 1.
+Supplier pre-design je dokončený, SI-0001 CLOSED a Supplier v1 implementovaný. Phase 0.2C.2-close.1 Supplier Closure Corrective Alignment uzavrela SEC-0001/0002/0003 podľa CDR-0018 Revision 1: 35/35 kritérií PASS, 263 úspešných testov. Phase 0.2C.2 je COMPLETE. ManufacturingProcess pre-design je nasledujúci povolený míľnik, ale zatiaľ nezačal; jeho implementácia sa týmto nezačína.
 
 ## Ďalšie otvorené položky
+
+- Pre Supplier odložiť site/location a address model, contacts/persons a ich governance, scheme-aware external/legal identifiers, qualification, certifications a scoped capability model.
+- Pre Supplier odložiť Material/StockMaterial supply a service/process capability relationships, commercial offer/procurement, ceny, lead times a payment terms, assessment/performance a corporate relationships/succession.
+- Pred reálnym Supplier onboardingom uzavrieť identity/source verification a duplicate policy; širší Organization model zostáva research/design otázkou s MEDIUM rizikom. Zachovať stabilné SUP a historické referencie; generic entity resolver až podľa budúcich schválených väzieb.
 
 - Pre Material odložiť designation, MaterialCondition / delivery-state, chemistry/composition, structured NormReference linkage, equivalence a riadený onboarding reálnych dát.
 - Pre Material odložiť replacement target resolution, persistence/history a Decision-based claim promotion/conflict resolution; generic entity resolver zostáva samostatnou runtime úlohou.
@@ -22,6 +26,8 @@
 - Pre runtime odložiť všeobecný entity resolver, referenčnú integritu entít, persistence a načítanie reálnych katalógových dát.
 
 ## Dokončené položky
+
+- Dokončený Supplier pre-design, SI-0001 identity rozhodnutie, Supplier v1 a corrective closure Phase 0.2C.2 podľa CDR-0018 Revision 1. SEC-0001/0002/0003 CLOSED; automatická provenance zachovaná bez duplicitnej diagnostiky, všetkých 5 CLS lifecycle stavov overených pri oboch politikách, bez reálnych Supplier dát a nového frameworku.
 
 - Dokončený Material pre-design, implementácia condition-neutral Material v1 a corrective closure Phase 0.2C.1 podľa CDR-0016 Revision 1: 25/25 criteria PASS, 236/236 testov, bez reálnych Material dát a generic entity resolvera.
 

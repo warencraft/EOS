@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 0.2C.2-close.1 - 2026-10-14
+
+Status: Completed
+
+### Fixed
+
+- SEC-0001: zosúladený BACKLOG s dokončeným Supplier pre-designom, SI-0001, implementáciou a corrective closure; skutočné deferred Supplier témy zachované a explicitne uvedené.
+- SEC-0002: composition guard vynechá druhé root source volanie pri automaticky kontrolovaných kontraktoch (Material, Supplier, Observation a štyri katalógy). Default aj explicitný flag zachovávajú provenance povinnosť; nejde o post-hoc deduplikáciu chýb. Ostatní opt-in consumers a CLI argument sú zachované.
+- SEC-0003: existujúci Supplier CLS test rozšírený na 5 stavov × 2 politiky s presnými error/warning cestami, recordId a referencedId. Varianty sú test-local, shared fixture nezmenená.
+
+### Validated
+
+- 263 passed, 0 failures, 0 errors, 0 skipped: pôvodných 260 testov zachovaných, 3 nové corrective metódy. Pred opravou nové entity regresie reprodukovali štyri duplicitné prípady; po oprave prešli.
+- 35/35 completion criteria PASS; CDR-0018 Revision 1 uzatvára všetky tri findings a Phase 0.2C.2 označuje COMPLETE.
+- 22 schém, 201 vyriešených refs; JSON, UTF-8 a Python compile PASS. Schémy, fixtures, dependencies, governance a Accepted RFC/ADR nezmenené.
+- Nasleduje Phase 0.2C.3-prep ManufacturingProcess Entity Pre-design Review, ktorý sa v tomto míľniku nezačal. Bez merge/tag/release a reálnych dát.
+
 ## 0.2C.2 - 2026-10-14
 
 Status: IMPLEMENTED / READY FOR SUPPLIER CLOSURE REVIEW

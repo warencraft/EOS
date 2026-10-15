@@ -2402,6 +2402,41 @@ raise SystemExit(0 if result.wasSuccessful() else 1)
                     {(error.errorCode, error.path) for error in indexed.errors},
                 )
 
+    def test_material_root_source_rule_runs_once_with_explicit_flag(self) -> None:
+        for status in ("Draft", "Review", "Approved"):
+            for populated in (False, True):
+                name = "material-populated-source-links-valid.json" if populated else "material-minimal-draft-valid.json"
+                record = {**load_json(VALID_ENTITY_FIXTURES / name), "status": status}
+                for kwargs in ({}, {"has_verifiable_claims": False}, {"has_verifiable_claims": True}):
+                    with self.subTest(status=status, populated=populated, kwargs=kwargs):
+                        result = self.validator.validate(record, MATERIAL_SCHEMA, **kwargs)
+                        expected = [] if populated or status == "Draft" else [
+                            ("application_validation", "application_validation.source_links_required", "$.sourceLinks", record["id"])
+                        ]
+                        self.assertEqual([(e.category, e.errorCode, e.path, e.recordId) for e in result.errors], expected)
+                        self.assertEqual(result.ok, not expected)
+
+    def test_source_flag_preserves_catalog_observation_and_opt_in_consumers(self) -> None:
+        automatic = [
+            (UNIT_CATALOG_ENTRY_SCHEMA, VALID_CATALOG_FIXTURES / "unit-minimal-draft-valid.json"),
+            (CONDITION_TYPE_CATALOG_ENTRY_SCHEMA, VALID_CATALOG_FIXTURES / "condition-type-minimal-draft-valid.json"),
+            (PROPERTY_CATALOG_ENTRY_SCHEMA, VALID_CATALOG_FIXTURES / "property-minimal-draft-valid.json"),
+            (CLASSIFICATION_CATALOG_ENTRY_SCHEMA, VALID_CATALOG_FIXTURES / "classification-catalog-minimal-draft-valid.json"),
+            (OBSERVATION_SCHEMA, VALID_KNOWLEDGE_CORE_FIXTURES / "observation-global-quantity-valid.json"),
+        ]
+        sources = load_json(VALID_ENTITY_FIXTURES / "material-populated-source-links-valid.json")["sourceLinks"]
+        for schema, path in automatic + [(SOURCE_SCHEMA, FIXTURES / "source-reference-valid.json")]:
+            for status in ("Draft", "Review", "Approved"):
+                for populated in (False, True):
+                    record = {**load_json(path), "status": status, "sourceLinks": sources if populated else []}
+                    for flag in (False, True):
+                        with self.subTest(schema=schema, status=status, populated=populated, flag=flag):
+                            result = self.validator.validate(record, schema, has_verifiable_claims=flag)
+                            required = status != "Draft" and not populated and (schema != SOURCE_SCHEMA or flag)
+                            expected = [("application_validation", "application_validation.source_links_required", "$.sourceLinks", record["id"])] if required else []
+                            self.assertEqual([(e.category, e.errorCode, e.path, e.recordId) for e in result.errors], expected)
+                            self.assertEqual(result.ok, not required)
+
     def test_material_replacement_links_are_structural_mat_references(self) -> None:
         for name in ["material-replaces-valid.json", "material-replaced-by-valid.json"]:
             with self.subTest(name=name):
