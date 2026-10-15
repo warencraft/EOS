@@ -85,6 +85,7 @@ PROPERTY_CATALOG_ENTRY_SCHEMA_ID = "https://eos.local/schemas/catalogs/property-
 CLASSIFICATION_CATALOG_ENTRY_SCHEMA_ID = "https://eos.local/schemas/catalogs/classification-catalog-entry.schema.json"
 MATERIAL_SCHEMA_ID = "https://eos.local/schemas/entities/material.schema.json"
 SUPPLIER_SCHEMA_ID = "https://eos.local/schemas/entities/supplier.schema.json"
+MANUFACTURING_PROCESS_SCHEMA_ID = "https://eos.local/schemas/entities/manufacturing-process.schema.json"
 INDEX_SCHEMA_ID = "https://eos.local/schemas/index.schema.json"
 
 EMBEDDED_CONTRACT_FIELDS: dict[str, dict[str, tuple[str, bool]]] = {
@@ -109,6 +110,9 @@ EMBEDDED_CONTRACT_FIELDS: dict[str, dict[str, tuple[str, bool]]] = {
         "conditions": (CONDITION_SCHEMA_ID, True),
     },
     SUPPLIER_SCHEMA_ID: {
+        "classifications": (CLASSIFICATION_SCHEMA_ID, True),
+    },
+    MANUFACTURING_PROCESS_SCHEMA_ID: {
         "classifications": (CLASSIFICATION_SCHEMA_ID, True),
     },
     MATERIAL_SCHEMA_ID: {
@@ -476,6 +480,7 @@ class EosValidator:
             CLASSIFICATION_CATALOG_ENTRY_SCHEMA_ID,
             MATERIAL_SCHEMA_ID,
             SUPPLIER_SCHEMA_ID,
+            MANUFACTURING_PROCESS_SCHEMA_ID,
         }:
             self._validate_source_links_rule(instance, result, has_verifiable_claims=has_verifiable_claims)
         self._validate_hierarchical_ids(instance, result)
@@ -531,7 +536,7 @@ class EosValidator:
                 has_verifiable_claims=True,
                 path=path,
             )
-        elif schema_id in {MATERIAL_SCHEMA_ID, SUPPLIER_SCHEMA_ID}:
+        elif schema_id in {MATERIAL_SCHEMA_ID, SUPPLIER_SCHEMA_ID, MANUFACTURING_PROCESS_SCHEMA_ID}:
             self._validate_source_links_rule(
                 instance,
                 result,
@@ -595,7 +600,7 @@ class EosValidator:
                 f"{path}.classificationId",
                 record_id,
             )
-        elif schema_id == SUPPLIER_SCHEMA_ID:
+        elif schema_id in {SUPPLIER_SCHEMA_ID, MANUFACTURING_PROCESS_SCHEMA_ID}:
             for index, child in enumerate(instance.get("classifications", [])):
                 self._validate_catalog_contract(
                     child,

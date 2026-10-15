@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## 0.2C.3 - 2026-10-15
+
+Status: IMPLEMENTED / READY FOR MANUFACTURINGPROCESS CLOSURE REVIEW
+
+- Pridaný ManufacturingProcess v1 ako tretia Knowledge Entity/Entity/Aggregate Root: centrálne TEC, common metadata, required name/description a optional Classification/notes. Index discovery bez kolekcie.
+- Reuse provenance a CLS runtime vetiev bez nového resolvera; zachované SEC-0002/0003 správanie a presné error paths.
+- 11 valid a 148 invalid fiktívnych fixtures, 27 nových testov; 290 passed, 0 failures/errors/skipped vrátane pôvodných 263.
+- 23 schém a 215 refs, JSON/UTF-8/Python compile PASS. Dependencies, Material/Supplier, identifiers a Accepted architektúra nezmenené.
+- CDR-0019 Revision 1 dopĺňa implementation outcome bez odstránenia pre-design histórie. ROADMAP/BACKLOG zosúladené s nasledujúcim closure review.
+- Bez parametrov, PropertyRecord, capability, operation/routing, časov/cien, entity vzťahov alebo reálnych dát. Phase 0.2C.3 nie je COMPLETE; nasleduje Phase 0.2C.3-close, nie Machine.
+
 ## 0.2C.2-close.1 - 2026-10-14
 
 Status: Completed

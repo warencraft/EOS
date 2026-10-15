@@ -6,7 +6,7 @@ Contract: ManufacturingProcess
 Review type: Pre-design
 Phase: 0.2C.3-prep
 Version: 0.1
-Revision: 0
+Revision: 1
 Status: Review
 Document basis: Accepted EOS architecture + completed Material and Supplier phases
 
@@ -519,4 +519,32 @@ Odporúčanie je READY WITH CONDITIONS, pretože bezpečný prvý profil je zám
 | --- | --- | --- | --- | --- |
 | 2026-10-15 | 0.1 | 0 | Codex | ManufacturingProcess pre-design: TEC type identity, operation/routing hranice, obmedzený profil B, ownership/provenance/validation matice a explicitné odloženie parametrov, capability a execution dát. |
 
-READY WITH CONDITIONS
+## 66. Implementation Outcome - Phase 0.2C.3
+
+Stav: IMPLEMENTED, nie COMPLETE. Pôvodné pre-design závery §1–64 a záznam Revision 0 zostávajú historicky zachované. Implementovaný je presne obmedzený profil B z §63 bez odchýlok; nasleduje samostatné Phase 0.2C.3-close ManufacturingProcess Entity Integration Closure Review.
+
+Schéma: `schemas/entities/manufacturing-process.schema.json`, canonical ID `https://eos.local/schemas/entities/manufacturing-process.schema.json`. Draft 2020-12, closed object. Index obsahuje iba discovery `$defs.manufacturingProcess`, nie novú kolekciu.
+
+ManufacturingProcess je tretia Knowledge Entity, Entity a Aggregate Root. `id` reuse-nuje centrálny `$defs/TEC`, `TEC-xxxx`, `^TEC-[0-9]{4}$`. EOS-003 ani central identifiers sa nemenia. Jedno TEC identifikuje stabilný význam výrobnej alebo kontrolnej metódy, nie operáciu, routing, event alebo supplier service.
+
+Required: `id`, `schemaVersion`, `recordVersion`, `revision`, `status`, `createdAt`, `createdBy`, `updatedAt`, `updatedBy`, `sourceLinks`, `changeSummary`, `name`, `description`. Optional: `classifications`, `notes`. Common metadata aj notes sú referencované, nie duplikované. Name a description majú minLength 1; whitespace-only a vecnú dostatočnosť definície musí posúdiť authoring review. Text sa nenormalizuje ani neinterpretuje ako vykonateľný model.
+
+RecordStatus ostáva lifecycle záznamu, nie qualification. Root sourceLinks je vždy štrukturálne povinné; Draft umožní prázdne pole, Review/Approved vynúti existujúci aplikačný helper. Explicitný flag nevypne automatickú povinnosť a nespôsobí duplicitnú diagnostiku. Root provenance podporuje definíciu, nie downstream schopnosti.
+
+Classification[] je optional, môže byť prázdne alebo obsahovať viac assignments; assignment a catalog provenance zostávajú oddelené. Existujúci CLS helper overí existenciu, typ a lifecycle iba s explicitným ValidationContext. Default povoľuje Approved/Deprecated, authoring aj Draft/Review; Archived je zamietnutý a Deprecated vráti warning. Zachované sú presné nested paths, TEC recordId a CLS referencedId. Contract-only nepotrebuje registry a nepotvrdzuje referenčnú integritu; prázdny registry postačuje pre context-aware záznam bez klasifikácií.
+
+Runtime zmena je obmedzená na registráciu schema ID, embedded Classification traversal, spoločnú entity provenance vetvu a rozšírenie existujúcej Supplier CLS vetvy. Nevzniká nový engine, generic entity resolver ani process-specific applicability pravidlo. SEC-0002 a SEC-0003 regresie sú zachované.
+
+V1 neobsahuje PropertyRecord, root Condition, MeasurementQuality, parametre, parameter definitions/values, recipe, Capability, input/output/state alebo MaterialCondition. Bez Material/StockMaterial/Machine/CuttingTool/Supplier väzieb; bez qualification, tolerance/roughness capability, času, ceny, spotrebných zdrojov a personálu. Hierarchia, aliases, externé kódy, equivalence, replacement a norm/document applicability zostávajú odložené. Observation sa nevnára; existujúci TEC subject prešiel regresiou bez zmeny schémy. Kontrolné metódy sú v rozsahu, generic logistics nie; správnosť doménového zaradenia textu nie je predstieraná JSON validáciou.
+
+Fixtures: 11 valid a 148 invalid, všetky fiktívne, prefix `manufacturing-process-` v existujúcich entity fixture priečinkoch. Každý invalid prípad kontroluje očakávané pravidlo a cestu; okrem prázdneho objektu/root array má presne jednu chybu. Nových 27 unittest metód; spolu 290 úspešných vrátane pôvodných 263, 0 failures/errors/skipped. Overené všetkých 23 schém a 215 referencií, JSON, UTF-8 a Python compile. Python 3.12.14, jsonschema 4.26.0, referencing 0.37.0; závislosti nezmenené.
+
+Schema counts 22 -> 23, entity 2 -> 3; Knowledge Core 7 a catalogs 4 bezo zmeny. ADR 17 a RFC dokumenty 4 bezo zmeny. Material, Supplier, Accepted architektúra a existujúce testy nezmenené. Bez reálnych dát, novej entity alebo implementácie deferred konceptov z §62.
+
+### Revision 1 Change History
+
+| Date | Version | Revision | Author | Change |
+| --- | --- | --- | --- | --- |
+| 2026-10-15 | 0.1 | 1 | Codex | Implementovaný obmedzený ManufacturingProcess v1, centrálne refs, provenance/CLS integrácia, fixtures a regresie; pripravené na samostatné closure review. |
+
+READY FOR MANUFACTURINGPROCESS CLOSURE REVIEW

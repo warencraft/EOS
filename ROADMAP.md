@@ -1,5 +1,13 @@
 # ROADMAP
 
+## Míľnik 0.2C.3 - ManufacturingProcess Entity v1
+
+Stav: `IMPLEMENTED`, nie COMPLETE. Phase 0.2C.3-prep je dokončená; CDR-0019 Revision 1: `READY FOR MANUFACTURINGPROCESS CLOSURE REVIEW`.
+
+Implementovaný restricted profil B: typ výrobnej alebo kontrolnej metódy, centrálne TEC, common metadata, required name/description, optional Classification/notes. Bez parametrov, PropertyRecord, capability, operation/routing, entity vzťahov a reálnych dát. 290 úspešných testov, 23 schém (3 entity).
+
+Nasleduje `Phase 0.2C.3-close - ManufacturingProcess Entity Integration Closure Review`. Machine nezačína. Táto sekcia a aktuálny BACKLOG určujú transition stav; nižšie sekcie sú historické.
+
 ## Míľnik 0.2C.2-close.1 - Supplier Closure Corrective Alignment
 
 Stav: `COMPLETE`. Phase 0.2C.2 Supplier je COMPLETE podľa CDR-0018 Revision 1. SEC-0001/0002/0003 sú CLOSED: BACKLOG je zosúladený, source diagnostika sa pri explicitnom flagu neduplikuje a Supplier CLS test trvalo vykonáva všetkých päť stavov pri default aj authoring politike. Automatická provenance a doménové hranice Material/Supplier zostali nezmenené.

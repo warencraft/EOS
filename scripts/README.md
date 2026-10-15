@@ -1,5 +1,11 @@
 # scripts
 
+## Míľnik 0.2C.3 - ManufacturingProcess validácia
+
+ManufacturingProcess schema ID je zaregistrované pre embedded Classification traversal a automatickú root source kontrolu. Existujúca entity provenance vetva a Supplier CLS vetva sú rozšírené bez duplikácie helperov. Draft môže mať sourceLinks prázdne; Review/Approved nie, nezávisle od explicitného has_verifiable_claims flagu a bez duplicitnej chyby.
+
+`validate(record, schema_id)` zostáva contract-only. `validate_with_context(record, schema_id, context)` vyžaduje explicitný ValidationContext; CLS existencia/typ a lifecycle sa kontrolujú existujúcim helperom. Bez klasifikácií postačuje prázdny registry. Chyby zachovávajú kategórie schema_validation, application_validation, reference_integrity, catalog_validation, nested path, TEC recordId a CLS referencedId. Deprecated je warning, Archived je neprípustný. Žiadne PRP/CND/UNT procesné vetvy, entity resolver alebo process applicability.
+
 ## Míľnik 0.2C.2 - Supplier validácia
 
 `validator.py` explicitne registruje Supplier schema ID a embedded Classification[] traversal. Root lifecycle/source pravidlo zdieľa existujúci `_validate_source_links_rule` s `has_verifiable_claims=True`: Draft môže byť bez zdrojov, Review/Approved nie. Classification používa existujúcu CLS resolution a lifecycle policy; nevzniká duplikovaná klasifikačná logika, applicability pravidlo ani generic entity resolver.

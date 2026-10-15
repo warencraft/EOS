@@ -1,5 +1,17 @@
 # schemas
 
+## Míľnik 0.2C.3 - ManufacturingProcess Entity v1
+
+Aktuálne 23 schém: 7 Knowledge Core, 4 katalógy a 3 entity (Material, Supplier, ManufacturingProcess). Phase 0.2C.3 je IMPLEMENTED, čaká na closure; Material a Supplier sú COMPLETE. Staršie sekcie dokumentujú historické stavy.
+
+`entities/manufacturing-process.schema.json` definuje Knowledge Entity a Aggregate Root pre stabilný typ výrobnej alebo kontrolnej metódy. Centrálne `TEC-xxxx` sa používa cez `$defs/TEC`, bez zmeny identifiers. Index poskytuje `$defs.manufacturingProcess`, nie kolekciu.
+
+Required sú common entity metadata a neprázdne name/description. Optional classifications reuse-nujú Classification; optional notes common metadata. Viac assignments aj prázdne pole sú povolené. Root sourceLinks podporujú definíciu, assignment sourceLinks zaradenie; Draft môže byť prázdny, Review/Approved vyžaduje zdroj aplikačne.
+
+Proces nie je operácia, routing ani recipe. Bez PropertyRecord, Condition, parametrov, Capability, material/machine/tool/supplier vzťahov, časov, cien, qualification, input/output/state, hierarchy, aliases, equivalence a replacement. Observation je samostatný root s existujúcim TEC subject; MeasurementQuality nie je root procesné pole. Norm/document applicability je odložená. Kontrolné metódy sú zahrnuté, generic logistics služby nie. JSON nemôže overiť odborný význam voľného textu; to patrí source-backed review.
+
+Kontextová CLS validácia používa existujúci register a lifecycle policy, nie entity resolver alebo applicability model. Nevznikajú reálne procesné záznamy. Presné hranice a outcome: CDR-0019 Revision 1.
+
 ## Míľnik 0.2C.2 - Supplier Entity v1
 
 Aktuálne: 22 schém, 7 Knowledge Core, 4 katalógové a 2 entity schémy (Material a Supplier). Supplier je IMPLEMENTED a čaká na samostatné integračné closure review. Staršie sekcie nižšie opisujú stav svojich míľnikov.

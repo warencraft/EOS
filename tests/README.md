@@ -1,5 +1,15 @@
 # tests
 
+## Míľnik 0.2C.3 - ManufacturingProcess regresie
+
+Aktuálne 290 úspešných unittest metód: pôvodných 263 nezmenených a 27 nových v `test_manufacturing_process_validation.py`. 0 failures/errors/skipped. Nové fiktívne fixtures: 11 valid a 148 invalid s prefixom manufacturing-process- v entity priečinkoch; žiadna produkčná populácia.
+
+Testy kontrolujú central TEC/common metadata/SourceLink/Classification refs, index discovery, required description, minimum bez ostatných entít, všetky deferred root polia, presný dôvod a cestu invalid fixtures. CLS matica vykonáva všetkých 5 lifecycle stavov pri oboch policies vrátane Deprecated warningov, exact path, TEC recordId a CLS referencedId. Root source test overuje omitted/False/True flag bez duplicitnej chyby; Observation TEC subject ostáva platný.
+
+Spustenie z koreňa: `.\.venv\Scripts\python.exe -m unittest discover -s tests -v`.
+
+Overené: 23 schém, 215 refs, JSON, UTF-8, Python compile. Python 3.12.14, jsonschema 4.26.0, referencing 0.37.0. Staršie počty nižšie sú historické.
+
 ## Míľnik 0.2C.2-close.1 - Corrective Supplier regresie
 
 Aktuálne 263 úspešných unittest metód (196 v test_validation.py, 42 v test_catalog_validation.py, 25 v test_supplier_validation.py), 0 failures/errors/skipped. Pôvodných 260 metód zachovaných, 3 nové; existujúca CLS metóda je rozšírená, nie započítaná ako nová.

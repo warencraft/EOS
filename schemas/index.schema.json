@@ -22,7 +22,8 @@
     "propertyCatalogEntry": { "$ref": "https://eos.local/schemas/catalogs/property-catalog-entry.schema.json" },
     "classificationCatalogEntry": { "$ref": "https://eos.local/schemas/catalogs/classification-catalog-entry.schema.json" },
     "material": { "$ref": "https://eos.local/schemas/entities/material.schema.json" },
-    "supplier": { "$ref": "https://eos.local/schemas/entities/supplier.schema.json" }
+    "supplier": { "$ref": "https://eos.local/schemas/entities/supplier.schema.json" },
+    "manufacturingProcess": { "$ref": "https://eos.local/schemas/entities/manufacturing-process.schema.json" }
   },
   "properties": {
     "sourceReferences": {

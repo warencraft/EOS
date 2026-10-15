@@ -1,8 +1,8 @@
 # BACKLOG
 
-## Nasledujúce: Phase 0.2C.3-prep - ManufacturingProcess Entity Pre-design Review
+## Nasledujúce: Phase 0.2C.3-close - ManufacturingProcess Entity Integration Closure Review
 
-Supplier pre-design je dokončený, SI-0001 CLOSED a Supplier v1 implementovaný. Phase 0.2C.2-close.1 Supplier Closure Corrective Alignment uzavrela SEC-0001/0002/0003 podľa CDR-0018 Revision 1: 35/35 kritérií PASS, 263 úspešných testov. Phase 0.2C.2 je COMPLETE. ManufacturingProcess pre-design je nasledujúci povolený míľnik, ale zatiaľ nezačal; jeho implementácia sa týmto nezačína.
+Material a Supplier sú COMPLETE; SEC-0001/0002/0003 zostávajú CLOSED. ManufacturingProcess pre-design je dokončený a Phase 0.2C.3 je IMPLEMENTED podľa CDR-0019 Revision 1, nie COMPLETE. 290 úspešných testov, 23 schém. Nasleduje samostatné integračné closure review; Machine sa nezačína. Deferred process témy ostávajú evidované v CDR-0019 §62, bez duplicity alebo novej implementácie.
 
 ## Ďalšie otvorené položky
 
