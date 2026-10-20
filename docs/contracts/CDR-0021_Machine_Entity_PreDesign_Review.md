@@ -6,9 +6,11 @@ Contract: Machine
 Review type: Pre-design
 Phase: 0.2C.4-prep
 Version: 0.1
-Revision: 0
+Revision: 1
 Status: Review
 Document basis: Accepted EOS architecture + completed Material, Supplier and ManufacturingProcess phases
+
+Aktuálny výsledok Phase 0.2C.4-prep.1 je v §64: MI-0001 CLOSED. Sekcie 1 až 62 zachovávajú pôvodný review Revision 0 vrátane vtedajších otvorených otázok a verdictu; ich návrhový stav nahrádza iba explicitné rozhodnutie §64. Status dokumentu zostáva Review; táto revízia neimplementuje Machine.
 
 ## 1. Purpose
 
@@ -433,5 +435,137 @@ Implementácia teraz nesmie začať. Odporúčanie fyzickej jednotky a profilu C
 | Date | Version | Revision | Author | Change |
 | --- | --- | --- | --- | --- |
 | 2026-10-20 | 0.1 | 0 | Codex | Machine pre-design: autoritatívny MAC/aggregate rámec, otvorená identity granularita MI-0001, návrh fyzickej jednotky a profilu C, specification/evidence/capability hranice, matrices a deferred scope. |
+| 2026-10-20 | 0.1 | 1 | Codex | Phase 0.2C.4-prep.1: explicitné doménové rozhodnutie o fyzickej MAC identite, kontinuita a hranice v1; MI-0001 CLOSED; opätovná kontrola preconditions a readiness. |
 
-NOT READY
+Pôvodný verdict Revision 0: NOT READY.
+
+## 64. Machine Identity Boundary Decision
+
+### 64.1 Rekonštrukcia MI-0001 a autorita
+
+MI-0001 vznikol preto, že RFC-0002 §4.4 pripúšťa konkrétne výrobné zariadenie alebo riadený typ podľa budúceho doménového rozhodnutia a RFC-0003 G-0046 ponecháva typ verzus konkrétny stroj na spresnenie. Syntax MAC ani označenie Aggregate Root tento výber neriešia. Pôvodné odporúčanie §61 bolo fyzická jednotka, nie uzavreté rozhodnutie. Zmiešaný význam by znejasnil Observation, Operation, capability, údržbu, kalibráciu, konfiguráciu a vlastnícke či lokalizačné väzby.
+
+Používateľ v tomto samostatnom míľniku výslovne poveril rozhodnutím medzi oboma možnosťami. Výsledok využíva priestor, ktorý Accepted RFC ponechalo doméne; nemení kategóriu Machine, aggregate hranicu, lifecycle, provenance ani identifikačný formát. CDR-0015 až CDR-0020 a existujúce entity poskytujú vzor spoločných metadát a oddelených hraníc. Osobitne CDR-0017 ukazuje explicitné uzavretie identity pred implementáciou; nejde o dôvod automaticky prevziať všetky polia Supplier.
+
+### 64.2 Porovnanie kandidátov
+
+| Oblasť | A: individuálna fyzická jednotka | B: model alebo typ |
+| --- | --- | --- |
+| Stabilná identita | Jeden skutočný kus aj pri zmene názvu, lokality a vlastníka. | Jedna opakovane použiteľná definícia, nie jeden kus. |
+| Viac kusov rovnakého modelu | Každý má samostatný MAC a vlastnú históriu. | Jeden MAC nedokáže rozlíšiť kusy bez ďalšej identity. |
+| Retrofit a konfigurácia | Menia stav tej istej jednotky a platnosť jej claims. | Jednotlivé modifikované kusy už nemožno bezpečne popísať spoločným modelom. |
+| Observation | Meranie sa viaže na konkrétny pozorovaný kus. | Merania rôznych kusov by sa miešali, ak chýba samostatná identita jednotky. |
+| Údržba a kalibrácia | História patrí jednotke, nie modelu. | Vyžaduje ďalší objekt fyzickej jednotky. |
+| Operation | Budúce pridelenie skutočného stroja má jednoznačný cieľ. | Model vyjadruje požiadavku alebo výber typu, nie pridelený kus. |
+| Zdieľanie špecifikácií | Potrebuje neskorší MachineModel; v1 nemá automatické dedenie. | Prirodzene podporuje modelové nominálne údaje. |
+| Riziko | Nutné doložiť kontinuitu a applicability claims pri prestavbe. | MAC by nebol použiteľný ako identita konkrétneho prevádzkového zariadenia. |
+
+Vybraný je kandidát A. Kandidát B je užitočný budúci MachineModel, nie význam MAC. Voľba vychádza z identity, auditovateľnosti a budúcich väzieb, nie z jednoduchosti JSON.
+
+### 64.3 Normatívna identita
+
+- MAC identifikuje práve jednu individuálne identifikovateľnú fyzickú výrobnú alebo kontrolnú strojovú jednotku.
+- MAC neidentifikuje MachineModel, triedu strojov, WorkCenter, MachineCapability, verziu konfigurácie, samostatný controller alebo spindle, lokalitu, vlastníka, Operation, údržbovú ani kalibračnú udalosť.
+- MAC zostáva stabilný, keď sa tá istá doložiteľne kontinuálna fyzická jednotka upravuje, opravuje, premenúva, premiestňuje alebo mení vlastníka.
+- Nový MAC je povinný pre inú fyzickú jednotku, ktorá pôvodnú nahradí. Historický MAC sa nerecykluje.
+
+Identita EOS je `id` s existujúcim centrálnym `MAC-xxxx`; budúca schéma musí použiť `$ref` na `https://eos.local/schemas/common/identifiers.schema.json#/$defs/MAC`, bez lokálneho regexu. Nevzniká všeobecná identita ľubovoľného resource, pracoviska či ručného nástroja.
+
+### 64.4 Kontinuita, retrofit a náhrada
+
+| Situácia | Rozhodnutie | Normatívna hranica |
+| --- | --- | --- |
+| Premenovanie | SAME MAC | Názov nie je identita. |
+| Premiestnenie | SAME MAC | Lokalita nie je identita. |
+| Zmena vlastníka | SAME MAC | Vlastníctvo nie je identita. |
+| Výmena controller | SAME MAC | Úprava tej istej jednotky, nie výmena celého stroja. |
+| Výmena spindle | SAME MAC | Oprava alebo konfigurácia tej istej jednotky. |
+| Doplnenie rotačnej osi | SAME MAC | Rozšírenie jednotky; samostatný nový stroj sa tým nestáva tým istým kusom. |
+| Major retrofit alebo generálna oprava | SAME MAC | Zachovaná doložená kontinuita jednotky; zmenené claims vyžadujú nové posúdenie. |
+| Rebuild identifikovanej jednotky | SAME MAC | Rekonštrukcia tej istej jednotky s doloženou kontinuitou. |
+| Extrémny rebuild z donorov alebo nejasná kontinuita | CASE REQUIRING GOVERNED IDENTITY DECISION | Pred pridelením či zachovaním MAC rozhodne dokumentovaný identity review; žiadny automatický percentuálny prah vymenených dielov. |
+| Iný fyzický stroj na pôvodnom mieste | NEW MAC | Platí aj pre rovnaký model, shop name a interné označenie. |
+| Definitívne fyzické zničenie a nová jednotka | NEW MAC pre novú jednotku | Pôvodná identita zostáva historická; nedochádza k jej prevodu. |
+| Duplicitný EOS záznam | CASE REQUIRING GOVERNED IDENTITY DECISION | Overiť totožnosť kusu, zvoliť kanonický existujúci MAC a zachovať audit a dohľadateľnosť referencií. Nevytvárať ďalší MAC len kvôli duplicite. |
+
+Bežný retrofit nevytvára nový MAC. Doloženie kontinuity však nie je dôkazom zachovania technických vlastností. Zmenené alebo nedoložené claims sa nesmú automaticky považovať za platné po prestavbe. Nejasný rebuild sa nesmie potichu zaradiť medzi bežné opravy. Tento CDR neimplementuje deduplikáciu, prepis referencií, fyzické mazanie, replacement polia ani nový lifecycle stav.
+
+### 64.5 MachineModel a špecifikácie
+
+Machine vlastní fyzickú identitu, unit-specific sourced specifications a klasifikácie. Observation zostáva samostatným evidenčným aggregate a môže odkazovať na MAC; Machine ho nevlastní vložením.
+
+Budúci MachineModel predstavuje opakovane použiteľnú výrobcom/modelom určenú definíciu a modelové nominálne špecifikácie. Nesmie používať MAC ako vlastnú modelovú identitu. Jeho prefix, schéma a vzťah k Machine sa tu neurčujú.
+
+Machine v1 môže mať `properties: PropertyRecord[]`. Datasheet môže byť zdrojom claim o konkrétnej jednotke iba po doložení applicability na jej modelový variant a konfiguráciu. PropertyRecord nesie vlastné sourceLinks a príslušný verificationStatus; modelová dokumentácia nie je automatická verifikácia fyzického kusu. Claims sa nekopírujú ako automaticky zdedená pravda a neimplikujú meranie ani capability. Pri nepreukázanej applicability sa claim nesmie prezentovať ako overená špecifikácia jednotky.
+
+PropertyRecord je optional a obmedzený na existujúci numerický kontrakt. Nesmie niesť runtime stav, Operation parametre, aktuálne príkazy, plánované nastavenia, maintenance hodnoty, capability vzťahy ani costing.
+
+### 64.6 Budúce väzby
+
+| Koncept | Dôsledok rozhodnutia a hranica v1 |
+| --- | --- |
+| MachineCapability | Budúca väzba fyzického `machineId = MAC` na `processId = TEC` a scoped obmedzenia je konzistentná. Capability nie je identita ani automatický dôsledok špecifikácie. Presný kontrakt sa neschvaľuje. |
+| Observation | Existujúci MAC subject môže označiť jednotku pri meraní hádzania, presnosti, vibrácií alebo kalibrácii; ide iba o príklady významu, nie technické dáta. Modelový MAC by nerozlíšil merané kusy. |
+| MaintenanceRecord / CalibrationRecord | Budúca história sa viaže na jednotku. Servis ani kalibrácia nemenia MAC; v1 nemá tieto kontrakty ani skryté polia v notes. |
+| Configuration history | Konfigurácia sa mení bez zmeny identity. Revision je audit záznamu, nie časová konfigurácia ani automatický výber platných claims. |
+| Operation | Budúce `operation.machineId` pre skutočné pridelenie znamená fyzický MAC. Požiadavka na model alebo typ je iný význam; Operation sa tu nenavrhuje. |
+| Location / ownership | Sú vzťahy alebo kontext, nie identita; root locationId/ownerId sa nezavádzajú. |
+| External identifiers | Serial number, asset number, ERP code a identifikátor výrobcu sú externé identifikátory alebo dôkazy. Nenahrádzajú MAC a zostávajú odložené do riadeného kontraktu. |
+| Costing a onboarding | MAC umožní neskoršie priradenie ku kusu, ale nezavádza ceny, odpisy ani nákladové polia. Reálny onboarding vyžaduje identifikačné dôkazy a kontrolu duplicít; tento míľnik nevkladá dáta. |
+
+### 64.7 Classification a presný minimálny v1
+
+`classifications: Classification[]` je bezpečný optional profil s 0..N existujúcimi Classification objektmi. Viac klasifikácií je dovolených; nejde o jediný `machineType` enum. Sú možné kategórie ako sústruh, frézka, brúska, pec alebo kontrolné zariadenie, ale tento text nevytvára katalógové záznamy. Klasifikácia nedokazuje vykonateľnosť procesu.
+
+| Povinnosť | Polia |
+| --- | --- |
+| REQUIRED | `id`, `schemaVersion`, `recordVersion`, `revision`, `status`, `createdAt`, `createdBy`, `updatedAt`, `updatedBy`, `sourceLinks`, `changeSummary`, `name` |
+| OPTIONAL | `description`, `classifications`, `properties`, `notes` |
+
+`id` a `sourceLinks` sú už súčasťou entity profilu a nesmú byť definované duplicitne. Description, ak je prítomný, je neprázdny text podľa existujúceho profilu; notes rešpektuje spoločný kontrakt a nesmie nahrádzať zakázané polia. Optional arrays môžu byť prázdne. Nepridáva sa mixed physical/model discriminator, manufacturer/model, serial, lokalita, vlastník, runtime, root Condition/MQ, process/material/tool/supplier referencie ani capability.
+
+Toto je profil C z pôvodného review: užitočná identita fyzickej jednotky s auditom, provenance a voliteľnými sourced claims, nie prevádzkový digitálny model.
+
+### 64.8 Provenance a validačná hranica
+
+Root `sourceLinks` je povinné pole. Draft môže mať prázdne pole; pre Review/Approved sa uplatní neprázdnosť podľa entity profilu a existujúcich lifecycle pravidiel. Samotná prítomnosť zdroja nie je dôkaz jeho pravdivosti alebo applicability.
+
+Nested PropertyRecord má povinné sourceLinks, ktoré existujúca schéma pripúšťa prázdne. Tento CDR nemení tento kontrakt ani nepredstiera existenciu automatickej parent-lifecycle validácie každého claim. Pre Machine v1 sa výslovne volí existujúca hranica: schéma/runtime kontrolujú implementované štrukturálne a katalógové pravidlá; zodpovedný review pred schválením ručne overuje zdroj každého technického claim, jeho interpretáciu a applicability na konkrétnu jednotku. Root sourceLinks nenahrádza claim sourceLinks. Claim bez doloženého zdroja sa nesmie schváliť ako sourced specification.
+
+Úspešný validačný report nie je schválenie entity ani doklad úplnej provenance. Automatizované schvaľovanie na základe samotného validátora je mimo v1. Existujúca backlog úloha automatického nested source enforcement zostáva otvorená; jej implementácia nie je skrytým rozsahom Machine v1. Ak budúca implementačná úloha vyžaduje automatické schvaľovanie, musí tento limit vyriešiť samostatne pred takým použitím.
+
+Existencia cieľového SourceReference, fyzická totožnosť, kontinuita, konfigurácia a obsahová applicability sa nesmú označiť za overené iba podľa regexu alebo katalógu. Generic entity resolver sa nevyžaduje ani nezavádza.
+
+### 64.9 RFC/ADR impact
+
+Výsledok A: explicitné spresnenie otvoreného doménového rozhodnutia v medziach RFC-0002 §4.4 a RFC-0003 G-0046. Nie je to materiálna zmena Accepted architektúry. Machine zostáva Entity a Aggregate Root, MAC formát zostáva centrálny, Observation zostáva samostatný a claim/evidence/capability hranice sa zachovávajú. Princíp, že Aggregate Root nevlastní ďalší Aggregate Root, nie je dotknutý.
+
+Na toto uzavretie postačuje používateľom zadaný CDR decision review; Accepted RFC/ADR sa nemenia a nevzniká nové ADR. Neskoršie predefinovanie MAC na model, zmiešanú identitu alebo zmena aggregate/provenance hranice by vyžadovali riadny RFC/ADR amendment podľa governance pred implementáciou. Toto rozhodnutie nie je všeobecná výnimka z architecture freeze.
+
+### 64.10 Recheck všetkých preconditions
+
+| Podmienka pôvodného §61 alebo súvisiaca hranica | Výsledok |
+| --- | --- |
+| MI-0001: unit vs model | CLOSED: fyzická jednotka, §64.2 až §64.4; model nie je MAC. |
+| 1. Profil C, optional description, bez discriminator | Potvrdené presným field modelom §64.7. |
+| 2. Optional Classification reuse | Potvrdené, 0..N; bez machineType enumu. |
+| 3. Numeric PropertyRecord iba unit-specific specification | Potvrdené v §64.5; runtime, capability a planned settings vylúčené. |
+| 4. Root/claim provenance, applicability, nested source limit | Explicitne uzavretá hranica manual approval vs runtime v §64.8; automatizovaný enforcement zostáva odložený, nie deklarovaný ako hotový. |
+| 5. Bez direct refs a generic resolvera | Potvrdené; nový entity resolver nie je implementačný predpoklad. |
+| 6. Bez runtime, údržby/kalibrácie, ceny/času, replacement | Potvrdené; pravidlá identity nie sú implementácia týchto kontraktov. |
+| 7. Revision nie je configuration history engine | Potvrdené; retrofit neznamená automatickú platnosť claims. |
+| 8. Fiktívne fixtures a úplné regresie | Povinné acceptance criteria následnej implementácie; v tomto review žiadne nové fixtures ani testy. |
+| Specification vs capability / Observation | Oddelené: claim nie je meranie ani schopnosť; bez automatickej promotion. |
+| MachineCapability / MachineModel dependency | Nie sú nutné pre obmedzený v1, nezavádzajú sa náhradné polia. |
+| External identifiers | Deferred, nikdy náhrada MAC. |
+| Extrémny rebuild a duplicity | Riadený identity review pred onboarding rozhodnutím; bez automatického algoritmu alebo novej identity len pre duplicitu. |
+
+Zostávajúce implementačné blokéry pre tento presne obmedzený profil: žiadne. Odložené koncepčné a prevádzkové funkcie nie sú implementované ani vyhlásené za vyriešené.
+
+### 64.11 Overenie a finálny verdict
+
+Pred rozhodnutím: vetva `feature/phase-0.2c-knowledge-entities`, HEAD `99bc3f4dd0790cbd26af301088fd65ab7edb14e1`, čistý pracovný strom. Existujúca unittest sada: 290 testov, 0 zlyhaní, 0 chýb, OK. Kontrola schém: 23 platných schém, z toho 7 Knowledge Core, 4 katalógy a 3 entity; 17 ADR a 4 RFC dokumenty. Machine, MachineModel a MachineCapability schémy chýbajú zámerne.
+
+MI-0001 je CLOSED. Machine v1 je pripravený na samostatne zadanú implementáciu presného profilu §64.7 s validačnou hranicou §64.8. Tento míľnik iba rozhoduje a dokumentuje; neimplementuje Machine, nemení existujúce entity a nepopuluje reálne dáta.
+
+READY FOR IMPLEMENTATION
