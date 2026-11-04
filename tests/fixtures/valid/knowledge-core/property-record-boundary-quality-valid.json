@@ -1,0 +1,1 @@
+{"propertyId":"PRP-000010","valueType":"valueRange","valueRange":{"minValue":0,"unitId":"UNT-000010"},"measurementQuality":{"confidenceLevel":1},"conditions":[],"verificationStatus":"Disputed","sourceLinks":[{"sourceReferenceId":"SRC-000002","sourceClass":"L","supportedClaim":"fictional numeric claim","usageType":"interpretation","verificationStatus":"Draft"}]}

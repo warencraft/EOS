@@ -1,0 +1,1 @@
+{"propertyId":"PRP-000006","valueType":"valueRange","valueRange":{"minValue":6,"maxValue":7,"unitId":"UNT-000006"},"conditions":[{"conditionTypeId":"CND-000002","evaluationMode":"limiting","quantity":{"value":1,"unitId":"UNT-000007"}}],"verificationStatus":"Reviewed","sourceLinks":[]}

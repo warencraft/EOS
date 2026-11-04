@@ -1,10 +1,460 @@
 # CHANGELOG
 
+## 0.2C.3 - 2026-10-15
+
+Status: IMPLEMENTED / READY FOR MANUFACTURINGPROCESS CLOSURE REVIEW
+
+- Pridaný ManufacturingProcess v1 ako tretia Knowledge Entity/Entity/Aggregate Root: centrálne TEC, common metadata, required name/description a optional Classification/notes. Index discovery bez kolekcie.
+- Reuse provenance a CLS runtime vetiev bez nového resolvera; zachované SEC-0002/0003 správanie a presné error paths.
+- 11 valid a 148 invalid fiktívnych fixtures, 27 nových testov; 290 passed, 0 failures/errors/skipped vrátane pôvodných 263.
+- 23 schém a 215 refs, JSON/UTF-8/Python compile PASS. Dependencies, Material/Supplier, identifiers a Accepted architektúra nezmenené.
+- CDR-0019 Revision 1 dopĺňa implementation outcome bez odstránenia pre-design histórie. ROADMAP/BACKLOG zosúladené s nasledujúcim closure review.
+- Bez parametrov, PropertyRecord, capability, operation/routing, časov/cien, entity vzťahov alebo reálnych dát. Phase 0.2C.3 nie je COMPLETE; nasleduje Phase 0.2C.3-close, nie Machine.
+
+## 0.2C.2-close.1 - 2026-10-14
+
+Status: Completed
+
+### Fixed
+
+- SEC-0001: zosúladený BACKLOG s dokončeným Supplier pre-designom, SI-0001, implementáciou a corrective closure; skutočné deferred Supplier témy zachované a explicitne uvedené.
+- SEC-0002: composition guard vynechá druhé root source volanie pri automaticky kontrolovaných kontraktoch (Material, Supplier, Observation a štyri katalógy). Default aj explicitný flag zachovávajú provenance povinnosť; nejde o post-hoc deduplikáciu chýb. Ostatní opt-in consumers a CLI argument sú zachované.
+- SEC-0003: existujúci Supplier CLS test rozšírený na 5 stavov × 2 politiky s presnými error/warning cestami, recordId a referencedId. Varianty sú test-local, shared fixture nezmenená.
+
+### Validated
+
+- 263 passed, 0 failures, 0 errors, 0 skipped: pôvodných 260 testov zachovaných, 3 nové corrective metódy. Pred opravou nové entity regresie reprodukovali štyri duplicitné prípady; po oprave prešli.
+- 35/35 completion criteria PASS; CDR-0018 Revision 1 uzatvára všetky tri findings a Phase 0.2C.2 označuje COMPLETE.
+- 22 schém, 201 vyriešených refs; JSON, UTF-8 a Python compile PASS. Schémy, fixtures, dependencies, governance a Accepted RFC/ADR nezmenené.
+- Nasleduje Phase 0.2C.3-prep ManufacturingProcess Entity Pre-design Review, ktorý sa v tomto míľniku nezačal. Bez merge/tag/release a reálnych dát.
+
+## 0.2C.2 - 2026-10-14
+
+Status: IMPLEMENTED / READY FOR SUPPLIER CLOSURE REVIEW
+
+### Added
+
+- Supplier v1 ako druhá Knowledge Entity, Entity a Aggregate Root v `schemas/entities/supplier.schema.json`, s existujúcim centrálnym `SUP-xxxx` pre jednu právne samostatnú organizáciu v dodávateľskej roli.
+- Indexová discovery definícia `$defs.supplier` bez novej entity kolekcie, 12 valid a 131 invalid fiktívnych fixtures a 24 unittest metód.
+
+### Changed
+
+- Existujúci runtime komponuje root lifecycle/source helper a CLS context-aware validáciu bez zmeny common kontraktov alebo nového resolvera.
+- CDR-0017 Revision 2 zachováva pre-design aj SI-0001 history a dopĺňa implementačný outcome. README a ROADMAP zachytávajú aktuálny stav a hranice v1.
+
+### Validated
+
+- 260 passed, 0 failures, 0 errors, 0 skipped vrátane všetkých 236 pôvodných regresií; 22 schém, 201 vyriešených `$ref`, UTF-8, JSON a Python compile PASS.
+- Material, Observation, ostatné schémy okrem indexu, Accepted RFC/ADR, governance a závislosti zostali nezmenené.
+- Bez reálnych Supplier dát, deferred modelov, generic entity resolvera, merge alebo tagu.
+- Nasleduje `Phase 0.2C.2-close - Supplier Entity Integration Closure Review`; Supplier fáza ešte nie je uzatvorená. ManufacturingProcess nezačal.
+
+## 0.2C.1-close.1 - 2026-10-06
+
+Status: Completed
+
+### Changed
+
+- BACKLOG a ROADMAP zosúladené s dokončeným Material v1 a nasledujúcim, zatiaľ nezačatým Supplier pre-designom.
+- CDR-0016 Revision 1 uzatvára MEC-0001 a MEC-0003; MEC-0002 má stav CLOSED – TRANSITION DEFINED s povinným prechodom na Phase 0.2C vetvu pred Supplier prácou.
+- Legacy wrong-PRP-prefix fixture používa platné fiktívne `MAT-9001`; existujúci test overuje jedinú pattern chybu na `$.propertyId` a úspech po nahradení platným PRP. Pôvodný výsledok nebol spôsobený iným poľom.
+
+### Validated
+
+- 236/236 testov, 25/25 Material completion criteria a 21 platných schém; schémy, validátor a Accepted architektúra zostali nezmenené.
+- Phase 0.2C.1 je COMPLETE. Supplier ani ďalšia entita nezačali; nevznikli reálne Material dáta.
+- Staršie changelog a implementačné README sekcie zachovávajú stav svojho míľnika; aktuálny closure stav určuje CDR-0016 Revision 1 a ROADMAP.
+
+## 0.2C.1 - 2026-10-04
+
+Status: Implemented / Ready for closure review
+
+### Added
+
+- `schemas/entities/material.schema.json` ako prvá Knowledge Entity schéma pre condition-neutral Material Aggregate Root so stabilným centrálnym `MAT-xxxx`.
+- Registrácia Materialu v schema indexe a 16 platných plus 42 neplatných výhradne fiktívnych entity fixtures.
+- 22 unittest metód pre štruktúru, lifecycle provenance, vlastníctvo PropertyRecord a Classification, paralelné a konfliktné claims, context-aware PRP/CND/UNT/CLS validáciu a presné vnorené error paths.
+
+### Changed
+
+- Validačná kompozícia rekurzívne deleguje vnorené Material claims a classifications existujúcim helperom bez nového resolvera alebo duplicitných pravidiel.
+- CDR-0015 je Revision 1 s implementačným výsledkom `READY FOR MATERIAL CLOSURE REVIEW`.
+- Dokumentácia schém, validátora, testov a roadmap opisuje prvú entity schému a jej hranice.
+
+### Deferred / Not Added
+
+- Nevznikol Designation, root MaterialCondition, chemical composition, structured NormReference relation, StockMaterial, Supplier ani process/machine/tool compatibility model.
+- `replaces` a `replacedBy` sú iba štrukturálne MAT odkazy; generic entity resolver, replacement graph integrity a persistence zostávajú deferred.
+- Nevznikli reálne Material dáta ani iná 0.2C entita; Accepted RFC a ADR zostali nezmenené.
+
+### Validated
+
+- Kompletných 236 unittest testov prešlo vrátane všetkých pôvodných 214 regresií.
+- Phase 0.2C.1 je `IMPLEMENTED`; nasleduje `Phase 0.2C.1-close - Material Entity Integration Closure Review`.
+
+## 0.2B.2-close.1 - 2026-10-04
+
+Status: Completed
+
+### Changed
+
+- `BACKLOG.md` rozlišuje dokončený v1 rozsah Phase 0.2B.2 od odložených katalógových a runtime rozšírení a označuje Material pre-design ako nasledujúci míľnik.
+- `schemas/README.md` obsahuje aktuálny prehľad siedmich Knowledge Core kontraktov, štyroch katalógov a hranice medzi JSON Schema, `reference_integrity` a `catalog_validation`.
+- CDR-0014 Revision 1 uzatvára KCC-0001 a KCC-0002 s verifikačnými dôkazmi.
+
+### Validated
+
+- Všetkých 17 completion criteria zostáva PASS a kompletných 214 unittest testov prešlo.
+- Phase 0.2B.2 je `COMPLETE`; nasleduje `Phase 0.2C.1-prep - Material Entity Pre-design Review`.
+- Nezmenili sa JSON schémy, Python implementácia, testy, fixtures ani Accepted RFC a ADR; nevznikli reálne katalógové dáta ani 0.2C entita.
+
+## 0.2B.2.5 - 2026-10-04
+
+Status: Complete / Ready for closure review
+
+### Added
+
+- Immutable in-memory `CatalogRegistry`, `ValidationContext` a explicitná default/authoring lifecycle policy pre UNT, CND, PRP a CLS.
+- Context-aware API `validate_with_context(...)` a `validate_json_file_with_context(...)` s reportom vykonaných vrstiev.
+- `reference_integrity` kontroly existencie a typu a oddelené `catalog_validation` kontroly lifecycle a katalógovej kompatibility.
+- 15 fiktívnych test-only catalog entries a 32 integračných unittest testov.
+
+### Changed
+
+- `ValidationError` podporuje voliteľné `referencedId`; `ValidationResult` rozlišuje warnings a `executedLayers`.
+- Quantity, ValueRange a vnorené Quantity zdieľajú UNT lookup; Condition zdieľa CND/value-form/prefix pravidlá; PropertyRecord a Observation zdieľajú PRP/value/unit/condition compatibility.
+- CDR-0013 zvýšený na Revision 1 s výsledkom `READY FOR 0.2B.2 CLOSURE`.
+- Kompletná sada má 214 úspešných testov vrátane všetkých 182 pôvodných regresií.
+
+### Deferred / Not Added
+
+- Nevznikol generic entity resolver, SourceReference repository, persistence, production loader, conversion, dimension inference, classification applicability ani workflow engine.
+- Condition `referenceId` kontroluje iba katalógom povolený prefix; existencia cieľa zostáva pre 0.2C.
+- Nevznikli reálne katalógové dáta ani nový 0.2C kontrakt. Phase 0.2B.2 čaká na `0.2B.2-close` review.
+
+## 0.2B.2.4 - 2026-09-24
+
+Status: Implemented / Review
+
+### Added
+
+- `schemas/catalogs/classification-catalog-entry.schema.json` pre samostatný system-neutral Reference Catalog Entry Aggregate Root s centrálnym CLS ID, common metadata, povinným názvom a definíciou a definition provenance.
+- Registrácia `classificationCatalogEntry` a `classificationCatalogEntries` v schema indexe.
+- 9 platných a 34 neplatných fiktívnych fixtures a 14 unittest testov pre Classification Catalog v1.
+
+### Changed
+
+- CDR-0012 zvýšený na Revision 1 a doplnený o skutočný implementačný, validačný a testovací výsledok.
+- Existujúca validačná kompozícia aplikuje lifecycle/source pravidlo na Classification Catalog Entry priamo aj cez schema index.
+- Dokumentácia schém, testov, validátora a roadmap opisuje Reference Catalog rolu, CLS identitu a hranicu definition/assignment provenance.
+
+### Deferred / Not Added
+
+- Nevznikol Classification System model, external-code binding, hierarchy, alias, equivalence, target-entity restriction ani catalog-aware/reference-integrity validácia embedded Classification.
+- Nevznikla žiadna reálna CLS položka a Accepted architektúra zostala nezmenená.
+- Celá Phase 0.2B.2 nie je dokončená. Nasleduje `Phase 0.2B.2.5-prep - Catalog-aware / Reference-integrity Integration Review`, ktorá nebola začatá.
+
+## 0.2B.2.3 - 2026-09-24
+
+Status: Implemented / Review
+
+### Added
+
+- `schemas/catalogs/property-catalog-entry.schema.json` pre samostatný Knowledge Catalog Entry Aggregate Root s centrálnym PRP ID, common metadata, povinným významovým opisom, riadenými value types, presným UNT allow-listom, voliteľným CND allow-listom a provenance.
+- Registrácia `propertyCatalogEntry` a `propertyCatalogEntries` v schema indexe.
+- 11 platných a 44 neplatných fiktívnych fixtures a 16 unittest testov pre Property Catalog v1.
+
+### Changed
+
+- CDR-0011 zvýšený na Revision 1 a doplnený o skutočný implementačný, validačný a testovací výsledok.
+- Existujúca validačná kompozícia aplikuje lifecycle/source pravidlo na Property Catalog Entry priamo aj cez schema index.
+- Dokumentácia schém, testov, validátora a roadmap opisuje Knowledge Catalog rolu, PRP identitu a value-type/unit/condition policy.
+
+### Deferred / Not Added
+
+- Nevznikla catalog-aware validácia PropertyRecord alebo Observation, reference-integrity resolver, canonical unit, required Conditions, multiplicita, MeasurementQuality policy, classification väzba, alias, equivalence, quantity-kind, dimension ani conversion model.
+- Nevznikla žiadna reálna PRP položka ani Classification Catalog.
+- Celá Phase 0.2B.2 nie je dokončená. Nasleduje `Phase 0.2B.2.4-prep - Classification Catalog Pre-design Review`, ktorá nebola začatá.
+
+## 0.2B.2.2 - 2026-09-24
+
+Status: Implemented / Review
+
+### Added
+
+- `schemas/catalogs/condition-type-catalog-entry.schema.json` pre samostatný Knowledge Catalog Entry Aggregate Root s centrálnym CND ID, common metadata, riadenými hodnotovými formami, podmienenou reference-prefix policy a provenance.
+- Registrácia `conditionTypeCatalogEntry` a `conditionTypeCatalogEntries` v schema indexe.
+- 8 platných a 38 neplatných fiktívnych fixtures a 15 unittest testov pre Condition Type Catalog v1.
+
+### Changed
+
+- CDR-0010 zvýšený na Revision 1 a doplnený o skutočný implementačný, validačný a testovací výsledok.
+- Existujúca validačná kompozícia aplikuje lifecycle/source pravidlo na Condition Type Catalog Entry priamo aj cez schema index.
+- Dokumentácia schém, testov, validátora a roadmap opisuje Knowledge Catalog rolu, CND identitu, value-form/reference policy a hranicu voči Property Catalogu.
+
+### Deferred / Not Added
+
+- Nevznikla catalog-aware validácia Condition, reference-integrity resolver, evaluation-mode policy, unit restriction, quantity-kind, dimension, multiplicity, logický výraz ani rule engine.
+- Nevznikla žiadna reálna CND položka, Property Catalog ani Classification Catalog.
+- Celá Phase 0.2B.2 nie je dokončená. Nasleduje `Phase 0.2B.2.3-prep - Property Catalog Pre-design Review`, ktorá nebola začatá.
+
+## 0.2B.2.1 - 2026-09-10
+
+Status: Implemented / Review
+
+### Added
+
+- `schemas/catalogs/unit-catalog-entry.schema.json` pre samostatný Unit Catalog Entry Aggregate Root s centrálnym UNT ID, common metadata, name, symbol, provenance a voliteľnými replacement referenciami.
+- Registrácia `unitCatalogEntry` a `unitCatalogEntries` v schema indexe.
+- 8 platných a 31 neplatných fiktívnych fixtures a 15 unittest testov pre Unit Catalog v1.
+
+### Changed
+
+- CDR-0009 zvýšený na Revision 1 a doplnený o skutočný implementačný, validačný a testovací výsledok.
+- Existujúca validačná kompozícia aplikuje lifecycle/source pravidlo na Unit Catalog Entry priamo aj cez schema index.
+- Dokumentácia schém, testov, validátora a roadmap opisuje identitu, lifecycle, symbolovú neunikátnosť, provenance a replacement hranice.
+
+### Deferred / Not Added
+
+- Nevznikol quantity-kind, dimension, unit-system, alias, equivalence ani conversion model alebo engine.
+- Nevznikla žiadna reálna jednotka ani autoritatívna Unit Catalog populácia.
+- Celá Phase 0.2B.2 nie je dokončená. Nasleduje Phase 0.2B.2.2 - Condition Type Catalog, ktorá nebola začatá.
+
+## 0.2B.1-close.1 - 2026-09-09
+
+Status: Completed
+
+### Changed
+
+- Testovacia bootstrap kontrola teraz pri chýbajúcom `jsonschema` alebo `referencing` zlyhá s nenulovým návratovým kódom a jasným inštalačným postupom namiesto výsledku `OK` so všetkými testami preskočenými.
+- Odstránená duplicitná ručná regex kontrola `sourceReferenceId`; formát kontroluje centrálna JSON Schema a kategória `reference_integrity` zostáva vyhradená pre skutočnú existenciu, stav a kompatibilitu referencie.
+- `BACKLOG.md` je zosúladený s dokončenými siedmimi Knowledge Core kontraktmi a obsahuje konkrétne pokračovanie pre 0.2B.2.
+- CDR-0008 Revision 1 uzatvára blokery KCI-0001, KCI-0002 a KCI-0004; opravuje sa aj zastaraný popis validačného runtime v dokumentácii.
+
+### Validated
+
+- Kompletných 122 unittest testov prešlo; simulácie chýbajúceho `jsonschema` aj `referencing` skončili nenulovo.
+- Phase 0.2B.1 je `COMPLETE`. Nasleduje Phase 0.2B.2 - Knowledge Catalogs, ktorá nebola začatá.
+- Schémy, katalógy, Accepted RFC a ADR sa v korektívnom uzatvorení nemenili.
+
+## 0.2B.1.7 - 2026-09-08
+
+Status: Implemented / Review
+
+### Added
+
+- `schemas/knowledge-core/observation.schema.json` pre first-class Property Measurement Observation Aggregate Root s jedným subjektom a jedným Quantity alebo ValueRange výsledkom.
+- Centrálny OBS formát, Observation discovery v schema indexe, 10 platných a 45 neplatných fixtures.
+- 15 unittest testov pre identitu, subject rodiny, GLOBAL/JOB scope, typed result, vnorené pravidlá, zdroje a indexovú kompozíciu.
+
+### Changed
+
+- CDR-0007 Revision 2 zaznamenáva implementačný výsledok; verdict zostáva `READY FOR IMPLEMENTATION` a Status Review.
+- Validačná kompozícia rekurzívne používa existujúce ValueRange a MeasurementQuality pravidlá a existujúcu source lifecycle kontrolu.
+- Dokumentácia schém, testov, validátora a roadmap opisuje úzky profil a deferred hranice.
+
+### Deferred / Not Added
+
+- Nevznikol PropertyRecord embedding, arbitrary payload, generic ObservationResult, nečíselný výsledok, PROJECT/EXPERIMENT binding, actor, attachment, evidence verification ani correction model.
+- Referenčná existencia subject/JOB/PRP, katalógová kompatibilita, persistence immutability a Decision workflow zostávajú aplikačné alebo budúce pravidlá.
+- Phase 0.2B.2 ani 0.2C nezačala; nevznikol nový RFC, ADR, katalóg, databáza, API ani UI.
+
+## 0.2B.1.6 - 2026-09-08
+
+Status: Implemented / Review
+
+### Added
+
+- `schemas/knowledge-core/property-record.schema.json` pre embedded claim-like Value Object s povinným `propertyId`, `valueType`, `verificationStatus`, `sourceLinks` a presne jednou vetvou `quantity` alebo `valueRange`.
+- Centrálny PRP formát a discovery PropertyRecord v schema indexe.
+- 10 platných a 40 neplatných fiktívnych fixtures a 13 unittest testov pre štruktúru, `$ref`, discriminator, odmietnuté polia, vnorené aplikačné pravidlá a regresie.
+
+### Changed
+
+- CDR-0006 Revision 1 zaznamenáva finálny implementačný výsledok; Status zostáva Review a verdikt `READY WITH CONDITIONS` je zachovaný.
+- Validačná orchestrácia rekurzívne aplikuje existujúce ValueRange a MeasurementQuality pravidlá aj vo vnorených kontraktoch bez duplikácie ich implementácie.
+- Dokumentácia schém, testov a validátora opisuje claim boundary, zdroje, verifikáciu a odložené katalógové kontroly.
+
+### Deferred / Not Added
+
+- Do 0.2B.2 zostáva existencia a stav PRP, povolený valueType, kompatibilita jednotiek a dimenzií, povinné podmienky, doménové rozsahy a property classification.
+- Kontextová povinnosť neprázdnych `sourceLinks` a Decision workflow zostávajú odložené; samostatný kontrakt nepredstiera lifecycle rodiča.
+- Nevznikol Property Catalog, Observation, Decision, reálne PRP položky, nové RFC, ADR ani governance dokumenty.
+- Dokončený je iba rozsah 0.2B.1.6; Phase 0.2B.2 nezačala.
+
+## 0.2B.1.5 - 2026-09-07
+
+Status: Implemented / Review
+
+### Added
+
+- `schemas/knowledge-core/classification.schema.json` pre embedded reference Value Object s povinným `classificationId` a štrukturálne nepovinnými `sourceLinks` cez existujúci SourceLink `$ref`.
+- Centrálny CLS formát a discovery v schema indexe.
+- 4 platné a 26 neplatných fiktívnych fixtures; 12 nových unittest testov vrátane presných príčin a ciest chýb, multiplicity SourceLink a regresnej kontroly indexu.
+- Konkrétna backlog úloha pre katalógové vynucovanie pôvodu a povinnosti sourceLinks v `0.2B.2`.
+
+### Changed
+
+- CDR-0005 Revision 1 dopĺňa finálny implementačný výsledok; Status zostáva Review.
+- Dokumentácia schém a testov opisuje význam CLS, zdrojové pravidlá a limity validácie.
+- Namiesto pre-design odporúčania neprázdneho sourceLinks sa zachováva existujúca EOS multiplicita: prázdne pole je štrukturálne platné a unikátnosť sa nevyžaduje. Ide o explicitné implementačné spresnenie podľa zadania, nie zrušenie zdrojovej povinnosti.
+
+### Deferred / Not Added
+
+- Povinnosť sourceLinks pre externé klasifikácie podľa RFC-0001 §4.6 zostáva platná; kontrola katalógového pôvodu, existencie, aktívneho stavu, kompatibility a hierarchie je odložená do `0.2B.2`.
+- Validačný kód, závislosti a predchádzajúce Knowledge Core kontrakty sa nemenili.
+- Nevznikol Classification Catalog, reálne CLS položky, nové RFC, ADR ani governance zmeny.
+- Dokončený je iba implementačný rozsah `0.2B.1.5`; celý `0.2B.1` zostáva rozpracovaný a `0.2B.2` nezačala.
+
+## 0.2B.1.4 - 2026-08-01
+
+Status: Review
+
+### Added
+
+- `CDR-0004_Condition_Contract.md` ako contract review dokument pre štvrtý Knowledge Core Contract.
+- `schemas/knowledge-core/condition.schema.json` pre value object `Condition`.
+- Centrálny identifikátor `CND-xxxxxx` v `schemas/common/identifiers.schema.json`.
+- Discovery záznam pre `Condition` v `schemas/index.schema.json`.
+- Platné a neplatné fixture záznamy pre `Condition`.
+- `unittest` pokrytie pre `CND` identifikátor, `evaluationMode`, presne jednu hodnotovú formu, vnorené `Quantity`/`ValueRange` `$ref`, notes-only rozhodnutie, zákaz metadata/source/verification polí a regresie `Quantity`/`ValueRange`/`MeasurementQuality`.
+
+### Changed
+
+- Dokumentácia schém, testov a skriptov opisuje počiatočný scope `Condition`, rozdiel medzi kontextovou podmienkou a výrobnou toleranciou, schema-only validáciu a odložené aplikačné pravidlá.
+
+### Not Added
+
+- Nevznikol Condition Type Catalog, Classification, PropertyRecord ani Observation kontrakt.
+- Nevznikol tolerance schema, MeasurementMethod, Instrument, Unit Catalog ani Property Catalog.
+- Nevznikli konkrétne strojárske hodnoty, reálne jednotky, konverzné faktory, kalkulačky, API, databázový server ani UI.
+- Nevznikol nový ADR ani RFC.
+
+## 0.2B.1.3 - 2026-08-01
+
+Status: Review
+
+### Added
+
+- `CDR-0003_MeasurementQuality_Contract.md` ako contract review dokument pre tretí Knowledge Core Contract.
+- `schemas/knowledge-core/measurement-quality.schema.json` pre value object `MeasurementQuality`.
+- Discovery záznam pre `MeasurementQuality` v `schemas/index.schema.json`.
+- Platné a neplatné fixture záznamy pre `MeasurementQuality`.
+- `unittest` pokrytie pre vnorený `Quantity` `$ref`, notes-only rozhodnutie, `confidenceLevel`, aplikačné pravidlá pre neistotu a rozlíšenie, zákaz tolerancií a regresie `Quantity`/`ValueRange`.
+
+### Changed
+
+- EOS aplikačná validačná vrstva doplnená o pravidlá `MeasurementQuality`: `uncertainty.value >= 0` a `resolution.value > 0`.
+- Dokumentácia schém, testov a skriptov opisuje počiatočný scope `MeasurementQuality`, rozdiel voči tolerancii, confidenceLevel reprezentáciu a odložené koncepty.
+
+### Not Added
+
+- Nevznikol tolerance, requirement, Condition, Classification, PropertyRecord ani Observation kontrakt.
+- Nevznikol MeasurementMethod, Instrument, CalibrationRecord, Unit Catalog ani Property Catalog.
+- Nevznikli konkrétne strojárske hodnoty, reálne jednotky, konverzné faktory, kalkulačky, API, databázový server ani UI.
+- Nevznikol nový ADR ani RFC.
+
+## 0.2B.1.3-prep - 2026-08-01
+
+Status: Completed / Approved
+
+### Changed
+
+- RFC-0001 zvýšené na Revision 4 a cez zaznamenaný `Accepted -> Review -> Accepted` lifecycle opravená hranica `MeasurementQuality`.
+- RFC-0003 zvýšené na Revision 3 a zosúladené so slovníkovým významom `MeasurementQuality`.
+- Výrobná, konštrukčná, rozmerová, geometrická a akceptačná tolerancia odstránená z `MeasurementQuality`.
+- `MeasurementQuality` ponechané pre metrologické charakteristiky ako neistota merania, rozlíšenie, deklarovaná chybová charakteristika meracieho systému, repeatability, reproducibility a confidence informácia.
+- Budúci requirement/tolerance model explicitne odložený do backlogu.
+- Implementácia `MeasurementQuality` zostáva ďalším kontraktom po tejto korekcii.
+
+### Not Added
+
+- Nevznikla žiadna JSON schéma.
+- Nevznikol tolerance, requirement, MeasurementQuality, Condition, Classification, PropertyRecord ani Observation kontrakt.
+- Nevznikol nový ADR ani RFC.
+
+## 0.2B.1.2 - 2026-08-01
+
+Status: Review
+
+### Added
+
+- `CDR-0002_ValueRange_Contract.md` ako contract review dokument pre druhý Knowledge Core Contract.
+- `schemas/knowledge-core/value-range.schema.json` pre value object `ValueRange`.
+- Discovery záznam pre `ValueRange` v `schemas/index.schema.json`.
+- Platné a neplatné fixture záznamy pre `ValueRange`.
+- `unittest` pokrytie pre štrukturálne pravidlá, aplikačné pravidlá, centrálny `UNT` `$ref`, schema index a regresiu `Quantity`.
+
+### Changed
+
+- EOS aplikačná validačná vrstva doplnená o pravidlá `ValueRange`: obrátené hranice a inkluzivita bez príslušnej hranice.
+- Dokumentácia schém, testov a skriptov opisuje `ValueRange`, jeho vzťah ku `Quantity`, štrukturálnu a aplikačnú validáciu a sémantickú predvolenú inkluzivitu.
+
+### Not Added
+
+- Nevznikol Unit Catalog ani konkrétne jednotky.
+- Nevznikli `MeasurementQuality`, `Condition`, `Classification`, `PropertyRecord` ani `Observation`.
+- Nevznikli konkrétne strojárske hodnoty, konverzné faktory, kalkulačky, API, databázový server ani UI.
+- Nevznikol nový ADR ani RFC.
+
+## 0.2B.1.1 - 2026-08-01
+
+Status: Review
+
+### Added
+
+- `CDR-0001_Quantity_Contract.md` ako prvý contract review dokument pre Knowledge Core Contract.
+- `schemas/knowledge-core/quantity.schema.json` pre value object `Quantity`.
+- Centrálny identifikátor `UNT-xxxxxx` v `schemas/common/identifiers.schema.json`.
+- Discovery záznam pre `Quantity` v `schemas/index.schema.json`.
+- Platné a neplatné fixture záznamy pre `Quantity`.
+- `unittest` pokrytie pre validáciu `Quantity`, centrálny `UNT` `$ref`, viac chýb naraz, presné cesty k poliam a zákaz entity metadát vo value objecte.
+
+### Changed
+
+- Validačná vrstva genericky odmieta nefinite numerické hodnoty `NaN` a `Infinity`.
+- Mapovanie `additionalProperties` chýb teraz ukazuje konkrétne neočakávané pole.
+- Dokumentácia schém, testov a skriptov opisuje kontrakt `Quantity` a jeho limity.
+
+### Not Added
+
+- Nevznikol Unit Catalog ani konkrétne jednotky.
+- Nevznikli `ValueRange`, `MeasurementQuality`, `Condition`, `PropertyRecord` ani `Observation`.
+- Nevznikli konkrétne strojárske hodnoty, konverzné faktory, kalkulačky, API, databázový server ani UI.
+- Nevznikol nový ADR ani RFC.
+
 Všetky významné zmeny projektu EOS sa zaznamenávajú v tomto súbore.
+
+## 0.2B.0 - 2026-08-01
+
+Status: Completed / Approved
+
+### Added
+
+- Architecture Phase Complete záznam pre uzavretie architektonickej fázy.
+- Architecture Freeze pravidlo: nové veľké architektonické dokumenty nevznikajú bez nového architektonického problému.
+
+### Changed
+
+- `EOS-003` doplnený o prefix governance pre `RFC`, `OBS`, `PRP`, `UNT`, `CLS`, `CND`, `DEC`, `REL` a `EVT`.
+- `DEC-xxxxxx` označený ako `Candidate`.
+- `REL-xxxxxx` a `EVT-xxxxxx` označené ako `Deferred`.
+- RFC-0001, RFC-0002 a RFC-0003 prijaté ako `Accepted`.
+- `EOS-009` aktualizovaný na closure stav po splnení governance podmienok.
+- `EOS-010` aktualizovaný na Architecture Readiness Verdict `READY`.
+- `ROADMAP.md` a `BACKLOG.md` nastavené na ďalší míľnik `Phase 0.2B.1 - Knowledge Core Contracts`.
+
+### Not Added
+
+- Nevznikli nové JSON schémy.
+- Nevznikli nové ADR.
+- Nevznikli nové RFC.
+- Nebola začatá implementácia Knowledge Core Contracts.
+- Nebol pridaný API, databázový server, calculation engine ani UI.
 
 ## 0.2A.2 - 2026-07-14
 
-Status: Draft
+Status: Completed / Approved
 
 ### Added
 

@@ -1,0 +1,19 @@
+{
+  "classificationId": "CLS-000001",
+  "sourceLinks": [
+    {
+      "sourceReferenceId": "SRC-000001",
+      "sourceClass": "N",
+      "supportedField": "classificationId",
+      "usageType": "citation",
+      "verificationStatus": "Draft"
+    },
+    {
+      "sourceReferenceId": "SRC-000002",
+      "sourceClass": "L",
+      "supportedClaim": "Fictional assignment to a controlled category",
+      "usageType": "interpretation",
+      "verificationStatus": "Reviewed"
+    }
+  ]
+}

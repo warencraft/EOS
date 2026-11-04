@@ -1,0 +1,1 @@
+{"propertyId":"PRP-000005","valueType":"quantity","quantity":{"value":5,"unitId":"UNT-000005"},"conditions":[{"conditionTypeId":"CND-000001","evaluationMode":"descriptive","textValue":"fictional context A"},{"conditionTypeId":"CND-000001","evaluationMode":"contextual","textValue":"fictional context B"}],"verificationStatus":"Draft","sourceLinks":[]}

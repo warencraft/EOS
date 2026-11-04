@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/schemas/entities/manufacturing-process.schema.json",
+  "title": "EOS ManufacturingProcess",
+  "description": "ManufacturingProcess v1: Knowledge Entity, Entity a Aggregate Root pre stabilnú definíciu typu výrobnej alebo kontrolnej metódy. Nie operácia, routing, parametre, capability ani vykonanie.",
+  "type": "object",
+  "required": [
+    "id",
+    "schemaVersion",
+    "recordVersion",
+    "revision",
+    "status",
+    "createdAt",
+    "createdBy",
+    "updatedAt",
+    "updatedBy",
+    "sourceLinks",
+    "changeSummary",
+    "name",
+    "description"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/TEC",
+      "description": "Stabilná identita významu typu procesu, nezávislá od operácie, stroja a dodávateľa."
+    },
+    "schemaVersion": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/schemaVersion"
+    },
+    "recordVersion": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/recordVersion"
+    },
+    "revision": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/revision"
+    },
+    "status": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/status",
+      "description": "Spoločný lifecycle EOS záznamu, nie qualification alebo schválenie procesu pre výrobu."
+    },
+    "createdAt": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/createdAt"
+    },
+    "createdBy": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/createdBy"
+    },
+    "updatedAt": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/updatedAt"
+    },
+    "updatedBy": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/updatedBy"
+    },
+    "sourceLinks": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/sourceLinks",
+      "description": "Provenance identity a definície procesu; nie dôkaz capability, parametrov alebo nákladov. Draft môže byť prázdny; Review/Approved vyžaduje zdroj aplikačne."
+    },
+    "changeSummary": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/changeSummary"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Ľudsky čitateľný EOS názov; nie identita, globálne unikátny kľúč ani registračný identifikátor."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Povinné vysvetlenie významu a rozsahu metódy; nie recept, routing alebo náhrada odložených štruktúr."
+    },
+    "classifications": {
+      "type": "array",
+      "items": {
+        "$ref": "https://eos.local/schemas/knowledge-core/classification.schema.json"
+      },
+      "description": "Voliteľné owned Classification assignments s vlastnou provenance; bez hierarchy a capability inference."
+    },
+    "notes": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/notes",
+      "description": "Podporný ľudsky čitateľný text; nie skrytá štruktúra pre odložené koncepty."
+    }
+  },
+  "additionalProperties": false
+}

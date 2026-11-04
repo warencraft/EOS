@@ -9,7 +9,21 @@
     "sourceLink": { "$ref": "https://eos.local/schemas/common/source-link.schema.json" },
     "sourceReference": { "$ref": "https://eos.local/schemas/source-reference.schema.json" },
     "normReference": { "$ref": "https://eos.local/schemas/norm-reference.schema.json" },
-    "documentRecord": { "$ref": "https://eos.local/schemas/document-record.schema.json" }
+    "documentRecord": { "$ref": "https://eos.local/schemas/document-record.schema.json" },
+    "quantity": { "$ref": "https://eos.local/schemas/knowledge-core/quantity.schema.json" },
+    "valueRange": { "$ref": "https://eos.local/schemas/knowledge-core/value-range.schema.json" },
+    "measurementQuality": { "$ref": "https://eos.local/schemas/knowledge-core/measurement-quality.schema.json" },
+    "condition": { "$ref": "https://eos.local/schemas/knowledge-core/condition.schema.json" },
+    "classification": { "$ref": "https://eos.local/schemas/knowledge-core/classification.schema.json" },
+    "propertyRecord": { "$ref": "https://eos.local/schemas/knowledge-core/property-record.schema.json" },
+    "observation": { "$ref": "https://eos.local/schemas/knowledge-core/observation.schema.json" },
+    "unitCatalogEntry": { "$ref": "https://eos.local/schemas/catalogs/unit-catalog-entry.schema.json" },
+    "conditionTypeCatalogEntry": { "$ref": "https://eos.local/schemas/catalogs/condition-type-catalog-entry.schema.json" },
+    "propertyCatalogEntry": { "$ref": "https://eos.local/schemas/catalogs/property-catalog-entry.schema.json" },
+    "classificationCatalogEntry": { "$ref": "https://eos.local/schemas/catalogs/classification-catalog-entry.schema.json" },
+    "material": { "$ref": "https://eos.local/schemas/entities/material.schema.json" },
+    "supplier": { "$ref": "https://eos.local/schemas/entities/supplier.schema.json" },
+    "manufacturingProcess": { "$ref": "https://eos.local/schemas/entities/manufacturing-process.schema.json" }
   },
   "properties": {
     "sourceReferences": {
@@ -23,8 +37,55 @@
     "documentRecords": {
       "type": "array",
       "items": { "$ref": "#/$defs/documentRecord" }
+    },
+    "quantities": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/quantity" }
+    },
+    "valueRanges": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/valueRange" }
+    },
+    "measurementQualities": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/measurementQuality" }
+    },
+    "conditions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/condition" }
+    },
+    "classifications": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/classification" }
+    },
+    "propertyRecords": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/propertyRecord" }
+    },
+    "observations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/observation" }
+    },
+    "unitCatalogEntries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/unitCatalogEntry" }
+    },
+    "conditionTypeCatalogEntries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/conditionTypeCatalogEntry" }
+    },
+    "propertyCatalogEntries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/propertyCatalogEntry" }
+    },
+    "classificationCatalogEntries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/classificationCatalogEntry" }
+    },
+    "materials": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/material" }
     }
   },
   "additionalProperties": false
 }
-

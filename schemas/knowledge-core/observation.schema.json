@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/schemas/knowledge-core/observation.schema.json",
+  "title": "EOS Observation",
+  "description": "First-class immutable evidence entity for one numeric property measurement of one referenced EOS subject. This initial profile is not a generic Observation payload.",
+  "type": "object",
+  "required": [
+    "id",
+    "schemaVersion",
+    "recordVersion",
+    "revision",
+    "status",
+    "createdAt",
+    "createdBy",
+    "updatedAt",
+    "updatedBy",
+    "sourceLinks",
+    "changeSummary",
+    "subjectId",
+    "observationScope",
+    "observedAt",
+    "propertyId",
+    "valueType"
+  ],
+  "oneOf": [
+    { "required": ["quantity"] },
+    { "required": ["valueRange"] }
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": { "valueType": { "const": "quantity" } },
+        "required": ["valueType"]
+      },
+      "then": {
+        "required": ["quantity"],
+        "not": { "required": ["valueRange"] }
+      }
+    },
+    {
+      "if": {
+        "properties": { "valueType": { "const": "valueRange" } },
+        "required": ["valueType"]
+      },
+      "then": {
+        "required": ["valueRange"],
+        "not": { "required": ["quantity"] }
+      }
+    },
+    {
+      "if": {
+        "properties": { "observationScope": { "const": "GLOBAL" } },
+        "required": ["observationScope"]
+      },
+      "then": {
+        "not": { "required": ["scopeReferenceId"] }
+      }
+    },
+    {
+      "if": {
+        "properties": { "observationScope": { "const": "JOB" } },
+        "required": ["observationScope"]
+      },
+      "then": {
+        "required": ["scopeReferenceId"]
+      }
+    }
+  ],
+  "properties": {
+    "id": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/OBS",
+      "description": "Stable identity of this first-class Observation entity."
+    },
+    "schemaVersion": { "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/schemaVersion" },
+    "recordVersion": { "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/recordVersion" },
+    "revision": { "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/revision" },
+    "status": { "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/status" },
+    "createdAt": { "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/createdAt" },
+    "createdBy": { "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/createdBy" },
+    "updatedAt": { "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/updatedAt" },
+    "updatedBy": { "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/updatedBy" },
+    "sourceLinks": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/sourceLinks",
+      "description": "Required provenance collection. Draft may be empty; Review and Approved require at least one source through EOS application validation."
+    },
+    "changeSummary": { "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/changeSummary" },
+    "subjectId": {
+      "description": "Cross-aggregate reference to the single observed EOS subject. The identifier family implies the subject type; target existence is application validation.",
+      "anyOf": [
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/MAT" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/POL" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/TEC" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/MAC" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/TOOL" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/SUP" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/JOB" },
+        { "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/JOB_OPERATION" }
+      ]
+    },
+    "observationScope": {
+      "type": "string",
+      "enum": ["GLOBAL", "JOB"],
+      "description": "Context of the initial Observation profile. PROJECT and EXPERIMENT remain deferred until their identifier formats are governed."
+    },
+    "scopeReferenceId": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/JOB",
+      "description": "Required JOB context reference for JOB scope and prohibited for GLOBAL scope."
+    },
+    "observedAt": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/createdAt",
+      "description": "Domain time when the technical observation occurred; distinct from createdAt, which records EOS entity creation."
+    },
+    "propertyId": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/PRP",
+      "description": "Identifier of the future Property Catalog meaning observed by this evidence record."
+    },
+    "valueType": {
+      "type": "string",
+      "enum": ["quantity", "valueRange"],
+      "description": "Discriminator for the single numeric result branch."
+    },
+    "quantity": {
+      "$ref": "https://eos.local/schemas/knowledge-core/quantity.schema.json",
+      "description": "Single scalar observed result."
+    },
+    "valueRange": {
+      "$ref": "https://eos.local/schemas/knowledge-core/value-range.schema.json",
+      "description": "Single interval observed result."
+    },
+    "measurementQuality": {
+      "$ref": "https://eos.local/schemas/knowledge-core/measurement-quality.schema.json",
+      "description": "Optional metrological quality of the single numeric result, not of the Observation entity generically."
+    },
+    "conditions": {
+      "type": "array",
+      "items": { "$ref": "https://eos.local/schemas/knowledge-core/condition.schema.json" },
+      "description": "Optional conditions qualifying the Observation and its single result. Array order has no authoritative meaning."
+    },
+    "notes": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/notes",
+      "description": "Optional non-authoritative note that must not replace result, subject, provenance, or deferred payload fields."
+    }
+  },
+  "additionalProperties": false
+}

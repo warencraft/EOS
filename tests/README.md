@@ -1,5 +1,259 @@
 # tests
 
+## Míľnik 0.2C.3 - ManufacturingProcess regresie
+
+Aktuálne 290 úspešných unittest metód: pôvodných 263 nezmenených a 27 nových v `test_manufacturing_process_validation.py`. 0 failures/errors/skipped. Nové fiktívne fixtures: 11 valid a 148 invalid s prefixom manufacturing-process- v entity priečinkoch; žiadna produkčná populácia.
+
+Testy kontrolujú central TEC/common metadata/SourceLink/Classification refs, index discovery, required description, minimum bez ostatných entít, všetky deferred root polia, presný dôvod a cestu invalid fixtures. CLS matica vykonáva všetkých 5 lifecycle stavov pri oboch policies vrátane Deprecated warningov, exact path, TEC recordId a CLS referencedId. Root source test overuje omitted/False/True flag bez duplicitnej chyby; Observation TEC subject ostáva platný.
+
+Spustenie z koreňa: `.\.venv\Scripts\python.exe -m unittest discover -s tests -v`.
+
+Overené: 23 schém, 215 refs, JSON, UTF-8, Python compile. Python 3.12.14, jsonschema 4.26.0, referencing 0.37.0. Staršie počty nižšie sú historické.
+
+## Míľnik 0.2C.2-close.1 - Corrective Supplier regresie
+
+Aktuálne 263 úspešných unittest metód (196 v test_validation.py, 42 v test_catalog_validation.py, 25 v test_supplier_validation.py), 0 failures/errors/skipped. Pôvodných 260 metód zachovaných, 3 nové; existujúca CLS metóda je rozšírená, nie započítaná ako nová.
+
+Nové entity source testy overujú Material aj Supplier pre Draft/Review/Approved, empty/populated sourceLinks a omitted/False/True flag: celý zoznam diagnostiky vrátane kategórie, kódu, cesty a recordId musí obsahovať presne jednu očakávanú chybu alebo byť prázdny. Tretia metóda chráni štyri katalógy, Observation a opt-in SourceReference. Pred runtime opravou entity testy zlyhali presne v štyroch explicit-True prípadoch.
+
+Supplier nested CLS lifecycle test vytvorí izolovaný deep-copy platnej fiktívnej položky pre Draft, Review, Approved, Deprecated a Archived. Pred registráciou overí jej katalógový kontrakt; obe policies potom vykoná cez skutočný validate_with_context. Assertuje presný zoznam chýb/warningov, severity, nested path, Supplier recordId, CLS referencedId a počet warningov. Deprecated vetva sa vykoná pri oboch politikách. Shared fixture a fixture počty zostali nezmenené: 121 valid/523 invalid, Supplier 12/131.
+
+Python 3.12.14, jsonschema 4.26.0, referencing 0.37.0. Historická sekcia 0.2C.2 nižšie opisuje implementačný míľnik; jej vtedajšie tvrdenie o Deprecated pokrytí opravuje tento corrective záznam a CDR-0018 Rev. 1.
+
+## Míľnik 0.2C.2 - Supplier Entity v1
+
+`test_supplier_validation.py` obsahuje 24 nových unittest metód. Supplier má 12 valid a 131 invalid fiktívnych fixtures s prefixom `supplier-` v existujúcich `fixtures/valid/entities/` a `fixtures/invalid/entities/`. Nové Supplier záznamy nie sú reálne dáta.
+
+Testy overujú central SUP, common metadata, SourceLink a Classification refs, required/optional polia, Draft a Review/Approved provenance, vrstvy root/assignment provenance, viac priradení, odmietnutie každého zahrnutého deferred poľa ako additionalProperties a pozitívnu kontrolu po jeho odstránení. Indexový `$defs.supplier` sa overuje bez pridania kolekcie. Regression Observation so SUP subjectId nepridáva novú sémantiku.
+
+Existujúci `fixtures/catalog-context/fictional-catalog-context.json` sa nemení. Kontextové testy používajú jeho Classification entries a overujú CLS existenciu, type mismatch, default/authoring lifecycle, Deprecated warning a presné error paths vrátane indexu 1. Nezavádzajú Supplier-specific applicability. Contract-only cesta nevyžaduje registry; explicitná context cesta zachováva pôvodné API.
+
+Výsledok 14.10.2026: 260 passed, 0 failures, 0 errors, 0 skipped; všetkých pôvodných 236 regresií zostáva úspešných a nezmenených. Všetkých 22 schém a 201 `$ref` prešlo kontrolou. Python 3.12.14, jsonschema 4.26.0, referencing 0.37.0. Staršie počty nižšie patria historickým míľnikom.
+
+## Míľnik 0.2C.1 - Material Entity v1
+
+Material má 16 platných a 42 neplatných fiktívnych fixtures v priečinkoch `fixtures/valid/entities/` a `fixtures/invalid/entities/`. Neobsahujú reálne materiály, označenia, normové väzby, chemické zloženie ani technické odporúčania.
+
+Nových 22 unittest metód overuje Draft 2020-12 schému, centrálny MAT `$ref`, common metadata, SourceLink, PropertyRecord a Classification refs, schema index, minimum bez voliteľných znalostí, paralelné a konfliktné claims, root lifecycle provenance, condition-neutral root, zákaz Observation ownership a deferred polí a štrukturálne replacement odkazy.
+
+Context-aware testy používajú existujúci fiktívny CatalogRegistry a dokazujú PRP/CND/UNT/CLS resolution, lifecycle a compatibility bez Material-local duplikácie. Overujú kategórie aj úplné cesty vrátane `$.properties[0].quantity.unitId`, `$.properties[0].conditions[0].conditionTypeId` a `$.classifications[0].classificationId`. Platný, ale neexistujúci MAT replacement odkaz zámerne nevyvolá `reference_integrity`, pretože generic entity resolver zatiaľ neexistuje.
+
+Kompletná sada má 236 testov vrátane všetkých pôvodných 214 regresií. Spustenie z koreňa projektu:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+## Míľnik 0.2B.2.5 - Catalog-aware / Reference-integrity Integration
+
+Súbor `test_catalog_validation.py` pridáva 32 `unittest` integračných testov. Pokrýva immutable registry, všetky štyri katalógové rodiny, duplicate a type mismatch, explicitný context, contract-only kompatibilitu, presné vrstvy a cesty chýb, UNT/CND/PRP/CLS resolution, lifecycle policy, shared PropertyRecord/Observation pravidlá, shared Condition pravidlá a dependency-aware potlačenie odvodených chýb.
+
+`fixtures/catalog-context/fictional-catalog-context.json` obsahuje 15 výhradne fiktívnych testovacích položiek vo vysokom ID rozsahu. Každá položka pred registráciou prechádza vlastným katalógovým kontraktom. Fixture nie je produkčný katalóg, autoritatívny technický zdroj ani vstup pre automatický loader.
+
+Kompletná sada má 214 testov: 182 pôvodných regresií a 32 nových integračných testov. Contract-only `validate(...)` naďalej nekontroluje katalógy; catalog-aware výsledok možno tvrdiť iba po úspešnom `validate_with_context(...)` s explicitným `ValidationContext`.
+
+Spustenie z koreňa projektu:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+## Míľnik 0.2B.2.4 - Classification Catalog v1
+
+Classification Catalog Entry má 9 platných a 34 neplatných fiktívnych fixtures v priečinkoch `fixtures/valid/catalogs/` a `fixtures/invalid/catalogs/`. Nepredstavujú reálne classifications, externé klasifikačné systémy ani autoritatívnu populáciu katalógu.
+
+Štrnásť nových unittest testov overuje Draft 2020-12 schému, centrálny CLS a common metadata refs, SourceLink, povinný name a description, zámernú neunikátnosť name, lifecycle/provenance pri priamej aj indexovej validácii, replacement CLS odkazy, odmietnutie system/code/hierarchy/alias/equivalence/applicability polí a registráciu v schema indexe.
+
+Kompletná sada má 182 testov. Úspešná validácia katalógovej položky nepotvrdzuje existenciu alebo použiteľnosť CLS cieľa ani kompatibilitu embedded Classification s rodičom. Spustenie z koreňa projektu:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+## Míľnik 0.2B.2.3 - Property Catalog v1
+
+Property Catalog Entry má 11 platných a 44 neplatných fiktívnych fixtures v priečinkoch `fixtures/valid/catalogs/` a `fixtures/invalid/catalogs/`. Nepredstavujú reálne properties, jednotky, condition types ani autoritatívnu populáciu katalógu.
+
+Šestnásť nových unittest testov overuje Draft 2020-12 schému, centrálne PRP/UNT/CND a common metadata refs, SourceLink, povinný name a description, uzavretý a unikátny `allowedValueTypes`, povinný UNT allow-list, voliteľný CND allow-list, lifecycle/provenance pri priamej aj indexovej validácii, replacement PRP odkazy, odmietnutie deferred polí a registráciu v schema indexe.
+
+Kompletná sada má 168 testov. Úspešná validácia katalógovej položky nepotvrdzuje existenciu PRP, UNT alebo CND cieľa ani kompatibilitu PropertyRecord/Observation s katalógovou policy. Spustenie z koreňa projektu:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+## Míľnik 0.2B.2.2 - Condition Type Catalog v1
+
+Condition Type Catalog Entry má 8 platných a 38 neplatných fiktívnych fixtures v priečinkoch `fixtures/valid/catalogs/` a `fixtures/invalid/catalogs/`. Nepredstavujú reálne typy podmienok ani autoritatívnu populáciu katalógu.
+
+Pätnásť nových unittest testov overuje Draft 2020-12 schému, centrálny CND a common metadata refs, SourceLink, povinný name, uzavretý a unikátny `allowedValueForms`, podmienenú reference-prefix policy, jej presnú zhodu s aktuálnym Condition reference unionom, lifecycle/provenance pri priamej aj indexovej validácii, replacement CND odkazy, odmietnutie deferred polí a schema index.
+
+Kompletná sada má 152 testov. Úspešná validácia katalógovej položky nepotvrdzuje existenciu CND alebo reference targetu a validácia Condition ešte nepoužíva katalógovú kompatibilitu. Spustenie z koreňa projektu:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+## Míľnik 0.2B.2.1 - Unit Catalog v1
+
+Unit Catalog Entry má 8 platných a 31 neplatných fiktívnych fixtures v priečinkoch `fixtures/valid/catalogs/` a `fixtures/invalid/catalogs/`. Nepredstavujú reálne jednotky ani autoritatívnu populáciu katalógu.
+
+Pätnásť nových unittest testov overuje Draft 2020-12 schému, centrálny UNT a property-level common metadata refs, SourceLink, povinný name a symbol, zámernú neunikátnosť symbolu, existujúci lifecycle, source pravidlo pri priamej aj indexovej validácii, replacement UNT formát, odmietnutie root verificationStatus a všetkých deferred polí a registráciu v schema indexe.
+
+Kompletná sada má 137 testov. Unit Catalog v1 nekontroluje existenciu UNT záznamov, symbolové kolízie, replacement cykly, quantity-kind alebo dimension kompatibilitu ani konverzie. Spustenie z koreňa projektu:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+## Míľnik 0.2B.1.7 - Observation Contract
+
+Observation má 10 platných a 45 neplatných fiktívnych fixtures v Knowledge Core priečinkoch. Pätnásť nových `unittest` testov overuje Draft 2020-12 schému, centrálny OBS a PRP formát, všetkých osem povolených subject ID rodín, GLOBAL/JOB podmienky, Quantity/ValueRange discriminator, odmietnutie PropertyRecord a arbitrary payloadu, povinný `observedAt`, spoločné metadata a registráciu v schema indexe.
+
+Regresie dokazujú, že obrátený ValueRange, záporná MeasurementQuality uncertainty, nulová resolution a významové pravidlá ValueRange vo vnorenom Condition sa zachytia aj v Observation s úplnou cestou. `sourceLinks` je povinné pole; prázdny Draft prejde, kým Review/Approved bez zdroja vracia `application_validation.source_links_required`.
+
+Úspešná validácia nepotvrdzuje existenciu subject, JOB, PRP ani katalógovú kompatibilitu. Nekontroluje persistence immutability, evidence promotion ani Decision workflow. Po korektívnom uzatvorení 0.2B.1 má kompletná sada 122 testov. Suite-level preflight pri chýbajúcom `jsonschema` alebo `referencing` skončí chybou a nenulovým návratovým kódom, nie úspešným preskočením testov.
+
+Formát `sourceReferenceId` kontroluje iba JSON Schema. Platne formátovaný, ale nevyriešený SRC identifikátor zostáva platný, kým 0.2B.2 nezavedie skutočný resolver záznamov; budúca kontrola existencie musí používať kategóriu `reference_integrity`. Spustenie z koreňa projektu:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+## Míľnik 0.2B.1.6 - PropertyRecord Contract
+
+Testy používajú `unittest` a existujúci EOS validátor. PropertyRecord má 10 platných a 40 neplatných fiktívnych fixtures v Knowledge Core priečinkoch. Pokrytie overuje centrálny PRP `$ref`, povinný discriminator `valueType`, presne jednu vetvu `quantity` alebo `valueRange`, všetky znovupoužité kontrakty, štyri VerificationStatus stavy, povinné ale potenciálne prázdne `sourceLinks`, viac podmienok a odmietnutie deferred, identity a lifecycle polí.
+
+Kritické regresie dokazujú, že obrátené hranice ValueRange, záporná MeasurementQuality uncertainty a nulová resolution zostávajú aplikačnými chybami aj pri vnorení v PropertyRecord, s úplnou cestou k poľu. Kompozičná kontrola pokrýva aj ValueRange vo vnorenom Condition. Schema a aplikačné chyby zostávajú rozlíšiteľné.
+
+Platný PRP alebo UNT formát nepotvrdzuje existenciu katalógovej položky ani kompatibilitu. Kontextová povinnosť neprázdnych zdrojov, Property Catalog pravidlá a Decision workflow nie sú predmetom týchto testov.
+
+Kompletná sada má 105 testov. Spustenie z koreňa projektu:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+## Míľnik 0.2B.1.5 - Classification Contract
+
+Testy používajú `unittest` a existujúci EOS validátor. Nové fixtures majú názvy `classification-*-valid.json` a `classification-*-invalid.json` v príslušných `tests/fixtures/valid/knowledge-core/` a `tests/fixtures/invalid/knowledge-core/` priečinkoch. Obsahujú iba fiktívne CLS a SRC identifikátory, nie reálne katalógové či zdrojové záznamy.
+
+Pokrytie zahŕňa 4 platné a 26 neplatných fixtures, centrálny CLS `$ref`, znovupoužitie SourceLink, povinné `classificationId`, voliteľné a prázdne `sourceLinks`, viac zdrojov a zachovanie existujúceho pravidla bez unikátnosti. Neplatné fixtures sa kontrolujú podľa očakávaného schema error kódu a presnej cesty. Testy odmietajú metadáta, lifecycle, koreňový `verificationStatus`, `evaluationMode`, poznámky, voľný text a ostatné nepovolené polia; overujú vnorené chyby cez index, viac chýb naraz a rozlíšenie existujúcej kategórie `reference_integrity`.
+
+Úspech Classification testov potvrdzuje štruktúru. Existencia a použiteľnosť CLS cieľa, externý pôvod a z neho vyplývajúca povinnosť `sourceLinks` sa ešte nekontrolujú; katalógová validácia je odložená do `0.2B.2`. Aj platný odkaz bez zdrojov môže byť po zavedení katalógu sémanticky neplatný. Test neprítomnosti odhadu pôvodu dokumentuje toto obmedzenie, nie jeho budúcu platnosť.
+
+Kompletná sada má 92 testov vrátane pôvodných 80 testov a regresií Quantity, ValueRange, MeasurementQuality a Condition. Spustenie z koreňa projektu:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+## Míľnik 0.2B.1.4 - Condition Contract
+
+Testy pre `Condition` používajú iba `unittest` a existujúcu validačnú vrstvu.
+
+Platné a neplatné fixture sú v:
+
+- `tests/fixtures/valid/knowledge-core/`
+- `tests/fixtures/invalid/knowledge-core/`
+
+Pokrytie zahŕňa:
+
+- povinné `conditionTypeId` vo formáte `CND-xxxxxx`,
+- povinné `evaluationMode` s hodnotami `mandatory`, `limiting`, `descriptive`, `recommended` a `contextual`,
+- presne jednu hodnotovú formu z `quantity`, `valueRange`, `textValue`, `booleanValue` alebo `referenceId`,
+- notes-only objekt ako neplatný,
+- vnorené `Quantity` a `ValueRange` cez `$ref`,
+- neprázdne `textValue` a `referenceId`,
+- obmedzenie `referenceId` na existujúce centrálne podporované EOS identifikátory,
+- zákaz entity metadát, lifecycle polí, `sourceLinks`, `verificationStatus` a `propertyId`,
+- presné cesty k vnoreným chybám,
+- dostupnosť `Condition` cez centrálny schema index,
+- regresiu `Quantity`, `ValueRange` a `MeasurementQuality`.
+
+Pre `Condition` nebolo pridané nové aplikačné pravidlo; kontraktové pravidlá tohto míľnika sú pokryté JSON Schema Draft 2020-12.
+
+## Míľnik 0.2B.1.3 - MeasurementQuality Contract
+
+Testy pre `MeasurementQuality` používajú iba `unittest` a existujúcu validačnú vrstvu.
+
+Platné a neplatné fixture sú v:
+
+- `tests/fixtures/valid/knowledge-core/`
+- `tests/fixtures/invalid/knowledge-core/`
+
+Pokrytie zahŕňa:
+
+- `uncertainty`, nulovú `uncertainty`, `resolution` a `confidenceLevel`,
+- hranice `confidenceLevel` 0 a 1,
+- kombinácie štruktúrovaných polí a voliteľné `notes`,
+- empty object a notes-only objekt ako neplatné,
+- zápornú neistotu cez aplikačnú validáciu,
+- nulové a záporné rozlíšenie cez aplikačnú validáciu,
+- neplatné vnorené `Quantity`,
+- presné cesty k vnoreným chybám,
+- zákaz metadát, lifecycle polí, `sourceLinks`, `verificationStatus`,
+- zákaz tolerančných polí a odložených polí `accuracy`, `repeatability`, `reproducibility`,
+- rozlíšenie `schema_validation` a `application_validation`,
+- dostupnosť `MeasurementQuality` cez centrálny schema index.
+
+## Míľnik 0.2B.1.2 - ValueRange Contract
+
+Testy pre `ValueRange` používajú iba `unittest` a existujúcu validačnú vrstvu.
+
+Platné a neplatné fixture sú v rovnakých Knowledge Core priečinkoch ako `Quantity`:
+
+- `tests/fixtures/valid/knowledge-core/`
+- `tests/fixtures/invalid/knowledge-core/`
+
+Pokrytie zahŕňa:
+
+- uzavretý, otvorený a polootvorený rozsah,
+- jednostranne ohraničené rozsahy,
+- rovnaké hranice,
+- zápornú až kladnú fiktívnu hodnotu,
+- voliteľné `notes`,
+- chýbajúci `unitId`,
+- chýbajúce obe hranice,
+- obrátené hranice cez aplikačnú validáciu,
+- inkluzivitu bez príslušnej hranice,
+- nesprávne typy hraníc,
+- neplatný `UNT` identifikátor,
+- `additionalProperties: false`,
+- zákaz entity metadát, `sourceLinks`, `tolerance` a `uncertainty`,
+- rozlíšenie `schema_validation` a `application_validation`,
+- dostupnosť `ValueRange` cez centrálny schema index.
+
+## Míľnik 0.2B.1.1 - Quantity Contract
+
+Testy pre `Quantity` používajú iba `unittest` a existujúcu validačnú vrstvu.
+
+Platné fixture sú v:
+
+- `tests/fixtures/valid/knowledge-core/`
+
+Neplatné fixture sú v:
+
+- `tests/fixtures/invalid/knowledge-core/`
+
+Pokrytie zahŕňa:
+
+- platné celé číslo,
+- platné desatinné číslo,
+- platnú zápornú hodnotu,
+- platnú nulu,
+- platné voliteľné `notes`,
+- chýbajúce povinné polia,
+- nesprávny typ `value`,
+- neplatný prefix `unitId`,
+- malé písmená v prefixe `unitId`,
+- neúplné nulové doplnenie `unitId`,
+- `additionalProperties: false`,
+- zákaz metadát entity vo value objecte,
+- viac chýb v jednom zázname,
+- presné cesty k chybným poliam,
+- dostupnosť `Quantity` cez centrálny schema index.
+
 Tento priečinok je určený pre budúce testy schém, dátových kontraktov a kalkulačných modulov.
 
 Vo fáze 0.2A obsahuje testy základných dátových kontraktov.

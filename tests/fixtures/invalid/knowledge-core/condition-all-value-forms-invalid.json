@@ -1,0 +1,15 @@
+{
+  "conditionTypeId": "CND-000001",
+  "evaluationMode": "mandatory",
+  "quantity": {
+    "value": 1,
+    "unitId": "UNT-000001"
+  },
+  "valueRange": {
+    "minValue": 1,
+    "unitId": "UNT-000001"
+  },
+  "textValue": "text",
+  "booleanValue": true,
+  "referenceId": "SRC-000001"
+}

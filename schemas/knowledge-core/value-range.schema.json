@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/schemas/knowledge-core/value-range.schema.json",
+  "title": "EOS ValueRange",
+  "description": "Immutable value object representing one-dimensional numeric interval with one authoritative future Unit Catalog reference.",
+  "type": "object",
+  "required": [
+    "unitId"
+  ],
+  "anyOf": [
+    { "required": ["minValue"] },
+    { "required": ["maxValue"] }
+  ],
+  "dependentRequired": {
+    "lowerInclusive": ["minValue"],
+    "upperInclusive": ["maxValue"]
+  },
+  "properties": {
+    "minValue": {
+      "type": "number",
+      "description": "Optional numeric lower boundary. The schema intentionally defines no engineering minimum."
+    },
+    "maxValue": {
+      "type": "number",
+      "description": "Optional numeric upper boundary. The schema intentionally defines no engineering maximum."
+    },
+    "unitId": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/UNT",
+      "description": "Identifier of a future Unit Catalog Entry. The referenced catalog is not implemented by this contract."
+    },
+    "lowerInclusive": {
+      "type": "boolean",
+      "description": "Whether minValue is included in the interval. Meaningful only when minValue exists. If omitted, the semantic default is true."
+    },
+    "upperInclusive": {
+      "type": "boolean",
+      "description": "Whether maxValue is included in the interval. Meaningful only when maxValue exists. If omitted, the semantic default is true."
+    },
+    "notes": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional local note. It must not define unit meaning, tolerance, uncertainty, conditions, source evidence, conversion, or display formatting."
+    }
+  },
+  "additionalProperties": false
+}

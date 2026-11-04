@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/schemas/entities/supplier.schema.json",
+  "title": "EOS Supplier",
+  "description": "Supplier v1: Knowledge Entity, Entity a Aggregate Root pre jednu právne samostatnú organizáciu v dodávateľskej roli. Vlastní iba schválené embedded Classification assignments. Sole traders, sites, contacts, external IDs, PropertyRecord, Observation ownership a obchodné dáta sú mimo v1.",
+  "type": "object",
+  "required": [
+    "id",
+    "schemaVersion",
+    "recordVersion",
+    "revision",
+    "status",
+    "createdAt",
+    "createdBy",
+    "updatedAt",
+    "updatedBy",
+    "sourceLinks",
+    "changeSummary",
+    "name"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/SUP",
+      "description": "Stabilná identita jednej právne samostatnej organizácie v dodávateľskej roli; nie identita prevádzky, účtu ani jednej roly."
+    },
+    "schemaVersion": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/schemaVersion"
+    },
+    "recordVersion": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/recordVersion"
+    },
+    "revision": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/revision"
+    },
+    "status": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/status",
+      "description": "Spoločný EOS lifecycle záznamu; nie kvalifikácia dodávateľa, obchodná dostupnosť ani právny prevádzkový stav."
+    },
+    "createdAt": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/createdAt"
+    },
+    "createdBy": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/createdBy"
+    },
+    "updatedAt": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/updatedAt"
+    },
+    "updatedBy": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/updatedBy"
+    },
+    "sourceLinks": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/sourceLinks",
+      "description": "Root provenance identity, existencie a definície organizácie; nie dôkaz qualification, capability, certification alebo obchodných podmienok. Draft môže byť prázdny; Review/Approved vyžaduje zdroj aplikačne."
+    },
+    "changeSummary": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/changeSummary"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Ľudsky čitateľný EOS názov; nie identita, globálne unikátny kľúč ani registračný identifikátor."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Voliteľné vysvetlenie subjektu; nie štruktúrovaná ani textová náhrada odložených domén."
+    },
+    "classifications": {
+      "type": "array",
+      "items": {
+        "$ref": "https://eos.local/schemas/knowledge-core/classification.schema.json"
+      },
+      "description": "Voliteľné parent-owned priradenia Classification s vlastnou assignment provenance. Viac priradení jednej organizácie je povolených; katalógové položky nie sú vlastnené."
+    },
+    "notes": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/notes",
+      "description": "Podporný ľudsky čitateľný text; nie skrytá štruktúra pre odložené koncepty."
+    }
+  },
+  "additionalProperties": false
+}

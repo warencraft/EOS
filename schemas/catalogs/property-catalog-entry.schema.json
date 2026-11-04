@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/schemas/catalogs/property-catalog-entry.schema.json",
+  "title": "EOS Property Catalog Entry",
+  "description": "Standalone Knowledge Catalog Entry Aggregate Root defining one authoritative PRP meaning, its supported numeric value forms, exact unit whitelist and optional condition-type whitelist. Version 1 defines no dimension, conversion, canonical-unit, required-condition, MeasurementQuality, classification, alias or equivalence semantics.",
+  "type": "object",
+  "required": [
+    "id",
+    "schemaVersion",
+    "recordVersion",
+    "revision",
+    "status",
+    "createdAt",
+    "createdBy",
+    "updatedAt",
+    "updatedBy",
+    "sourceLinks",
+    "changeSummary",
+    "name",
+    "description",
+    "allowedValueTypes",
+    "allowedUnitIds"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/PRP",
+      "description": "Stable identity of exactly one Property Catalog Entry. It is not the identity of a PropertyRecord, Observation or concrete value."
+    },
+    "schemaVersion": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/schemaVersion"
+    },
+    "recordVersion": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/recordVersion"
+    },
+    "revision": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/revision"
+    },
+    "status": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/status"
+    },
+    "createdAt": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/createdAt"
+    },
+    "createdBy": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/createdBy"
+    },
+    "updatedAt": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/updatedAt"
+    },
+    "updatedBy": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/updatedBy"
+    },
+    "sourceLinks": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/sourceLinks"
+    },
+    "changeSummary": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/changeSummary"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Canonical human-readable property name. It is not identity and is not structurally unique."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Authoritative human-readable definition of the property meaning. It does not replace structured constraints."
+    },
+    "allowedValueTypes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": ["quantity", "valueRange"]
+      },
+      "description": "One or both numeric value branches currently supported by PropertyRecord and Observation. Array order has no priority or fallback meaning."
+    },
+    "allowedUnitIds": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/UNT"
+      },
+      "description": "Exact whitelist of Unit Catalog identifiers. It implies no dimension, equivalence, conversion or display preference."
+    },
+    "allowedConditionTypeIds": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/CND"
+      },
+      "description": "Optional exact whitelist of Condition Type Catalog identifiers. Absence means Conditions are not permitted for this property."
+    },
+    "notes": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/notes"
+    },
+    "replaces": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/PRP",
+      "description": "Optional reference to one older Property Catalog Entry replaced by this entry."
+    },
+    "replacedBy": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/PRP",
+      "description": "Optional reference to one newer Property Catalog Entry that replaces this entry."
+    }
+  },
+  "additionalProperties": false
+}

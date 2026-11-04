@@ -1,0 +1,9 @@
+{
+  "conditionTypeId": "CND-000002",
+  "evaluationMode": "limiting",
+  "valueRange": {
+    "minValue": 1,
+    "maxValue": 3,
+    "unitId": "UNT-000002"
+  }
+}

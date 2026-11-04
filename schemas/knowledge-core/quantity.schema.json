@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/schemas/knowledge-core/quantity.schema.json",
+  "title": "EOS Quantity",
+  "description": "Immutable value object representing one finite numeric value with an authoritative future Unit Catalog reference.",
+  "type": "object",
+  "required": [
+    "value",
+    "unitId"
+  ],
+  "properties": {
+    "value": {
+      "type": "number",
+      "description": "Single scalar numeric value. The schema intentionally defines no engineering minimum, maximum, tolerance, uncertainty, precision, or resolution."
+    },
+    "unitId": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/UNT",
+      "description": "Identifier of a future Unit Catalog Entry. The referenced catalog is not implemented by this contract."
+    },
+    "notes": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional local note. It must not define unit meaning, conditions, tolerance, uncertainty, source evidence, conversion, or display formatting."
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,22 @@
+{
+  "id": "SUP-9001",
+  "schemaVersion": "0.1.0",
+  "recordVersion": "0.1.0",
+  "revision": 0,
+  "status": "Review",
+  "createdAt": "2026-01-01T00:00:00Z",
+  "createdBy": "test-suite",
+  "updatedAt": "2026-01-01T00:00:00Z",
+  "updatedBy": "test-suite",
+  "sourceLinks": [
+    {
+      "sourceReferenceId": "SRC-980001",
+      "sourceClass": "P",
+      "supportedField": "name",
+      "usageType": "citation",
+      "verificationStatus": "Draft"
+    }
+  ],
+  "changeSummary": "Výhradne fiktívny Supplier testovací záznam.",
+  "name": "Fiktívna organizácia Alfa"
+}

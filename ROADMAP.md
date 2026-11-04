@@ -1,5 +1,256 @@
 # ROADMAP
 
+## Míľnik 0.2C.3 - ManufacturingProcess Entity v1
+
+Stav: `IMPLEMENTED`, nie COMPLETE. Phase 0.2C.3-prep je dokončená; CDR-0019 Revision 1: `READY FOR MANUFACTURINGPROCESS CLOSURE REVIEW`.
+
+Implementovaný restricted profil B: typ výrobnej alebo kontrolnej metódy, centrálne TEC, common metadata, required name/description, optional Classification/notes. Bez parametrov, PropertyRecord, capability, operation/routing, entity vzťahov a reálnych dát. 290 úspešných testov, 23 schém (3 entity).
+
+Nasleduje `Phase 0.2C.3-close - ManufacturingProcess Entity Integration Closure Review`. Machine nezačína. Táto sekcia a aktuálny BACKLOG určujú transition stav; nižšie sekcie sú historické.
+
+## Míľnik 0.2C.2-close.1 - Supplier Closure Corrective Alignment
+
+Stav: `COMPLETE`. Phase 0.2C.2 Supplier je COMPLETE podľa CDR-0018 Revision 1. SEC-0001/0002/0003 sú CLOSED: BACKLOG je zosúladený, source diagnostika sa pri explicitnom flagu neduplikuje a Supplier CLS test trvalo vykonáva všetkých päť stavov pri default aj authoring politike. Automatická provenance a doménové hranice Material/Supplier zostali nezmenené.
+
+Overené: 35/35 kritérií PASS, 263/263 testov (pôvodná baseline 260 + 3 nové metódy), 22 schém a 201 referencií. Nasleduje povolený `Phase 0.2C.3-prep - ManufacturingProcess Entity Pre-design Review`; zatiaľ nezačal. Nevznikla ďalšia entita, reálne dáta ani zmena Accepted architektúry.
+
+Táto sekcia a aktuálny BACKLOG určujú transition stav. Nasledujúce milestone sekcie zachovávajú historický stav svojho dokončenia; ich vtedajšie pending/next výroky nie sú aktuálnym plánom.
+
+## Míľnik 0.2C.2 - Supplier Entity v1
+
+Stav: `IMPLEMENTED`, nie CLOSED. CDR-0017 Revision 2: `READY FOR SUPPLIER CLOSURE REVIEW`.
+
+Supplier je druhá Knowledge Entity a Aggregate Root pre jednu právne samostatnú organizáciu v dodávateľskej roli. Identity rozhodnutie SI-0001 je CLOSED; common metadata, root provenance a optional Classification[] sú implementované bez odložených modelov. Schémy 21 -> 22; entity schémy 1 -> 2; 24 nových testov, spolu 260 úspešných. Material zostáva COMPLETE.
+
+Nasleduje: `Phase 0.2C.2-close - Supplier Entity Integration Closure Review`. ManufacturingProcess sa nezačína. Staršie sekcie ROADMAP a nezmenený BACKLOG sú historické záznamy predchádzajúcich míľnikov; aktuálny transition status určuje táto sekcia a CDR-0017 Revision 2. BACKLOG sa v tomto míľniku nemení, keďže nevznikla nová deferred úloha.
+
+## Míľnik 0.2C.1 - Material Entity v1
+
+Cieľ:
+
+- implementovať prvú Knowledge Entity a Aggregate Root so stabilným centrálnym `MAT-xxxx`;
+- znovu použiť common entity metadata, lifecycle a root SourceLink provenance;
+- vlastniť voliteľné PropertyRecord claims a Classification assignments bez vnorenia Observation;
+- zachovať paralelné a konfliktné claims a condition-neutral v1 hranicu;
+- kompozične použiť existujúcu PRP/CND/UNT/CLS context-aware validáciu;
+- ponechať designation, root material condition, chémiu, normovú väzbu, StockMaterial, Supplier a výrobnú kompatibilitu mimo v1;
+- používať iba fiktívne validačné fixtures bez reálnych Material dát.
+
+Stav: `COMPLETE`. Phase 0.2C.1-close.1 uzavrela Material podľa CDR-0016 Revision 1: 25/25 completion criteria PASS a 236 úspešných testov. CDR-0015 Revision 1 zostáva historickým záznamom implementácie pred closure.
+
+Nasleduje: `Phase 0.2C.2-prep - Supplier Entity Pre-design Review`. Supplier nezačal. Pred jeho začatím musí po corrective commite a kontrole čistého stromu prebehnúť prechod na `feature/phase-0.2c-knowledge-entities` podľa CDR-0016. Nasledujúce staršie milestone sekcie zachovávajú historický stav.
+
+## Míľnik 0.2B.2-close.1 - Knowledge Catalog Closure Documentation Alignment
+
+Cieľ:
+
+- zosúladiť backlog a dokumentáciu schém so skutočne dokončenou implementáciou Phase 0.2B.2;
+- uzavrieť dokumentačné findings KCC-0001 a KCC-0002 bez zmeny implementácie alebo Accepted architektúry;
+- potvrdiť 17/17 completion criteria a 214/214 úspešných testov.
+
+Stav: `COMPLETE`. Phase 0.2B.2 je formálne uzatvorená a pripravená na prechod do Phase 0.2C.
+
+Nasleduje: `Phase 0.2C.1-prep - Material Entity Pre-design Review`. Phase 0.2C zatiaľ nebola implementovaná.
+
+## Míľnik 0.2B.2.5 - Catalog-aware / Reference-integrity Integration
+
+Cieľ:
+
+- zaviesť immutable in-memory registry pre UNT, CND, PRP a CLS;
+- vyžadovať explicitný ValidationContext pre plnú katalógovú validáciu;
+- oddeliť existence/type `reference_integrity` od významovej `catalog_validation`;
+- zdieľať UNT, CND a PRP validačné pravidlá vo všetkých relevantných Knowledge Core kontraktoch;
+- uplatniť explicitnú default a authoring lifecycle policy;
+- zachovať contract-only API, JSON Schema kontrakty a Accepted architektúru;
+- používať iba fiktívne test-only catalog entries.
+
+Stav: `COMPLETE`. Kompletná sada má 214 úspešných testov a CDR-0013 Revision 1 má verdict `READY FOR 0.2B.2 CLOSURE`.
+
+Nasleduje: `Phase 0.2B.2-close - Knowledge Catalog Integration Closure Review`. Phase 0.2C nebola začatá.
+
+## Míľnik 0.2B.2.4 - Classification Catalog Contract
+
+Cieľ:
+
+- implementovať Classification Catalog ako Reference Catalog,
+- zaviesť samostatný Classification Catalog Entry Aggregate Root so stabilným `CLS-xxxxxx`,
+- znovu použiť common entity metadata, lifecycle a SourceLink pravidlá,
+- vyžadovať neprázdny human-readable `name` a autoritatívny textový `description`,
+- oddeliť definition provenance katalógovej položky od assignment provenance embedded Classification,
+- podporiť iba priame CLS replacement odkazy,
+- ponechať classification system, external code, hierarchy, aliases, equivalence, target applicability a catalog-aware validáciu mimo v1,
+- používať iba fiktívne validačné fixtures bez reálnych classifications.
+
+Stav: `COMPLETE`. Kompletná sada má 182 úspešných testov.
+
+Nasledoval dokončený `Phase 0.2B.2.5 - Catalog-aware / Reference-integrity Integration`. Celá Phase 0.2B.2 čaká na krátke closure review.
+
+## Míľnik 0.2B.2.3 - Property Catalog Contract
+
+Cieľ:
+
+- implementovať Property Catalog ako Knowledge Catalog,
+- zaviesť samostatný Property Catalog Entry Aggregate Root so stabilným `PRP-xxxxxx`,
+- znovu použiť common entity metadata, lifecycle a SourceLink pravidlá,
+- definovať povinný neprázdny unique zoznam podporovaných číselných value types,
+- definovať presný povinný UNT allow-list a voliteľný CND allow-list,
+- ponechať canonical unit, required Conditions, multiplicitu, MeasurementQuality policy, classifications, aliases, dimension a conversion mimo v1,
+- používať iba fiktívne validačné fixtures bez reálnych properties.
+
+Stav: `COMPLETE`. Kompletná sada má 168 úspešných testov.
+
+Nasleduje: `Phase 0.2B.2.4-prep - Classification Catalog Pre-design Review`. Tento míľnik nebol začatý a celá Phase 0.2B.2 zostáva rozpracovaná.
+
+## Míľnik 0.2B.2.2 - Condition Type Catalog Contract
+
+Cieľ:
+
+- implementovať Condition Type Catalog ako Knowledge Catalog,
+- zaviesť samostatný Condition Type Catalog Entry Aggregate Root so stabilným `CND-xxxxxx`,
+- znovu použiť common entity metadata, lifecycle a SourceLink pravidlá,
+- definovať povinný neprázdny unique zoznam existujúcich Condition value forms,
+- pri `referenceId` vyžadovať uzavretú policy podporovaných cieľových ID rodín,
+- ponechať evaluation mode constraints, jednotky, multiplicitu, logické kombinácie a catalog-aware validáciu mimo v1,
+- používať iba fiktívne validačné fixtures bez reálnych condition types.
+
+Stav: `COMPLETE`. Kompletná sada má 152 úspešných testov.
+
+Nasleduje: `Phase 0.2B.2.3-prep - Property Catalog Pre-design Review`. Tento míľnik nebol začatý a celá Phase 0.2B.2 zostáva rozpracovaná.
+
+## Míľnik 0.2B.2.1 - Unit Catalog Contract
+
+Cieľ:
+
+- implementovať Unit Catalog ako prvý Reference Catalog kontrakt,
+- zaviesť samostatný Unit Catalog Entry Aggregate Root so stabilným `UNT-xxxxxx`,
+- znovu použiť common entity metadata, lifecycle a SourceLink pravidlá,
+- oddeliť identitu od name, symbolu a semantic equivalence,
+- ponechať quantity kind, dimension, unit system, aliasy a conversion mimo v1,
+- používať iba fiktívne validačné fixtures bez reálnych jednotiek.
+
+Stav: `COMPLETE`. Kompletná sada má 137 úspešných testov.
+
+Nasleduje: `Phase 0.2B.2.2 - Condition Type Catalog`. Tento míľnik nebol začatý a celá Phase 0.2B.2 zostáva rozpracovaná.
+
+## Míľnik 0.2B.1-close.1 - Knowledge Core Corrective Closure
+
+Cieľ:
+
+- zabezpečiť fail-closed testovací bootstrap pri chýbajúcom `jsonschema` alebo `referencing`,
+- ponechať formát `sourceReferenceId` výlučne v JSON Schema a oddeliť ho od budúcej kontroly existencie referencie,
+- uzavrieť blokery KCI-0001, KCI-0002 a KCI-0004 z CDR-0008,
+- zosúladiť backlog a validačnú dokumentáciu so skutočným stavom repozitára.
+
+Stav: Completed. Phase 0.2B.1 je `COMPLETE`.
+
+Nasleduje: `Phase 0.2B.2 - Knowledge Catalogs` v poradí Unit Catalog, Condition Type Catalog, Property Catalog, Classification Catalog a katalógovo uvedomelá integračná validácia. Phase 0.2B.2 nebola začatá.
+
+## Míľnik 0.2B.1.7 - Observation Contract
+
+Cieľ:
+
+- implementovať first-class evidence Entity a Aggregate Root so stabilným `OBS-xxxxxx`,
+- podporiť jeden riadený `subjectId`, GLOBAL alebo JOB scope a jeden typed property result,
+- znovu použiť Quantity, ValueRange, MeasurementQuality, Condition, SourceLink a spoločné entity metadata,
+- zachovať hranicu evidence voči PropertyRecord, Decision a Derived Result,
+- aplikovať existujúce vnorené významové invarianty bez duplikácie.
+
+Stav: implementačný rozsah Completed, kontrakt Review. Všetkých sedem plánovaných Knowledge Core kontraktov má technickú implementáciu a Phase 0.2B.1 bola po integračnom review a korektívnom kroku formálne uzatvorená.
+
+PROJECT/EXPERIMENT scope, neidentifikované subjekty, všeobecné a nečíselné výsledky, observation type taxonomy, actor/attachment, evidence verification, korekčný lifecycle, referenčná existencia a katalógová kompatibilita zostávajú deferred. Phase 0.2B.2 ani 0.2C nezačala.
+
+## Míľnik 0.2B.1.6 - PropertyRecord Contract
+
+Cieľ:
+
+- zaviesť embedded claim-like Value Object pre jedno štruktúrované technické tvrdenie,
+- používať centrálny `PRP-xxxxxx`, povinný `valueType` a presne jednu číselnú vetvu Quantity alebo ValueRange,
+- podporiť voliteľné MeasurementQuality a viac rodičom vlastnených Conditions,
+- používať povinné pole `sourceLinks` a VerificationStatus tvrdenia bez predstierania lifecycle rodiča,
+- zachovať vnorené aplikačné invarianty bez duplikácie validačných pravidiel,
+- odložiť Property Catalog, Observation a Decision kontrakty do určených fáz.
+
+Stav: implementačný rozsah Completed, kontrakt Review. Celý `0.2B.1` zostáva In progress.
+
+Do `0.2B.2` zostáva existencia a použiteľnosť PRP, povolené hodnotové formy, jednotková a rozmerová kompatibilita, povinné podmienky, doménové rozsahy a klasifikácia vlastností. Property Catalog ani reálne PRP položky nevznikli; `0.2B.2` nezačala.
+
+## Míľnik 0.2B.1.5 - Classification Contract
+
+Cieľ:
+
+- implementovať embedded reference Value Object s jedným povinným `classificationId` na budúcu CLS katalógovú položku,
+- znovu použiť SourceLink a ponechať `sourceLinks` štrukturálne nepovinné,
+- zachovať sémantickú povinnosť zdrojov pre externý pôvod a odložiť jej katalógové vynucovanie do `0.2B.2`,
+- vynechať voľný text, enum klasifikácií, notes, evaluationMode, vlastné ID, lifecycle a koreňový verificationStatus,
+- ponechať hierarchiu katalógu a násobnosť kolekcii rodiča.
+
+Stav: implementačný rozsah Completed, kontrakt Review. Celý `0.2B.1` zostáva In progress.
+
+Do `0.2B.2` zostáva existencia a použiteľnosť CLS položiek, systémy, hierarchia, kompatibilita s rodičom a katalógová kontrola povinnosti zdrojov. Classification Catalog ani reálne CLS položky zatiaľ nevznikli; `0.2B.2` nezačala.
+
+## Míľnik 0.2B.1.4 - Condition Contract
+
+Cieľ:
+
+- zaviesť štvrtý minimálny Knowledge Core Contract pre value object `Condition`,
+- definovať povinné `conditionTypeId` a `evaluationMode`,
+- používať centralizovaný formát `CND-xxxxxx` pre budúci Condition Type Catalog význam,
+- vyžadovať presne jednu hodnotovú formu z `quantity`, `valueRange`, `textValue`, `booleanValue` alebo `referenceId`,
+- použiť vnorený `Quantity` a `ValueRange` cez `$ref`,
+- ponechať existenciu Condition Type Catalog položky, kompatibilitu hodnotovej formy a vyhodnotenie podmienky budúcej aplikačnej validácii,
+- nemodelovať manufacturing tolerance, workflow stav ani zdrojové dôkazy.
+
+Stav: Review.
+
+## Míľnik 0.2B.1.3 - MeasurementQuality Contract
+
+Cieľ:
+
+- zaviesť tretí minimálny Knowledge Core Contract pre value object `MeasurementQuality`,
+- definovať iba `uncertainty`, `resolution`, `confidenceLevel` a voliteľné `notes`,
+- vyžadovať aspoň jedno štruktúrované pole a odmietnuť notes-only objekt,
+- použiť vnorený `Quantity` pre metrologické hodnoty s jednotkou,
+- oddeliť štrukturálne pravidlá od aplikačných pravidiel `uncertainty.value >= 0` a `resolution.value > 0`,
+- nemodelovať výrobnú, konštrukčnú ani akceptačnú toleranciu.
+
+Stav: Review.
+
+## Míľnik 0.2B.1.3-prep - MeasurementQuality Tolerance Boundary Correction
+
+Cieľ:
+
+- odstrániť produktovú, výrobnú a akceptačnú toleranciu z `MeasurementQuality`,
+- ponechať `MeasurementQuality` pre metrologické kvalitatívne charakteristiky,
+- odložiť tolerance modelling do budúceho requirement/tolerance kontraktu,
+- obnoviť Accepted stav opravených RFC pred implementáciou `MeasurementQuality`.
+
+Stav: Completed / Approved.
+
+Ďalší krok: `Phase 0.2B.1.3 - MeasurementQuality Contract`.
+
+## Míľnik 0.2B.1.2 - ValueRange Contract
+
+Cieľ:
+
+- zaviesť druhý minimálny Knowledge Core Contract pre value object `ValueRange`,
+- definovať `minValue`, `maxValue`, `unitId`, `lowerInclusive`, `upperInclusive` a voliteľné `notes`,
+- použiť centrálny formát `UNT-xxxxxx`,
+- oddeliť štrukturálne pravidlá od aplikačného pravidla `minValue <= maxValue`,
+- nepridávať Unit Catalog, konkrétne jednotky ani strojárske hodnoty.
+
+Stav: Review.
+
+## Míľnik 0.2B.1.1 - Quantity Contract
+
+Cieľ:
+
+- zaviesť prvý minimálny Knowledge Core Contract pre value object `Quantity`,
+- definovať iba `value`, `unitId` a voliteľné `notes`,
+- použiť centrálny formát `UNT-xxxxxx`,
+- nepridávať Unit Catalog, konkrétne jednotky ani strojárske hodnoty.
+
+Stav: Review.
+
 ## Fáza 0.1 - Architektúra a riadenie projektu
 
 Cieľ:
@@ -32,7 +283,7 @@ Predbežný cieľ:
 - pripraviť pravidlá validácie,
 - vytvoriť testy štruktúry bez technických hodnôt.
 
-Stav: Next.
+Stav: Phase 0.2B.1 `COMPLETE`; všetkých sedem plánovaných kontraktov je implementovaných, integračne skontrolovaných a korektívne uzatvorených. Phase 0.2B.2 nezačala.
 
 ## Fáza 0.2A - Foundation Data Contracts
 
@@ -66,7 +317,50 @@ Cieľ:
 - pripraviť regresné testy pre štandardné JSON Schema schopnosti,
 - zdokumentovať runtime dependency postup.
 
-Stav: Draft.
+Stav: Completed / Approved.
+
+## Míľnik 0.2B.0 - Governance Finalization
+
+Cieľ:
+
+- uzavrieť architektonickú fázu EOS,
+- doplniť required prefixy do `EOS-003`,
+- prijať RFC-0001, RFC-0002 a RFC-0003,
+- zmeniť Architecture Readiness Verdict na `READY`,
+- zmraziť architektúru pred implementáciou Knowledge Core Contracts.
+
+Stav: Completed / Approved.
+
+## Míľnik 0.2B.1 - Knowledge Core Contracts
+
+Cieľ:
+
+- vytvoriť schémy pre minimálne knowledge core kontrakty schválené architektúrou,
+- zachovať oddelenie JSON Schema validácie a EOS aplikačnej validácie,
+- neprekročiť schválený scope bez ADR alebo RFC.
+
+Predbežný scope:
+
+- `Quantity`,
+- `ValueRange`,
+- `MeasurementQuality`,
+- `Condition`,
+- `Classification`,
+- `PropertyRecord`,
+- `Observation`.
+
+Stav: `COMPLETE`. Sedem plánovaných kontraktov je technicky implementovaných a blokujúce findings z integračného review sú uzavreté.
+
+## Fáza 0.2B.2 - Knowledge Catalogs
+
+Cieľ:
+
+- navrhnúť katalógy v poradí Unit, Condition Type, Property a Classification,
+- zaviesť katalógovo uvedomelú kontrolu existencie, lifecycle a kompatibility referencií,
+- zapojiť katalógové pravidlá do PropertyRecord a Observation bez zmeny ich evidence/claim hranice,
+- používať iba fiktívne testovacie záznamy, kým nie sú schválené autoritatívne technické dáta.
+
+Stav: Next / Not started.
 
 ## Fáza 0.3 - Prvé prázdne záznamové šablóny
 
