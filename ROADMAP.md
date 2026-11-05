@@ -2,6 +2,10 @@
 
 ## Aktuálny krok pred Phase 0.2C.4
 
+Aktuálne podľa ADR-0017: pilot Supplier COMPLETE ako dôkaz vzoru; spoločné testy ManufacturingProcess overené súbežne s pôvodnými. Nasleduje kontrola tejto migrácie pred prípadným vyradením fixtures. Material sa nemigroval a Machine sa nezačal. Celá migrácia ešte nie je COMPLETE.
+
+### Predchádzajúci stav
+
 ManufacturingProcess je COMPLETE (CDR-0020). Pre Machine zostáva platné rozhodnutie CDR-0021 Revision 1; implementácia nezačala. [ADR-0017](adr/ADR-0017_Shared_Entity_Test_Architecture.md) je Accepted. Prvý krok infraštruktúry je pilot Supplier v súbehu s pôvodnými testami. Nasleduje kontrola pilotu, nie Machine. Nasledujúce míľniky sú historické.
 
 ## Míľnik 0.2C.3 - ManufacturingProcess Entity v1
