@@ -41,6 +41,8 @@ EOS je interný inžiniersky znalostný systém pre strojársku výrobu a cenov�
 
 ## Skilly
 
+Skilly sú v `.agents/skills/<názov>/SKILL.md` (spoločný priečinok pre Codex aj Claude). Keď úloha zodpovedá riadku nižšie, **najprv si prečítaj príslušný `SKILL.md`** a postupuj podľa neho.
+
 | Skill | Kedy |
 | --- | --- |
 | `eos-run-tests` | po každej zmene kódu, schémy alebo fixtúry |

@@ -10,7 +10,7 @@ Status: Proposed (pull request `tools/ai-guardrails`)
 
 - ADR-0018 - Define target technology stack: etapy A–E, JSON Schema ako jediný zdroj pravdy, roly Chief Engineering Knowledge Architect / Software Architect / AI agent.
 - `TECH_STACK.md`, `CLAUDE.md`.
-- `.claude/skills/`: `eos-run-tests`, `eos-write-tests`, `eos-schema-change`, `eos-adr`, `eos-governance-check`, `eos-git-publish`.
+- `.agents/skills/`: `eos-run-tests`, `eos-write-tests`, `eos-schema-change`, `eos-adr`, `eos-governance-check`, `eos-git-publish`.
 - `.github/pull_request_template.md`, `docs/manual/GIT_TAHAK.md`, `docs/handoff/`.
 - `scripts/export_viewer.py` + `scripts/viewer_sk.json`: HTML prehľad projektu do `exports/viewer/` (iba štandardná knižnica, export nie je autoritatívny).
 

@@ -21,12 +21,12 @@
 | `adr/ADR-0018_Define_target_technology_stack.md` | **rozhodnutie** o stacku po etapách A–E a o rolách | áno |
 | `TECH_STACK.md` | technologický rámec: aktuálna etapa, povolené a zakázané technológie | áno |
 | `CLAUDE.md` | vstupné pravidlá pre Claude Code; načítava `AGENTS.md` a `TECH_STACK.md` | áno, krátke |
-| `.claude/skills/eos-run-tests/` | ako spustiť testy a poctivo nahlásiť výsledok | agent |
-| `.claude/skills/eos-write-tests/` | ako písať testy a fixtúry bez duplicít (nadväzuje na ADR-0017 a `ENTITY_PROFILES`) | agent |
-| `.claude/skills/eos-schema-change/` | postup pre novú entitu alebo zmenu schémy | agent |
-| `.claude/skills/eos-adr/` | kedy a ako napísať ADR | agent |
-| `.claude/skills/eos-governance-check/` | záverečná kontrola podľa EOS-000 a AGENTS.md | agent |
-| `.claude/skills/eos-git-publish/` | vetva → commit → push → pull request, s poistkami | agent |
+| `.agents/skills/eos-run-tests/` | ako spustiť testy a poctivo nahlásiť výsledok | agent |
+| `.agents/skills/eos-write-tests/` | ako písať testy a fixtúry bez duplicít (nadväzuje na ADR-0017 a `ENTITY_PROFILES`) | agent |
+| `.agents/skills/eos-schema-change/` | postup pre novú entitu alebo zmenu schémy | agent |
+| `.agents/skills/eos-adr/` | kedy a ako napísať ADR | agent |
+| `.agents/skills/eos-governance-check/` | záverečná kontrola podľa EOS-000 a AGENTS.md | agent |
+| `.agents/skills/eos-git-publish/` | vetva → commit → push → pull request, s poistkami | agent |
 | `.github/pull_request_template.md` | šablóna, ktorú GitHub ponúkne pri každom PR | – |
 | `docs/manual/GIT_TAHAK.md` | návod na git pre človeka | podľa potreby |
 | `scripts/export_viewer.py`, `scripts/viewer_sk.json` | generátor HTML prehľadu projektu (iba štandardná knižnica) | – |
@@ -58,12 +58,14 @@ Pevné pravidlá: **iba Python**, **JSON Schema je jediný zdroj pravdy**, bez O
 
 ## 4. Ako to použiť
 
-**Claude Code:** v priečinku projektu spusti `claude`. `CLAUDE.md` a skilly sa načítajú samy. Napríklad:
+Skilly sú v `.agents/skills/`. Tento priečinok **Codex načíta automaticky** a Claude Code ich nájde cez odkaz v `CLAUDE.md`. Formát `SKILL.md` je pre oba nástroje rovnaký.
+
+**Codex (CLI alebo rozšírenie v editore):** skill sa použije sám, keď úloha zodpovedá jeho popisu. Ručne ho vyvoláš príkazom `/skills` alebo napísaním `$` a názvu, napr. `$eos-git-publish`. Codex číta aj `AGENTS.md`, ktorý odkazuje na `TECH_STACK.md`.
+
+**Claude Code:** v priečinku projektu spusti `claude`. `CLAUDE.md` sa načíta sám a odkazuje na skilly. Napríklad:
 
 - „Implementuj Machine podľa CDR-0021.“ (agent použije `eos-schema-change` a `eos-write-tests`)
 - „Ulož to a pošli na GitHub.“ (agent použije `eos-git-publish`)
-
-**Codex:** číta `AGENTS.md`, ktorý teraz odkazuje na `TECH_STACK.md` a skilly v `.claude/skills/`.
 
 **HTML prehľad:** `python scripts/export_viewer.py` → otvor `exports/viewer/index.html`.
 
