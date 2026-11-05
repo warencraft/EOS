@@ -1,5 +1,26 @@
 # tests
 
+## ADR-0017: ManufacturingProcess, súbežné overenie
+
+Supplier pilot je ukončený ako dôkaz vzoru. Pre TEC sa 27 pôvodných metód a 11 platných/148 neplatných fixtures stále spúšťa spolu s profilom v `test_entity_profiles.py`. Jeho povinné polia zahŕňajú description, voliteľné sú iba classifications a notes. Index má definíciu manufacturingProcess bez kolekcie. Nová tabuľka [manufacturing-process.json](fixtures/invalid-cases/manufacturing-process.json) obsahuje 12 explicitných prípadov a 125 samostatne pomenovaných vylúčených polí, nie jeden zástupný príklad. Spolu s 30 generovanými vstupmi ide o 167 spoločných negatívnych prípadov; prázdny objekt sa posudzuje navyše. Root provenance má 18 kombinácií.
+
+**Mapa všetkých 148 názvov.** Pôvodná cesta je `fixtures/invalid/entities/manufacturing-process-<názov>-invalid.json`. Úplný inventár tvoria nasledujúce disjunktné skupiny. Spustiteľná mapa v `test_manufacturing_process_legacy_equivalence` vyžaduje rovnosť množín názvov so skutočným adresárom (nielen počet):
+
+| Pôvodný názov | Cieľ | Očakávaný kód a cesta |
+| --- | --- | --- |
+| Každý z 12 názvov v cases | rovnaký name | presný expect.errorCode a expect.path z príslušného riadka |
+| deferred-F pre každé zo 125 polí v deferred | deferred-F | schema_validation.additionalProperties na $.F |
+| missing-F / null-F pre id, name, description, sourceLinks | missing-F / F-null | schema_validation.required / schema_validation.type na $.F |
+| empty-name | name-empty | schema_validation.minLength na $.name |
+| array-root | array | schema_validation.type na $ |
+| empty-object | prázdny objekt | presne 13 schema_validation.required na $.F, jedno pre každé povinné F |
+
+146 vstupov sa líši od platného minima jedným koreňovým poľom, ďalšie sú presne [] a {}. Zachovaná je aj pôvodná fiktívna hodnota odloženého poľa (TEC a SUP ju majú rozdielnu). Pre každý pár sa porovná pôvodný dekódovaný JSON s rekonštrukciou a obe verejné validačné cesty s očakávaným zoznamom (errorCode, path, recordId, referencedId, severity) vrátane početnosti. Zhoda 148/148; žiadna aproximácia.
+
+**Čo ponechať.** A: po samostatnom review sú všetky vstupy s presnou mapou kandidátmi na vyradenie individuálnych neplatných súborov; zatiaľ ostávajú. Kontroly uzavretosti, minima, metadát, indexu a iterácie fixtures majú spoločné pokrytie; pred odstránením metódy porovnať aj jej doplnkové assertions. B: ponechať platné vstupy pre odlišné tvary a významové testy: povinný description, TEC ako subject Observation, klasifikačné politiky, presné TEC/CLS ID, chýbajúci cieľ bez následných katalógových chýb, kontrolu počtu root diagnostík, pozitívny vstup po odstránení zakázaného poľa. Named deferred prípady chránia aj hranice Operation/routing, Machine, Material, Supplier, CuttingTool, vlastností, parametrov, capability, času/ceny a hierarchie. C: žiadny z 148 vstupov nemá neúplnú ekvivalenciu. Nič sa v tomto kroku nevyraďuje.
+
+**Dôkazy:** poškodenie povinnosti description, povolenie parameters, zámena očakávanej cesty malformed-tec, zmena fiktívnej hodnoty deferred-properties a strata TEC recordId pri invalid-classification vyvolali očakávané zlyhania príslušných subTest. Mutácie boli iba v pamäti. Baseline 294 → 295 metód (+1 kontrola ekvivalencie). Bez migrácie Material alebo implementácie Machine.
+
 ## Pilot ADR-0017: Supplier
 
 Nová rodina sa počas pilotu nepridáva. Spustenie z koreňa: `.\.venv\Scripts\python.exe -m unittest discover -s tests -v`. Spoločný profil, generátor a kontrola ekvivalencie sú v `test_entity_profiles.py`; cesty a čerstvé vstupy v `validation_support.py`. SUP a TEC už používajú spoločné načítanie, ale iba Supplier je v ENTITY_PROFILES. Testy špecifických doménových pravidiel zostávajú na mieste.

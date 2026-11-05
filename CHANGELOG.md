@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## ADR-0017: ManufacturingProcess, súbežné overenie - 2026-11-05
+
+Rozšírený spoločný profil a tabuľkové prípady pre TEC. Všetkých 148 pôvodných neplatných JSON vstupov a ich diagnostika majú presný ekvivalent. Pôvodné testy a fixtures ponechané. 294 → 295 úspešných metód, 0 failures/errors/skipped. Mapa, rozlíšenie prípadov a dôkazy sú v tests/README.md. Produkčné kontrakty, validátor a závislosti bez zmien.
+
 ## Spoločná testovacia infraštruktúra: pilot Supplier - 2026-11-05
 
 ADR-0017 Accepted. Nové 4 unittest metódy: profil a platné fixtures, 140 jednotlivých negatívnych prípadov, 18 kombinácií root provenance a ekvivalencia 131 pôvodných neplatných vstupov vrátane dvoch zložených prípadov. Baseline 290 → 294 metód, všetky úspešné, 0 failures/errors/skipped. Žiadny starý prípad sa neodstránil. Bez zmien produkcie a bez začatia Machine.

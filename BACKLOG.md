@@ -1,6 +1,10 @@
 # BACKLOG
 
-## Aktuálne: kontrola pilotu spoločných testov
+## Aktuálne: kontrola migrácie testov ManufacturingProcess
+
+Supplier pilot bol prijatý ako dôkaz vzoru. Pre ManufacturingProcess je súbežné overenie dokončené; skontrolovať mapu a výsledky v tests/README.md pred samostatným rozhodnutím o vyradení. Material je samostatný nasledujúci migračný krok. Implementácia Machine čaká na dokončenie migrácie podľa ADR-0017.
+
+### Predchádzajúci stav: kontrola pilotu spoločných testov
 
 [ADR-0017](adr/ADR-0017_Shared_Entity_Test_Architecture.md) je Accepted. Spoločný runner a pilot Supplier sú pripravené na kontrolu ekvivalencie. Až po jej prijatí vyradiť doložene nahradené prípady a migrovať ManufacturingProcess, potom Material. ManufacturingProcess ako entita je COMPLETE (CDR-0020); migrácia jeho testov je iná úloha. Machine zostáva READY FOR IMPLEMENTATION podľa CDR-0021, ale čaká na dokončenie migrácie. Nižšie zostáva historický plán.
 

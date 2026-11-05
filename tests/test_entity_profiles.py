@@ -1,4 +1,4 @@
-"""ADR-0017: shared entity contracts and the Supplier equivalence pilot."""
+"""ADR-0017: shared entity contracts and legacy equivalence checkpoints."""
 import re
 import unittest
 
@@ -15,6 +15,13 @@ ENTITY_PROFILES = {
         "optional": {"description", "notes", "classifications"},
         "owned": {"classifications": "classification"}, "indexDef": "supplier",
         "collection": None,
+        "deferredValue": "fictional-excluded-value",
+    },
+    "manufacturing-process": {
+        "idFamily": "TEC", "required": COMMON | {"name", "description"},
+        "optional": {"classifications", "notes"},
+        "owned": {"classifications": "classification"}, "indexDef": "manufacturingProcess",
+        "collection": None, "deferredValue": "fictional",
     },
 }
 
@@ -68,7 +75,7 @@ def negative_cases(family, profile, table):
     for field in table["deferred"]:
         if field in profile["required"] | profile["optional"]:
             raise ValueError(f"Deferred field is allowed: {field}")
-        yield "deferred-" + field, {**base, field: "fictional-excluded-value"}, [
+        yield "deferred-" + field, {**base, field: profile["deferredValue"]}, [
             ("schema_validation.additionalProperties", "$." + field)]
 
 
@@ -153,3 +160,30 @@ class EntityProfileTests(unittest.TestCase):
             with self.subTest(case=name):
                 result = self.validator.validate(generated[name], uri)
                 self.assertCountEqual([(e.errorCode, e.path) for e in result.errors], expected)
+
+    def test_manufacturing_process_legacy_equivalence(self):
+        family = "manufacturing-process"
+        uri = BASE + f"entities/{family}.schema.json"
+        profile = ENTITY_PROFILES[family]
+        table = load_json(FIXTURES / "invalid-cases" / (family + ".json"))
+        generated = {name: (record, errors) for name, record, errors in negative_cases(family, profile, table)}
+        generated["empty-object"] = {}, [("schema_validation.required", "$." + k) for k in profile["required"]]
+
+        # Legacy names differ only for these generated cases. The table keeps original names.
+        mapping = {row["name"]: row["name"] for row in table["cases"]}
+        mapping.update(("deferred-" + k, "deferred-" + k) for k in table["deferred"])
+        for field in ("id", "name", "description", "sourceLinks"):
+            mapping["missing-" + field] = "missing-" + field
+            mapping["null-" + field] = field + "-null"
+        mapping.update({"array-root": "array", "empty-name": "name-empty", "empty-object": "empty-object"})
+        files = {p.name[len(family)+1:-len("-invalid.json")]: p for p in INVALID.glob(f"{family}-*-invalid.json")}
+        self.assertEqual(set(mapping), set(files))
+        for old, target in mapping.items():
+            with self.subTest(legacy=old, target=target):
+                record, errors = generated[target]
+                self.assertEqual(record, load_json(files[old]))
+                root_id = record.get("id") if isinstance(record, dict) else None
+                expected = [(code, path, root_id, None, "error") for code, path in errors]
+                for result in (self.validator.validate_json_file(files[old], uri), self.validator.validate(record, uri)):
+                    self.assertCountEqual([(e.errorCode, e.path, e.recordId, e.referencedId, e.severity)
+                                           for e in result.errors], expected)
