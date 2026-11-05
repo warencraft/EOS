@@ -1,5 +1,9 @@
 # ROADMAP
 
+## Aktuálny krok pred Phase 0.2C.4
+
+ManufacturingProcess je COMPLETE (CDR-0020). Pre Machine zostáva platné rozhodnutie CDR-0021 Revision 1; implementácia nezačala. [ADR-0017](adr/ADR-0017_Shared_Entity_Test_Architecture.md) je Accepted. Prvý krok infraštruktúry je pilot Supplier v súbehu s pôvodnými testami. Nasleduje kontrola pilotu, nie Machine. Nasledujúce míľniky sú historické.
+
 ## Míľnik 0.2C.3 - ManufacturingProcess Entity v1
 
 Stav: `IMPLEMENTED`, nie COMPLETE. Phase 0.2C.3-prep je dokončená; CDR-0019 Revision 1: `READY FOR MANUFACTURINGPROCESS CLOSURE REVIEW`.

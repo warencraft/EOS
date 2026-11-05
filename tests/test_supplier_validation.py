@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 import json
 import unittest
-from pathlib import Path
+from tests.validation_support import BASE, INDEX, INVALID, ROOT, VALID, entity_fixture
 from unittest.mock import patch
 
 from jsonschema import Draft202012Validator
@@ -18,16 +18,11 @@ from scripts.validation import (
 )
 
 
-ROOT = Path(__file__).resolve().parents[1]
-BASE = "https://eos.local/schemas/"
 SUPPLIER = BASE + "entities/supplier.schema.json"
-INDEX = BASE + "index.schema.json"
-VALID = ROOT / "tests/fixtures/valid/entities"
-INVALID = ROOT / "tests/fixtures/invalid/entities"
 
 
 def fixture(name: str = "minimal-draft") -> dict:
-    return json.loads((VALID / f"supplier-{name}-valid.json").read_text(encoding="utf-8"))
+    return entity_fixture("supplier", name)
 
 
 class SupplierValidationTests(unittest.TestCase):

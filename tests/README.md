@@ -1,5 +1,13 @@
 # tests
 
+## Pilot ADR-0017: Supplier
+
+Nová rodina sa počas pilotu nepridáva. Spustenie z koreňa: `.\.venv\Scripts\python.exe -m unittest discover -s tests -v`. Spoločný profil, generátor a kontrola ekvivalencie sú v `test_entity_profiles.py`; cesty a čerstvé vstupy v `validation_support.py`. SUP a TEC už používajú spoločné načítanie, ale iba Supplier je v ENTITY_PROFILES. Testy špecifických doménových pravidiel zostávajú na mieste.
+
+**Mapa pilotu:** pre každý pôvodný `invalid/entities/supplier-<názov>-invalid.json` je stabilné ID prípadu `supplier/<názov>`. Test ekvivalencie kontroluje rovnosť celého dekódovaného JSON pre každý súbor, bez ignorovania polí. V `invalid-cases/supplier.json` je 15 explicitných mutácií a 97 deferred polí. Missing/null, prázdny name a koreň typu pole generuje profil; dva zložené vstupy (empty-object, sourceLinks-malformed) majú samostatné očakávané zoznamy diagnostík. Celkovo 140 jednotlivých negatívnych kontrol plus 2 zložené, 18 kontrol root provenance, iterácia všetkých 12 platných fixtures. Pôvodné metódy aj všetky fixtures sa stále spúšťajú. Súbežný výsledok: 294/294 metód, bez failures/errors/skipped. SubTest nie je samostatná unittest metóda.
+
+Skúšky citlivosti (dočasné zmeny iba v pamäti): chybné voliteľné pole zlyhalo na profile Supplier, vynechané použitie mutácie na classifications-invalid-embedded, potlačený Review na prázdnom root sourceLinks a zmenená stará hodnota na deferred-website. Pred odstránením pôvodných vstupov treba prijať dôkazy pilotu podľa ADR-0017.
+
 ## Míľnik 0.2C.3 - ManufacturingProcess regresie
 
 Aktuálne 290 úspešných unittest metód: pôvodných 263 nezmenených a 27 nových v `test_manufacturing_process_validation.py`. 0 failures/errors/skipped. Nové fiktívne fixtures: 11 valid a 148 invalid s prefixom manufacturing-process- v entity priečinkoch; žiadna produkčná populácia.
