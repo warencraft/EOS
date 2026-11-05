@@ -1,5 +1,9 @@
 # BACKLOG
 
+## Aktuálne: kontrola pilotu spoločných testov
+
+[ADR-0017](adr/ADR-0017_Shared_Entity_Test_Architecture.md) je Accepted. Spoločný runner a pilot Supplier sú pripravené na kontrolu ekvivalencie. Až po jej prijatí vyradiť doložene nahradené prípady a migrovať ManufacturingProcess, potom Material. ManufacturingProcess ako entita je COMPLETE (CDR-0020); migrácia jeho testov je iná úloha. Machine zostáva READY FOR IMPLEMENTATION podľa CDR-0021, ale čaká na dokončenie migrácie. Nižšie zostáva historický plán.
+
 ## Nasledujúce: Phase 0.2C.3-close - ManufacturingProcess Entity Integration Closure Review
 
 Material a Supplier sú COMPLETE; SEC-0001/0002/0003 zostávajú CLOSED. ManufacturingProcess pre-design je dokončený a Phase 0.2C.3 je IMPLEMENTED podľa CDR-0019 Revision 1, nie COMPLETE. 290 úspešných testov, 23 schém. Nasleduje samostatné integračné closure review; Machine sa nezačína. Deferred process témy ostávajú evidované v CDR-0019 §62, bez duplicity alebo novej implementácie.

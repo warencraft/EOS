@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## Spoločná testovacia infraštruktúra: pilot Supplier - 2026-11-05
+
+ADR-0017 Accepted. Nové 4 unittest metódy: profil a platné fixtures, 140 jednotlivých negatívnych prípadov, 18 kombinácií root provenance a ekvivalencia 131 pôvodných neplatných vstupov vrátane dvoch zložených prípadov. Baseline 290 → 294 metód, všetky úspešné, 0 failures/errors/skipped. Žiadny starý prípad sa neodstránil. Bez zmien produkcie a bez začatia Machine.
+
+## Návrh spoločnej testovacej architektúry - 2026-11-05
+
+[ADR-0017](adr/ADR-0017_Shared_Entity_Test_Architecture.md): Draft predložený na schválenie. Bez zmeny testov, fixtures, schém a runtime; Machine zostáva blokovaný infraštruktúrou.
+
 ## Guardrails pre AI agentov a technologický rámec - 2026-11-04
 
 Status: Proposed (pull request `tools/ai-guardrails`)
