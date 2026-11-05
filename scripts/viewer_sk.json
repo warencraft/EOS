@@ -1,0 +1,208 @@
+{
+  "_comment": "Slovenské popisy pre export_viewer.py. Kľúč = názov schémy bez .schema.json. Chýbajúci preklad sa nahradí originálom zo schémy. Nie je autoritatívny zdroj; pri rozpore platí schéma.",
+  "classification-catalog-entry": {
+    "title": "Položka katalógu klasifikácií",
+    "desc": "Samostatná položka referenčného katalógu, ktorá definuje jeden význam klasifikácie CLS so stavom, auditnými metadátami a pôvodom definície. Verzia 1 nerieši klasifikačné systémy, externé kódy, hierarchiu, aliasy, ekvivalencie ani obmedzenie, na čo sa klasifikácia smie použiť.",
+    "fields": {
+      "id": "Stabilná identita jednej položky katalógu klasifikácií. Nie je to identita konkrétneho priradenia klasifikácie, klasifikačného systému ani externého kódu.",
+      "name": "Hlavný čitateľný názov. Nie je identitou a nemusí byť jedinečný.",
+      "description": "Záväzná textová definícia významu klasifikácie. Neobsahuje strojovo čitateľnú hierarchiu, systém, externý kód ani ekvivalencie.",
+      "replaces": "Voliteľný odkaz na staršiu položku, ktorú táto nahrádza. Nie je to väzba hierarchie ani ekvivalencie.",
+      "replacedBy": "Voliteľný odkaz na novšiu položku, ktorá túto nahrádza. Nie je to väzba hierarchie ani ekvivalencie."
+    }
+  },
+  "condition-type-catalog-entry": {
+    "title": "Položka katalógu typov podmienok",
+    "desc": "Samostatná položka znalostného katalógu so stabilnou identitou CND. Určuje, v akej forme sa smie zapísať hodnota podmienky a na aké typy záznamov sa smie odkazovať. Verzia 1 nerieši spôsob vyhodnotenia, jednotky, násobnosť ani logické kombinácie podmienok.",
+    "fields": {
+      "id": "Stabilná identita jednej položky katalógu typov podmienok. Nie je to identita konkrétnej hodnoty podmienky.",
+      "name": "Hlavný čitateľný názov. Nie je identitou a nenahrádza štruktúrovaný význam položky.",
+      "allowedValueForms": "Jedna alebo viac povolených foriem hodnoty podmienky (veličina, rozsah, text, áno/nie, odkaz). Konkrétna podmienka má vždy práve jednu formu. Poradie nič neznamená.",
+      "allowedReferencePrefixes": "Uzavretý zoznam typov záznamov, na ktoré sa podmienka smie odkazovať. Povinné iba vtedy, keď je odkaz povolenou formou. Neoveruje, či cieľ existuje.",
+      "description": "Voliteľné vysvetlenie. Nesmie suplovať odložené pravidlá o jednotkách, vyhodnotení ani násobnosti.",
+      "replaces": "Voliteľný odkaz na staršiu položku, ktorú táto nahrádza.",
+      "replacedBy": "Voliteľný odkaz na novšiu položku, ktorá túto nahrádza."
+    }
+  },
+  "property-catalog-entry": {
+    "title": "Položka katalógu vlastností",
+    "desc": "Samostatná položka znalostného katalógu, ktorá definuje jeden záväzný význam vlastnosti PRP (napr. pevnosť v ťahu): v akej číselnej forme sa smie zapísať, v akých jednotkách a za akých podmienok. Verzia 1 nerieši rozmerovú analýzu, prevody jednotiek, preferovanú jednotku, povinné podmienky, aliasy ani ekvivalencie.",
+    "fields": {
+      "id": "Stabilná identita jednej položky katalógu vlastností. Nie je to identita konkrétneho zápisu vlastnosti, pozorovania ani hodnoty.",
+      "name": "Hlavný čitateľný názov vlastnosti. Nie je identitou a nemusí byť jedinečný.",
+      "description": "Záväzná textová definícia významu vlastnosti. Nenahrádza štruktúrované obmedzenia.",
+      "allowedValueTypes": "Povolené číselné formy hodnoty: jedna hodnota, rozsah alebo oboje. Poradie nič neznamená.",
+      "allowedUnitIds": "Presný zoznam povolených jednotiek z katalógu jednotiek. Neurčuje prevody ani preferované zobrazenie.",
+      "allowedConditionTypeIds": "Voliteľný presný zoznam povolených typov podmienok. Ak chýba, k vlastnosti sa podmienky zapisovať nesmú.",
+      "replaces": "Voliteľný odkaz na staršiu položku, ktorú táto nahrádza.",
+      "replacedBy": "Voliteľný odkaz na novšiu položku, ktorá túto nahrádza."
+    }
+  },
+  "unit-catalog-entry": {
+    "title": "Položka katalógu jednotiek",
+    "desc": "Samostatná položka referenčného katalógu so stabilnou identitou UNT, názvom a značkou jednotky. Verzia 1 nerieši druh veličiny, rozmer, prevody, ekvivalencie ani sústavy jednotiek.",
+    "fields": {
+      "id": "Stabilná identita jednej jednotky. Nie je to značka, názov, rozmer ani pravidlo prevodu.",
+      "name": "Hlavný čitateľný názov. Nie je identitou a nedefinuje strojovo čitateľný význam jednotky.",
+      "symbol": "Hlavná značka jednotky na zobrazenie (rozlišuje veľké a malé písmená). Nie je identitou a nemusí byť jedinečná.",
+      "description": "Voliteľné vysvetlenie. Nesmie suplovať odložené pravidlá o rozmere, druhu veličiny ani prevodoch.",
+      "replaces": "Voliteľný odkaz na staršiu jednotku, ktorú táto nahrádza.",
+      "replacedBy": "Voliteľný odkaz na novšiu jednotku, ktorá túto nahrádza."
+    }
+  },
+  "identifiers": {
+    "title": "Formáty identifikátorov",
+    "desc": "Centrálne definované formáty všetkých ID v EOS, napríklad MAT-0001 pre materiál alebo SUP-0001 pre dodávateľa. Každá schéma sa na ne iba odkazuje."
+  },
+  "lifecycle-status": {
+    "title": "Stav záznamu",
+    "desc": "Povolené stavy životného cyklu záznamu (napr. rozpracovaný, v posudzovaní, schválený)."
+  },
+  "metadata": {
+    "title": "Spoločné metadáta",
+    "desc": "Polia, ktoré má každý záznam: ID, verzie schémy a záznamu, revízia, stav, kto a kedy ho vytvoril a zmenil, odkazy na zdroje a zhrnutie zmeny."
+  },
+  "source-link": {
+    "title": "Odkaz na zdroj",
+    "desc": "Prepája konkrétne tvrdenie alebo pole so záznamom zdroja (SourceReference), z ktorého pochádza."
+  },
+  "core_entities": {
+    "title": "Kompatibilný záznam starých kontraktov",
+    "desc": "Pozostatok z fázy 0.2A kvôli spätnej kompatibilite. Záväzný prehľad schém je v schemas/index.schema.json."
+  },
+  "document-record": {
+    "title": "Záznam dokumentu",
+    "desc": "Evidencia riadeného dokumentu EOS: ID, verzia, revízia, stav a ďalšie údaje."
+  },
+  "manufacturing-process": {
+    "title": "Výrobný proces",
+    "desc": "Entita pre stabilnú definíciu typu výrobnej alebo kontrolnej metódy (napr. sústruženie). Nie je to operácia, technologický postup, parametre, schopnosť stroja ani samotné vykonanie.",
+    "fields": {
+      "id": "Stabilná identita významu typu procesu, nezávislá od operácie, stroja a dodávateľa.",
+      "name": "Čitateľný názov v EOS. Nie je identitou, globálne jedinečným kľúčom ani registračným identifikátorom.",
+      "description": "Povinné vysvetlenie významu a rozsahu metódy. Nie je to recept ani technologický postup.",
+      "classifications": "Voliteľné priradenia klasifikácií, každé s vlastným zdrojom. Bez hierarchie a bez odvodzovania schopností."
+    }
+  },
+  "material": {
+    "title": "Materiál",
+    "desc": "Entita materiálu nezávislá od stavu dodania (napr. tepelného spracovania). Vlastní zápisy technických vlastností a priradenia klasifikácií. Nevlastní pozorovania, polotovary, dodávateľov ani údaje o vhodnosti pre výrobu.",
+    "fields": {
+      "id": "Stabilná identita jedného materiálu. Názov ani budúce označenia podľa noriem nie sú identitou.",
+      "name": "Hlavný čitateľný názov v EOS. Nie je identitou ani normovým označením a nemusí byť jedinečný.",
+      "description": "Voliteľné vysvetlenie, čo všetko materiál zahŕňa. Nenahrádza štruktúrované vlastnosti ani klasifikácie.",
+      "properties": "Technické vlastnosti materiálu. Ak pre jednu vlastnosť existuje viac rozdielnych alebo protichodných údajov, zachovajú sa všetky.",
+      "classifications": "Priradenia klasifikácií. Materiál nevlastní samotné položky katalógu klasifikácií.",
+      "replaces": "Voliteľný odkaz na starší materiál, ktorý tento nahrádza. Existencia cieľa sa zatiaľ neoveruje.",
+      "replacedBy": "Voliteľný odkaz na novší materiál, ktorý tento nahrádza. Existencia cieľa sa zatiaľ neoveruje."
+    }
+  },
+  "supplier": {
+    "title": "Dodávateľ",
+    "desc": "Entita pre jednu právne samostatnú organizáciu v roli dodávateľa. Vlastní iba priradenia klasifikácií. Živnostníci, prevádzky, kontakty, externé identifikátory (IČO a pod.), vlastnosti, pozorovania a obchodné údaje sú mimo verzie 1.",
+    "fields": {
+      "id": "Stabilná identita jednej právne samostatnej organizácie v roli dodávateľa. Nie je to identita prevádzky, účtu ani jednej roly.",
+      "name": "Čitateľný názov v EOS. Nie je identitou, globálne jedinečným kľúčom ani registračným identifikátorom.",
+      "description": "Voliteľné vysvetlenie subjektu. Nenahrádza odložené údaje ani textom.",
+      "classifications": "Voliteľné priradenia klasifikácií, každé s vlastným zdrojom. Jedna organizácia môže mať viac priradení."
+    }
+  },
+  "index": {
+    "title": "Index schém",
+    "desc": "Centrálny zoznam všetkých dátových kontraktov EOS."
+  },
+  "classification": {
+    "title": "Klasifikácia",
+    "desc": "Vnorený záznam, ktorý priraďuje svojmu nadradenému záznamu jednu klasifikáciu z katalógu. Existenciu a význam v katalógu táto schéma sama neoveruje.",
+    "fields": {
+      "classificationId": "ID položky v katalógu klasifikácií, nie ID tohto priradenia.",
+      "sourceLinks": "Odkazy na zdroje. Štrukturálne nepovinné, ale externé klasifikácie zdroj vyžadujú."
+    }
+  },
+  "condition": {
+    "title": "Podmienka",
+    "desc": "Nemenná hodnota, ktorá upresňuje, za akých okolností platí tvrdenie, vlastnosť, pozorovanie alebo schopnosť (napr. pri teplote 20 °C).",
+    "fields": {
+      "conditionTypeId": "ID typu podmienky v katalógu typov podmienok.",
+      "evaluationMode": "Ako sa má podmienka uplatniť v nadradenom zázname. Samotné vyhodnotenie táto schéma nerobí.",
+      "quantity": "Hodnota podmienky ako jedno číslo s jednotkou.",
+      "valueRange": "Hodnota podmienky ako rozsah s jednotkou.",
+      "textValue": "Textová hodnota podmienky. Nesmie obsahovať citácie zdrojov, stav ani viac podmienok naraz.",
+      "booleanValue": "Hodnota podmienky áno/nie.",
+      "referenceId": "Odkaz na existujúci záznam EOS. Existencia cieľa sa tu neoveruje.",
+      "notes": "Voliteľná poznámka. Nesmie nahrádzať hodnotu podmienky, zdroje ani stav."
+    }
+  },
+  "measurement-quality": {
+    "title": "Kvalita merania",
+    "desc": "Nemenná hodnota s vybranými metrologickými údajmi k nameranej, pozorovanej alebo uvedenej číselnej hodnote.",
+    "fields": {
+      "uncertainty": "Uvedená neistota merania. Nesmie sa zamieňať s výrobnou, konštrukčnou ani preberacou toleranciou.",
+      "resolution": "Najmenší rozlíšiteľný krok meradla alebo uvedeného výsledku.",
+      "confidenceLevel": "Úroveň spoľahlivosti od 0 do 1 vrátane.",
+      "notes": "Voliteľná poznámka. Nesmie definovať nameranú hodnotu, toleranciu, zdroj ani stav."
+    }
+  },
+  "observation": {
+    "title": "Pozorovanie",
+    "desc": "Samostatný nemenný dôkaz: jedno namerané číselné hodnotenie jednej vlastnosti jedného záznamu EOS (napr. tvrdosť nameraná na konkrétnom materiáli v zákazke).",
+    "fields": {
+      "id": "Stabilná identita tohto pozorovania.",
+      "subjectId": "Odkaz na pozorovaný záznam (materiál, stroj…). Typ cieľa vyplýva z prefixu ID.",
+      "observationScope": "Kontext pozorovania: všeobecné alebo v rámci zákazky. Projekty a experimenty sú odložené.",
+      "scopeReferenceId": "ID zákazky. Povinné pri pozorovaní v zákazke, zakázané pri všeobecnom.",
+      "propertyId": "ID vlastnosti z katalógu vlastností, ktorá bola pozorovaná.",
+      "valueType": "Určuje, či je výsledok jedno číslo alebo rozsah.",
+      "quantity": "Výsledok ako jedno číslo s jednotkou.",
+      "valueRange": "Výsledok ako rozsah s jednotkou.",
+      "measurementQuality": "Voliteľná kvalita merania tohto výsledku.",
+      "conditions": "Voliteľné podmienky, za ktorých pozorovanie platí. Poradie nič neznamená."
+    }
+  },
+  "property-record": {
+    "title": "Zápis vlastnosti",
+    "desc": "Vnorený záznam s jedným tvrdením o číselnej technickej vlastnosti (napr. hustota materiálu). Význam a dôveryhodnosť sa overujú mimo tejto schémy.",
+    "fields": {
+      "propertyId": "ID vlastnosti z katalógu vlastností, nie ID tohto zápisu.",
+      "valueType": "Určuje, či je hodnota jedno číslo alebo rozsah.",
+      "quantity": "Hodnota ako jedno číslo s jednotkou.",
+      "valueRange": "Hodnota ako rozsah s jednotkou.",
+      "measurementQuality": "Voliteľná kvalita merania k tejto hodnote.",
+      "conditions": "Voliteľné podmienky, za ktorých hodnota platí. Poradie nič neznamená.",
+      "verificationStatus": "Stav overenia tohto tvrdenia (nie stav nadradeného záznamu).",
+      "sourceLinks": "Odkazy na zdroje. Prázdny zoznam je štrukturálne platný; kedy je zdroj povinný, určujú pravidlá pracovného toku."
+    }
+  },
+  "quantity": {
+    "title": "Veličina",
+    "desc": "Nemenná hodnota: jedno konečné číslo s odkazom na jednotku z katalógu jednotiek.",
+    "fields": {
+      "value": "Jedna číselná hodnota. Schéma zámerne neurčuje žiadne inžinierske minimum, maximum, toleranciu ani presnosť.",
+      "unitId": "ID jednotky z katalógu jednotiek.",
+      "notes": "Voliteľná poznámka. Nesmie definovať jednotku, podmienky, toleranciu, neistotu, zdroj ani formát zobrazenia."
+    }
+  },
+  "value-range": {
+    "title": "Rozsah hodnôt",
+    "desc": "Nemenná hodnota: číselný interval s jednou jednotkou z katalógu jednotiek.",
+    "fields": {
+      "minValue": "Voliteľná dolná hranica.",
+      "maxValue": "Voliteľná horná hranica.",
+      "unitId": "ID jednotky z katalógu jednotiek.",
+      "lowerInclusive": "Či dolná hranica patrí do intervalu. Ak chýba, platí áno.",
+      "upperInclusive": "Či horná hranica patrí do intervalu. Ak chýba, platí áno.",
+      "notes": "Voliteľná poznámka. Nesmie definovať jednotku, toleranciu, neistotu, podmienky ani zdroj."
+    }
+  },
+  "norm-reference": {
+    "title": "Odkaz na normu",
+    "desc": "Odkaz na externú normu, štandard alebo záväzný technický predpis. Celý text normy sa ukladať nesmie."
+  },
+  "machine": {
+    "title": "Stroj"
+  },
+  "source-reference": {
+    "title": "Zdroj",
+    "desc": "Záznam o zdroji informácie (dokument, literatúra, skúsenosť, overenie vo výrobe), na ktorý sa tvrdenia odkazujú."
+  }
+}

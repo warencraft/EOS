@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## Guardrails pre AI agentov a technologický rámec - 2026-11-04
+
+Status: Proposed (pull request `tools/ai-guardrails`)
+
+Úplný kontext zmeny: `docs/handoff/2026-11-04_ai-guardrails.md`.
+
+### Added
+
+- ADR-0018 - Define target technology stack: etapy A–E, JSON Schema ako jediný zdroj pravdy, roly Chief Engineering Knowledge Architect / Software Architect / AI agent.
+- `TECH_STACK.md`, `CLAUDE.md`.
+- `.claude/skills/`: `eos-run-tests`, `eos-write-tests`, `eos-schema-change`, `eos-adr`, `eos-governance-check`, `eos-git-publish`.
+- `.github/pull_request_template.md`, `docs/manual/GIT_TAHAK.md`, `docs/handoff/`.
+- `scripts/export_viewer.py` + `scripts/viewer_sk.json`: HTML prehľad projektu do `exports/viewer/` (iba štandardná knižnica, export nie je autoritatívny).
+
+### Not Changed
+
+- Schémy, validátor, testy, fixtúry, `pyproject.toml` a existujúce Accepted ADR/RFC/CDR.
+
 ## 0.2C.3 - 2026-10-15
 
 Status: IMPLEMENTED / READY FOR MANUFACTURINGPROCESS CLOSURE REVIEW
