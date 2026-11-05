@@ -36,3 +36,9 @@ Pred dokončením práce over:
 - zdrojovú klasifikáciu,
 - neprítomnosť neoverených technických hodnôt,
 - či zmena nevyžaduje ADR.
+
+## Technologický rámec a postupy
+
+- Drž sa `TECH_STACK.md` a ADR-0018. Technológiu mimo aktuálnej etapy nepoužívaj. Doménové rozhodnutia nerob sám.
+- Postupy sú v `.agents/skills/*/SKILL.md`: pred zmenou schémy `eos-schema-change`, pred písaním testov `eos-write-tests`, po zmene `eos-run-tests`, pred ukončením `eos-governance-check`, na uloženie a pull request `eos-git-publish`.
+- Kontext zmien z 2026-11-04: `docs/handoff/2026-11-04_ai-guardrails.md`.
