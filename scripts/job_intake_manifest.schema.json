@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/tools/job-intake-manifest.schema.json",
+  "title": "EOS Job Intake Manifest",
+  "description": "Súpis podkladov jednej reálnej zákazky v lokálnom priečinku intake/ (ADR-0019). Nástrojový súbor, nie znalostný záznam ani entita Job; zdrojom pravdy sa podklady stanú až prevodom na záznamy so SourceReference.",
+  "type": "object",
+  "required": ["manifestVersion", "jobRef", "title", "confidentiality", "aiProcessingAllowed", "createdAt", "createdBy", "updatedAt", "files"],
+  "additionalProperties": false,
+  "properties": {
+    "manifestVersion": { "const": "0.1.0" },
+    "jobRef": {
+      "type": "string",
+      "pattern": "^JOB-[0-9]{4}-[0-9]{4}$",
+      "description": "Predbežné označenie vo formáte ID zákazky (ADR-0008). Entita Job zatiaľ neexistuje; význam ID potvrdí CDR Job."
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "confidentiality": {
+      "enum": ["internal", "confidential", "restricted"],
+      "description": "internal = interné; confidential = dôverné údaje zákazníka (predvolené); restricted = iba určené osoby."
+    },
+    "aiProcessingAllowed": {
+      "type": "boolean",
+      "description": "Výslovný súhlas, aby AI agent čítal obsah súborov. Predvolene false."
+    },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "createdBy": { "type": "string", "minLength": 1 },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "notes": { "type": "string" },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "category", "sha256", "bytes", "sourceClass"],
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$))[^\\\\]+$",
+            "description": "Relatívna cesta v priečinku zákazky, oddeľovač '/'."
+          },
+          "category": {
+            "enum": ["drawing", "model", "inquiry", "quote", "order", "production", "measurement", "correspondence", "other"]
+          },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "bytes": { "type": "integer", "minimum": 0 },
+          "sourceClass": {
+            "enum": ["N", "L", "P", "V", null],
+            "description": "Klasifikácia zdroja podľa EOS-000 (N/L/P/V); null = ešte nezaradené."
+          },
+          "documentRevision": { "type": "string", "minLength": 1, "description": "Revízia výkresu alebo dokumentu, ak ju má." },
+          "description": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,5 +1,11 @@
 # tests
 
+## Príjem reálnej zákazky (ADR-0019)
+
+| Súbor | Overenie |
+| --- | --- |
+| test_job_intake.py | Nástroj scripts/job_intake.py (new / scan / check) iba na fiktívnych súboroch v dočasnom priečinku: .gitignore, bezpečné predvolené hodnoty, kontrolné súčty, chýbajúce a nezapísané súbory, neplatný manifest, súbory zákazky v gite. |
+
 ## EngineeringItem v1
 
 | Súbor | Overenie |
