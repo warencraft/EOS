@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## ADR-0017: kontrolované vyradenie testovacích kópií - 2026-11-06
+
+Vyradených 321 presne nahradených neplatných fixtures (131 SUP, 148 TEC, 42 MAT). Odstránených 23 metód vrátane dočasných porovnaní. 299 → 276 úspešných unittest metód; 372 negatívnych prípadov v spoločnom runneri; 10/10 skúšok citlivosti. Bez zmeny produkcie, závislostí alebo začatia Machine. Inventár: [CDR-0022](docs/contracts/CDR-0022_ADR-0017_Shared_Test_Architecture_Closure_Review.md). Nižšie sekcie zachovávajú historický stav.
+
 ## ADR-0017: súbežný dôkaz Material - 2026-11-06
 
 42/42 neplatných Material vstupov rekonštruovaných bez rozdielu v JSON aj diagnostike; štyri nové testovacie metódy, 295 → 299 úspešných, bez failures/errors/skipped. Inventár a mapa: tests/README.md. Bez vyradenia fixtures, zmien schém, runtime alebo závislostí.

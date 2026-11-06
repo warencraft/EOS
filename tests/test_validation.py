@@ -16,7 +16,6 @@ INVALID_KNOWLEDGE_CORE_FIXTURES = ROOT / "tests" / "fixtures" / "invalid" / "kno
 VALID_CATALOG_FIXTURES = FIXTURES / "catalogs"
 INVALID_CATALOG_FIXTURES = ROOT / "tests" / "fixtures" / "invalid" / "catalogs"
 VALID_ENTITY_FIXTURES = FIXTURES / "entities"
-INVALID_ENTITY_FIXTURES = ROOT / "tests" / "fixtures" / "invalid" / "entities"
 
 
 SOURCE_SCHEMA = "https://eos.local/schemas/source-reference.schema.json"
@@ -2308,26 +2307,6 @@ raise SystemExit(0 if result.wasSuccessful() else 1)
         }
         self.assertValid(classification, CLASSIFICATION_SCHEMA)
 
-    def test_material_schema_definition_is_valid(self) -> None:
-        result = self.validator.validate_schema_definition(MATERIAL_SCHEMA)
-        self.assertTrue(result.ok, [(error.path, error.message) for error in result.errors])
-
-    def test_valid_material_fixtures_pass(self) -> None:
-        fixtures = sorted(VALID_ENTITY_FIXTURES.glob("material-*-valid.json"))
-        self.assertEqual(len(fixtures), 16)
-        for fixture in fixtures:
-            with self.subTest(fixture=fixture.name):
-                result = self.validator.validate_json_file(fixture, MATERIAL_SCHEMA)
-                self.assertTrue(result.ok, [(error.path, error.message) for error in result.errors])
-
-    def test_invalid_material_fixtures_fail(self) -> None:
-        fixtures = sorted(INVALID_ENTITY_FIXTURES.glob("material-*-invalid.json"))
-        self.assertEqual(len(fixtures), 42)
-        for fixture in fixtures:
-            with self.subTest(fixture=fixture.name):
-                result = self.validator.validate_json_file(fixture, MATERIAL_SCHEMA)
-                self.assertFalse(result.ok, fixture.name)
-
     def test_material_reuses_central_mat_and_common_metadata(self) -> None:
         schema = self.validator.registry.by_id[MATERIAL_SCHEMA]
         self.assertEqual(
@@ -2366,13 +2345,6 @@ raise SystemExit(0 if result.wasSuccessful() else 1)
             CLASSIFICATION_SCHEMA,
         )
         record = load_json(VALID_ENTITY_FIXTURES / "material-populated-source-links-valid.json")
-        self.assertValid(record, MATERIAL_SCHEMA)
-
-    def test_material_minimum_keeps_knowledge_fields_optional(self) -> None:
-        record = load_json(VALID_ENTITY_FIXTURES / "material-minimal-draft-valid.json")
-        for field_name in ["properties", "classifications", "description", "notes"]:
-            with self.subTest(field=field_name):
-                self.assertNotIn(field_name, record)
         self.assertValid(record, MATERIAL_SCHEMA)
 
     def test_material_preserves_duplicate_and_conflicting_claims(self) -> None:
@@ -2441,41 +2413,14 @@ raise SystemExit(0 if result.wasSuccessful() else 1)
         for name in ["material-replaces-valid.json", "material-replaced-by-valid.json"]:
             with self.subTest(name=name):
                 self.assertValid(load_json(VALID_ENTITY_FIXTURES / name), MATERIAL_SCHEMA)
-        for name, path in [
-            ("material-invalid-replaces-prefix-invalid.json", "$.replaces"),
-            ("material-invalid-replaced-by-prefix-invalid.json", "$.replacedBy"),
-        ]:
-            with self.subTest(name=name):
-                result = self.validator.validate(load_json(INVALID_ENTITY_FIXTURES / name), MATERIAL_SCHEMA)
+        for field in ("replaces", "replacedBy"):
+            with self.subTest(field=field):
+                record = load_json(VALID_ENTITY_FIXTURES / "material-minimal-draft-valid.json")
+                result = self.validator.validate({**record, field: "SUP-9001"}, MATERIAL_SCHEMA)
                 self.assertIn(
-                    ("schema_validation.pattern", path),
+                    ("schema_validation.pattern", "$." + field),
                     {(error.errorCode, error.path) for error in result.errors},
                 )
-
-    def test_material_rejects_deferred_and_foreign_root_fields(self) -> None:
-        names = [
-            "material-verification-status-invalid.json",
-            "material-designation-invalid.json",
-            "material-designations-invalid.json",
-            "material-material-condition-invalid.json",
-            "material-delivery-condition-invalid.json",
-            "material-heat-treatment-invalid.json",
-            "material-chemical-composition-invalid.json",
-            "material-norm-reference-ids-invalid.json",
-            "material-supplier-id-invalid.json",
-            "material-stock-forms-invalid.json",
-            "material-observation-ids-invalid.json",
-            "material-observations-invalid.json",
-            "material-family-invalid.json",
-            "material-type-invalid.json",
-            "material-machine-ids-invalid.json",
-            "material-cutting-tool-ids-invalid.json",
-            "material-compatible-processes-invalid.json",
-        ]
-        for name in names:
-            with self.subTest(name=name):
-                result = self.validator.validate(load_json(INVALID_ENTITY_FIXTURES / name), MATERIAL_SCHEMA)
-                self.assertIn("schema_validation.additionalProperties", [error.errorCode for error in result.errors])
 
     def test_material_rejects_root_conditions_but_allows_nested_condition(self) -> None:
         record = load_json(VALID_ENTITY_FIXTURES / "material-minimal-draft-valid.json")

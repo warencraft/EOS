@@ -1,16 +1,22 @@
-"""ADR-0017: shared entity contracts and legacy equivalence checkpoints."""
+"""ADR-0017: shared entity contract and diagnostic tests."""
 import re
 import unittest
 
 from jsonschema import Draft202012Validator
 
 from scripts.validation import EosValidator
-from tests.validation_support import BASE, FIXTURES, INDEX, INVALID, VALID, entity_fixture, load_json
+from tests.validation_support import BASE, FIXTURES, INDEX, VALID, entity_fixture, load_json
 
 
 COMMON = set("id schemaVersion recordVersion revision status createdAt createdBy updatedAt updatedBy sourceLinks changeSummary".split())
 ENTITY_PROFILES = {
     "material": {
+        "validCases": (
+            "conflicting-claims description empty-classifications empty-properties "
+            "empty-source-links minimal-draft multiple-classifications multiple-properties notes "
+            "one-classification one-property populated-source-links properties-classifications "
+            "replaced-by replaces same-property-multiple"
+        ).split(),
         "idFamily": "MAT", "required": COMMON | {"name"},
         "optional": {"description", "notes", "properties", "classifications", "replaces", "replacedBy"},
         "owned": {"properties": "property-record", "classifications": "classification"},
@@ -23,6 +29,11 @@ ENTITY_PROFILES = {
         },
     },
     "supplier": {
+        "validCases": (
+            "approved-with-source description empty-classifications empty-source-links full-profile "
+            "minimal-draft multiple-classifications notes one-classification populated-source-links "
+            "review-with-source without-classifications"
+        ).split(),
         "idFamily": "SUP", "required": COMMON | {"name"},
         "optional": {"description", "notes", "classifications"},
         "owned": {"classifications": "classification"}, "indexDef": "supplier",
@@ -30,6 +41,11 @@ ENTITY_PROFILES = {
         "deferredValue": "fictional-excluded-value",
     },
     "manufacturing-process": {
+        "validCases": (
+            "approved description empty-classifications empty-source-links full-profile "
+            "minimal-draft multiple-classifications notes one-classification populated-source-links "
+            "review"
+        ).split(),
         "idFamily": "TEC", "required": COMMON | {"name", "description"},
         "optional": {"classifications", "notes"},
         "owned": {"classifications": "classification"}, "indexDef": "manufacturingProcess",
@@ -74,6 +90,17 @@ def negative_cases(family, profile, table):
     yield "generic-wrong-family", {**base, "id": "XXX-9001"}, [("schema_validation.pattern", "$.id")]
     yield "generic-unknown", {**base, "unknownField": True}, [("schema_validation.additionalProperties", "$.unknownField")]
     yield "array", [], [("schema_validation.type", "$")]
+    yield "empty-object", {}, [("schema_validation.required", "$." + k) for k in profile["required"]]
+    if family in {"supplier", "material"}:
+        yield "malformed-source-link", {**base, "sourceLinks": [{}]}, [
+            ("schema_validation.required", "$.sourceLinks[0]." + k)
+            for k in ("sourceReferenceId", "sourceClass", "usageType", "verificationStatus")
+        ] + [("schema_validation.anyOf", "$.sourceLinks[0]")]
+    if "properties" in profile["owned"]:
+        yield "invalid-property-record", {**base, "properties": [{"propertyId": "PRP-980001"}]}, [
+            ("schema_validation.required", "$.properties[0]." + k)
+            for k in ("valueType", "verificationStatus", "sourceLinks")
+        ] + [("schema_validation.oneOf", "$.properties[0]")]
     if set(table) != {"cases", "deferred"} or not table["cases"]:
         raise ValueError(f"Missing or unexpected case data: {family}")
     for row in table["cases"]:
@@ -121,7 +148,10 @@ class EntityProfileTests(unittest.TestCase):
                 collections = {key for key, prop in index["properties"].items()
                                if prop.get("items", {}).get("$ref") == "#/$defs/" + profile["indexDef"]}
                 self.assertEqual(collections, {profile["collection"]} if profile["collection"] else set())
-            for file in sorted(VALID.glob(f"{family}-*-valid.json")):
+            files = sorted(VALID.glob(f"{family}-*-valid.json"))
+            expected_names = {f"{family}-{case}-valid.json" for case in profile["validCases"]}
+            self.assertLessEqual(expected_names, {p.name for p in files})
+            for file in files:
                 with self.subTest(family=family, file=file.name):
                     result = self.validator.validate_json_file(file, uri)
                     self.assertTrue(result.ok, result.errors)
@@ -131,12 +161,18 @@ class EntityProfileTests(unittest.TestCase):
             uri = BASE + f"entities/{family}.schema.json"
             table = load_json(FIXTURES / "invalid-cases" / (family + ".json"))
             seen = set()
+            self.assertTrue(self.validator.validate(entity_fixture(family, profile.get("caseBase", "minimal-draft")), uri).ok)
             for name, record, expected in negative_cases(family, profile, table):
                 with self.subTest(family=family, case=name):
                     self.assertNotIn(name, seen)
                     seen.add(name)
                     result = self.validator.validate(record, uri)
-                    self.assertCountEqual([(e.errorCode, e.path) for e in result.errors], expected)
+                    root_id = record.get("id") if isinstance(record, dict) else None
+                    self.assertFalse(result.ok)
+                    self.assertCountEqual(
+                        [(e.errorCode, e.path, e.recordId, e.referencedId, e.severity, e.category) for e in result.errors],
+                        [(code, path, root_id, None, "error", "schema_validation") for code, path in expected],
+                    )
 
     def test_root_provenance(self):
         for family in ENTITY_PROFILES:
@@ -149,54 +185,3 @@ class EntityProfileTests(unittest.TestCase):
                             expected = [] if populated or status == "Draft" else [
                                 ("application_validation", "application_validation.source_links_required", "$.sourceLinks", base["id"])]
                             self.assertEqual([(e.category, e.errorCode, e.path, e.recordId) for e in r.errors], expected)
-
-    def test_supplier_pilot_equivalence(self):
-        # Retain this independent comparison until the pilot is reviewed.
-        family = "supplier"
-        table = load_json(FIXTURES / "invalid-cases/supplier.json")
-        generated = {name: record for name, record, _ in negative_cases(family, ENTITY_PROFILES[family], table)}
-        generated["empty-object"] = {}
-        generated["sourceLinks-malformed"] = {**entity_fixture(family), "sourceLinks": [{}]}
-        legacy = sorted(INVALID.glob("supplier-*-invalid.json"))
-        self.assertTrue(legacy)
-        for file in legacy:
-            name = file.name[len("supplier-"):-len("-invalid.json")]
-            with self.subTest(case=name):
-                self.assertEqual(generated[name], load_json(file))
-        uri = BASE + "entities/supplier.schema.json"
-        for name, expected in (
-            ("empty-object", [("schema_validation.required", "$." + k) for k in ENTITY_PROFILES[family]["required"]]),
-            ("sourceLinks-malformed", [("schema_validation.required", "$.sourceLinks[0]." + k)
-             for k in ("sourceReferenceId", "sourceClass", "usageType", "verificationStatus")]
-             + [("schema_validation.anyOf", "$.sourceLinks[0]")]),
-        ):
-            with self.subTest(case=name):
-                result = self.validator.validate(generated[name], uri)
-                self.assertCountEqual([(e.errorCode, e.path) for e in result.errors], expected)
-
-    def test_manufacturing_process_legacy_equivalence(self):
-        family = "manufacturing-process"
-        uri = BASE + f"entities/{family}.schema.json"
-        profile = ENTITY_PROFILES[family]
-        table = load_json(FIXTURES / "invalid-cases" / (family + ".json"))
-        generated = {name: (record, errors) for name, record, errors in negative_cases(family, profile, table)}
-        generated["empty-object"] = {}, [("schema_validation.required", "$." + k) for k in profile["required"]]
-
-        # Legacy names differ only for these generated cases. The table keeps original names.
-        mapping = {row["name"]: row["name"] for row in table["cases"]}
-        mapping.update(("deferred-" + k, "deferred-" + k) for k in table["deferred"])
-        for field in ("id", "name", "description", "sourceLinks"):
-            mapping["missing-" + field] = "missing-" + field
-            mapping["null-" + field] = field + "-null"
-        mapping.update({"array-root": "array", "empty-name": "name-empty", "empty-object": "empty-object"})
-        files = {p.name[len(family)+1:-len("-invalid.json")]: p for p in INVALID.glob(f"{family}-*-invalid.json")}
-        self.assertEqual(set(mapping), set(files))
-        for old, target in mapping.items():
-            with self.subTest(legacy=old, target=target):
-                record, errors = generated[target]
-                self.assertEqual(record, load_json(files[old]))
-                root_id = record.get("id") if isinstance(record, dict) else None
-                expected = [(code, path, root_id, None, "error") for code, path in errors]
-                for result in (self.validator.validate_json_file(files[old], uri), self.validator.validate(record, uri)):
-                    self.assertCountEqual([(e.errorCode, e.path, e.recordId, e.referencedId, e.severity)
-                                           for e in result.errors], expected)
