@@ -493,12 +493,15 @@ class EosValidator:
         *,
         schema_id: str,
         path: str = "$",
+        record_id: str | None = None,
     ) -> None:
         if not isinstance(instance, dict):
             return
+        if record_id is None:
+            record_id = self._record_id(instance)
 
         if schema_id == VALUE_RANGE_SCHEMA_ID:
-            self._validate_value_range_rules(instance, result, path=path)
+            self._validate_value_range_rules(instance, result, path=path, record_id=record_id)
         elif schema_id == MEASUREMENT_QUALITY_SCHEMA_ID:
             self._validate_measurement_quality_rules(instance, result, path=path)
         elif schema_id == OBSERVATION_SCHEMA_ID:
@@ -554,9 +557,10 @@ class EosValidator:
                         result,
                         schema_id=child_schema_id,
                         path=f"{child_path}[{index}]",
+                        record_id=record_id,
                     )
             elif not is_array:
-                self._validate_contract_rules(child, result, schema_id=child_schema_id, path=child_path)
+                self._validate_contract_rules(child, result, schema_id=child_schema_id, path=child_path, record_id=record_id)
 
     def _validate_catalog_contract(
         self,
@@ -982,6 +986,7 @@ class EosValidator:
         result: ValidationResult,
         *,
         path: str,
+        record_id: str | None,
     ) -> None:
         min_value = instance.get("minValue")
         max_value = instance.get("maxValue")
@@ -993,7 +998,7 @@ class EosValidator:
                         category="application_validation",
                         message="ValueRange minValue must be less than or equal to maxValue.",
                         instancePath=f"{path}.minValue",
-                        recordId=self._record_id(instance),
+                        recordId=record_id,
                     )
 
         if "lowerInclusive" in instance and "minValue" not in instance:
@@ -1002,7 +1007,7 @@ class EosValidator:
                 category="application_validation",
                 message="ValueRange lowerInclusive is meaningful only when minValue exists.",
                 instancePath=f"{path}.lowerInclusive",
-                recordId=self._record_id(instance),
+                recordId=record_id,
             )
 
         if "upperInclusive" in instance and "maxValue" not in instance:
@@ -1011,7 +1016,7 @@ class EosValidator:
                 category="application_validation",
                 message="ValueRange upperInclusive is meaningful only when maxValue exists.",
                 instancePath=f"{path}.upperInclusive",
-                recordId=self._record_id(instance),
+                recordId=record_id,
             )
 
     def _validate_measurement_quality_rules(

@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Diagnostika vnoreného ValueRange - 2026-11-06
+
+Aplikačná chyba vnoreného ValueRange teraz pri svojom vzniku dostane ID vlastníka záznamu. Na baseline `a2bac5b` regresia pre Material zlyhala: pri obrátených hraniciach vznikla jedna chyba na `$.properties[0].valueRange.minValue` s `recordId = None` namiesto `MAT-9001`. Po oprave sa zmenilo iba toto ID. Samostatný rozsah bez vlastníka zostáva bez ID. Pravidlá platnosti dát, schémy, závislosti a katalógové politiky sa nemenia. Testy: 276 → 277 úspešných metód, bez zlyhaní, chýb a preskočení.
+
 ## ADR-0017: kontrolované vyradenie testovacích kópií - 2026-11-06
 
 Vyradených 321 presne nahradených neplatných fixtures (131 SUP, 148 TEC, 42 MAT). Odstránených 23 metód vrátane dočasných porovnaní. 299 → 276 úspešných unittest metód; 372 negatívnych prípadov v spoločnom runneri; 10/10 skúšok citlivosti. Bez zmeny produkcie, závislostí alebo začatia Machine. Inventár: [CDR-0022](docs/contracts/CDR-0022_ADR-0017_Shared_Test_Architecture_Closure_Review.md). Nižšie sekcie zachovávajú historický stav.
