@@ -1,5 +1,9 @@
 # BACKLOG
 
+## Aktuálne: Phase 0.2C.4 Machine Entity v1
+
+Profil CDR-0021 §64.7–64.8 je implementovaný. [Lokálne closure CDR-0023](docs/contracts/CDR-0023_Machine_Entity_Integration_Closure_Review.md) určilo stav COMPLETE; nasleduje používateľské review pred publikovaním. MachineModel, capability, prevádzkové údaje a onboarding ostávajú mimo rozsahu. Žiadna ďalšia doménová fáza nezačala.
+
 ## Aktuálne: uzavretie predpokladu Machine
 
 Spoločná testovacia infraštruktúra je v lokálnom closure dokončená pre Supplier, ManufacturingProcess a Material. Blokér podľa ADR-0017 je CLOSED. Machine podľa CDR-0021 zostáva READY FOR IMPLEMENTATION, nie IMPLEMENTED; implementácia nie je aktivovaná. Ďalší krok je finálne review týchto lokálnych zmien. Dôkazy: [CDR-0022](docs/contracts/CDR-0022_ADR-0017_Shared_Test_Architecture_Closure_Review.md). Nižšie sekcie zachovávajú historický stav.

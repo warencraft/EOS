@@ -1,0 +1,49 @@
+{
+  "id": "MAC-9002",
+  "schemaVersion": "0.1.0",
+  "recordVersion": "0.1.0",
+  "revision": 0,
+  "status": "Review",
+  "createdAt": "2026-01-01T00:00:00Z",
+  "createdBy": "test-suite",
+  "updatedAt": "2026-01-01T00:00:00Z",
+  "updatedBy": "test-suite",
+  "sourceLinks": [
+    {
+      "sourceReferenceId": "SRC-980001",
+      "sourceClass": "P",
+      "supportedField": "name",
+      "usageType": "citation",
+      "verificationStatus": "Draft"
+    }
+  ],
+  "changeSummary": "Fiktívny záznam pre overenie štruktúry.",
+  "name": "Fiktívny stroj B",
+  "description": "Fiktívna fyzická jednotka.",
+  "classifications": [
+    {
+      "classificationId": "CLS-980001"
+    }
+  ],
+  "properties": [
+    {
+      "propertyId": "PRP-980001",
+      "valueType": "quantity",
+      "quantity": {
+        "value": 1,
+        "unitId": "UNT-980001"
+      },
+      "verificationStatus": "Draft",
+      "sourceLinks": [
+        {
+          "sourceReferenceId": "SRC-980002",
+          "sourceClass": "P",
+          "supportedField": "quantity",
+          "usageType": "citation",
+          "verificationStatus": "Draft"
+        }
+      ]
+    }
+  ],
+  "notes": "Len na testovanie."
+}

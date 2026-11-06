@@ -1,5 +1,9 @@
 # ROADMAP
 
+## Phase 0.2C.4: Machine v1
+
+Implementácia a lokálne integračné closure sú dokončené. Platí pre fyzickú jednotku, nie model alebo capability. Ďalšia fáza nie je aktivovaná. Podrobnosti: [CDR-0023](docs/contracts/CDR-0023_Machine_Entity_Integration_Closure_Review.md). Nižšie sú historické záznamy.
+
 ## ADR-0017: migrácia COMPLETE
 
 Všetky tri existujúce entity používajú spoločný profil a tabuľky. Uzavretý je iba infraštruktúrny predpoklad: Machine nezačal. Výsledok lokálneho closure pred finálnym review: [CDR-0022](docs/contracts/CDR-0022_ADR-0017_Shared_Test_Architecture_Closure_Review.md). Nižšie sekcie zachovávajú historický stav.

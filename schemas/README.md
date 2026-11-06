@@ -1,5 +1,9 @@
 # schemas
 
+## Machine v1
+
+entities/machine.schema.json: centrálne MAC, spoločné metadáta a name; voliteľné description, classifications, properties a notes. Objaviteľná cez $defs.machine bez novej kolekcie. Podrobnosti: [CDR-0023](../docs/contracts/CDR-0023_Machine_Entity_Integration_Closure_Review.md). Nižšie sú historické záznamy.
+
 ## Míľnik 0.2C.3 - ManufacturingProcess Entity v1
 
 Aktuálne 23 schém: 7 Knowledge Core, 4 katalógy a 3 entity (Material, Supplier, ManufacturingProcess). Phase 0.2C.3 je IMPLEMENTED, čaká na closure; Material a Supplier sú COMPLETE. Staršie sekcie dokumentujú historické stavy.
