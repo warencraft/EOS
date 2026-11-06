@@ -1,5 +1,9 @@
 # ROADMAP
 
+## Aktuálny stav migrácie ADR-0017
+
+Supplier a ManufacturingProcess overené; Material overený v súbehu s pôvodnými testami. Celá migrácia ešte nie je uzatvorená. Machine zostáva READY FOR IMPLEMENTATION podľa CDR-0021, ale nezačal. Nižšie je história.
+
 ## Aktuálny krok pred Phase 0.2C.4
 
 Aktuálne podľa ADR-0017: pilot Supplier COMPLETE ako dôkaz vzoru; spoločné testy ManufacturingProcess overené súbežne s pôvodnými. Nasleduje kontrola tejto migrácie pred prípadným vyradením fixtures. Material sa nemigroval a Machine sa nezačal. Celá migrácia ešte nie je COMPLETE.

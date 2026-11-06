@@ -1,0 +1,37 @@
+{
+  "cases": [
+    {"name":"classifications-wrong-type","base":"legacy-draft","ops":[["set","/classifications",{}]],"expect":{"errorCode":"schema_validation.type","path":"$.classifications"}},
+    {"name":"description-wrong-type","base":"legacy-draft","ops":[["set","/description",[]]],"expect":{"errorCode":"schema_validation.type","path":"$.description"}},
+    {"name":"incomplete-padding","base":"legacy-draft","ops":[["set","/id","MAT-901"]],"expect":{"errorCode":"schema_validation.pattern","path":"$.id"}},
+    {"name":"invalid-classification","base":"legacy-draft","ops":[["set","/classifications",[{}]]],"expect":{"errorCode":"schema_validation.required","path":"$.classifications[0].classificationId"}},
+    {"name":"invalid-replaced-by-prefix","base":"legacy-draft","ops":[["set","/replacedBy","SUP-9001"]],"expect":{"errorCode":"schema_validation.pattern","path":"$.replacedBy"}},
+    {"name":"invalid-replaces-prefix","base":"legacy-draft","ops":[["set","/replaces","SUP-9001"]],"expect":{"errorCode":"schema_validation.pattern","path":"$.replaces"}},
+    {"name":"lowercase-prefix","base":"legacy-draft","ops":[["set","/id","mat-9001"]],"expect":{"errorCode":"schema_validation.pattern","path":"$.id"}},
+    {"name":"malformed-id","base":"legacy-draft","ops":[["set","/id","MAT-90A1"]],"expect":{"errorCode":"schema_validation.pattern","path":"$.id"}},
+    {"name":"name-wrong-type","base":"legacy-draft","ops":[["set","/name",9001]],"expect":{"errorCode":"schema_validation.type","path":"$.name"}},
+    {"name":"null-properties","base":"legacy-draft","ops":[["set","/properties",null]],"expect":{"errorCode":"schema_validation.type","path":"$.properties"}},
+    {"name":"properties-wrong-type","base":"legacy-draft","ops":[["set","/properties",{}]],"expect":{"errorCode":"schema_validation.type","path":"$.properties"}},
+    {"name":"source-links-wrong-type","base":"legacy-draft","ops":[["set","/sourceLinks",{}]],"expect":{"errorCode":"schema_validation.type","path":"$.sourceLinks"}},
+    {"name":"unknown-root-field","base":"legacy-draft","ops":[["set","/unexpected",true]],"expect":{"errorCode":"schema_validation.additionalProperties","path":"$.unexpected"}},
+    {"name":"wrong-prefix","base":"legacy-draft","ops":[["set","/id","SUP-9001"]],"expect":{"errorCode":"schema_validation.pattern","path":"$.id"}}
+  ],
+  "deferred": [
+    "chemicalComposition",
+    "compatibleProcesses",
+    "cuttingToolIds",
+    "deliveryCondition",
+    "designation",
+    "designations",
+    "materialFamily",
+    "heatTreatment",
+    "machineIds",
+    "materialCondition",
+    "normReferenceIds",
+    "observationIds",
+    "observations",
+    "stockForms",
+    "supplierId",
+    "materialType",
+    "verificationStatus"
+  ]
+}

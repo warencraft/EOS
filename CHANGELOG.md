@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## ADR-0017: súbežný dôkaz Material - 2026-11-06
+
+42/42 neplatných Material vstupov rekonštruovaných bez rozdielu v JSON aj diagnostike; štyri nové testovacie metódy, 295 → 299 úspešných, bez failures/errors/skipped. Inventár a mapa: tests/README.md. Bez vyradenia fixtures, zmien schém, runtime alebo závislostí.
+
 ## ADR-0017: ManufacturingProcess, súbežné overenie - 2026-11-05
 
 Rozšírený spoločný profil a tabuľkové prípady pre TEC. Všetkých 148 pôvodných neplatných JSON vstupov a ich diagnostika majú presný ekvivalent. Pôvodné testy a fixtures ponechané. 294 → 295 úspešných metód, 0 failures/errors/skipped. Mapa, rozlíšenie prípadov a dôkazy sú v tests/README.md. Produkčné kontrakty, validátor a závislosti bez zmien.

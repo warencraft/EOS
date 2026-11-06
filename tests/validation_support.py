@@ -16,4 +16,6 @@ def load_json(path):
 
 
 def entity_fixture(family, name="minimal-draft"):
+    if (family, name) == ("material", "legacy-draft"):
+        return {**entity_fixture("material"), "name": "Example Material", "changeSummary": "Fictional fixture."}
     return load_json(VALID / f"{family}-{name}-valid.json")
