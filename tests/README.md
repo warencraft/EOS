@@ -1,5 +1,29 @@
 # tests
 
+## ADR-0017: Material, súbežné overenie
+
+Na baseline bee4bc9 bolo 295 metód; po pridaní štyroch v `test_material_migration.py` je ich 299. Pôvodných 13 Material metód v test_validation a 10 v test_catalog_validation zostáva. Kontrakt a root provenance používa spoločný profil; význam claims, indexová kolekcia materials, katalógová politika, zdroje a replacement zostávajú viditeľné v špecifických testoch. Spoločný test vykoná 59 negatívnych prípadov (28 generovaných + 14 riadkov + 17 deferred), 18 kombinácií provenance a všetkých 16 platných fixtures. SubTest nie je ďalšia unittest metóda.
+
+**Inventár platných vstupov.** Všetky majú prefix material- a príponu -valid.json: minimal-draft, description, notes; empty-source-links, populated-source-links; empty-properties, one-property, multiple-properties, same-property-multiple, conflicting-claims; empty-classifications, one-classification, multiple-classifications; properties-classifications; replaces, replaced-by. Kontextové vstupy vytvárajú testy s jednou spoločnou fictional-catalog-context.json, nie s ďalšími Material entitami na disku.
+
+**Mapa neplatných vstupov.** Pôvodné súbory sú material-<názov>-invalid.json; množinu názvov porovnáva test s mapou pred validáciou. [Tabuľka](fixtures/invalid-cases/material.json) a nasledujúce pravidlá identifikujú všetkých 42 bez závislosti na poradí. Pre štrukturálne chyby je recordId koreňové id, ak existuje, inak null; referencedId je null a severity error. Tieto polia aj počet správ sa kontrolujú pre každý z oboch vstupov.
+
+| Skupina pôvodných názvov | Nový prípad, pravidlo a cesta |
+| --- | --- |
+| 14 explicitných názvov v cases (identita, text, tvar kolekcií, náhrady, zdroj, klasifikácia) | Rovnaké name; každý riadok uvádza konkrétny kód aj presnú cestu. |
+| 17 názvov odložených polí | deferred-F; pôvodný názov je kebab-case F, okrem family → materialFamily a type → materialType. additionalProperties na $.F. |
+| missing-id/name/source-links a null-id/name/source-links | missing-F / F-null, pre F = id/name/sourceLinks. required alebo type na $.F. |
+| empty-name, array-instead-of-object | name-empty / array: minLength na $.name alebo type na $. |
+| empty-object | required pre každé z 12 povinných polí na jeho ceste. |
+| invalid-property-record | required pre valueType, verificationStatus a sourceLinks pod $.properties[0]; oneOf na $.properties[0]. |
+| malformed-source-link | required pre sourceReferenceId, sourceClass, usageType a verificationStatus pod $.sourceLinks[0]; anyOf na $.sourceLinks[0]. |
+
+Voči uloženej minimal-draft fixture je jednopoložkových rozdielov **0**. Historický základ používa dva iné popisné reťazce: name a changeSummary. Je zostavený z minima a validovaný pred použitím, bez čítania očakávaného obsahu z neplatného súboru. Voči nemu je **40** zmien jedného koreňového poľa a **2** samostatné tvary ([] a {}). Z hľadiska obsahu: 1 vnorený chybný PropertyRecord a 1 vnorená Classification (okrem 2 chýb tvaru properties a 1 chyby tvaru classifications), 2 nesprávne náhrady a 4 chyby provenance vrátane 1 vnoreného SourceLink. Viacnásobné chyby nie sú sploštené do jednej. Presná zhoda JSON 42/42, presná diagnostika 42/42, iba významová náhrada 0, nezmapované 0.
+
+**Významové dôkazy.** Neexistujúce PRP/UNT/CND/CLS na platnom nezávislom kontexte vydajú presne jednu chybu na mieste odkazu s MAT recordId a chýbajúcim referencedId. CLS matica overuje 5 stavov pri oboch politikách vrátane Deprecated warning. Existujúce testy naďalej kontrolujú duplicitné a konfliktné claims, kompatibilitu typu hodnoty, jednotky a podmienok, MeasurementQuality a vnorenú chybu ValueRange. Root zdroj nie je dôkazom claim; vnorené zdroje nenahrádzajú root. Náhrady sú iba štrukturálne MAT odkazy: bez resolvera cieľa, novej kontroly self-reference či povinného párovania.
+
+**Vyradenie:** A = všetkých 42 neplatných vstupov má presnú náhradu; obe pôvodné metódy iterácie fixtures sú kandidátmi na budúce vyradenie po kontrole ich assertions. B = žiadny vstup nahradený iba významovo. C = ponechať všetkých 16 platných príkladov, všetky ostatné pôvodné metódy (vrátane presných indexových ciest a kontextových testov) a kontextovú fixture do samostatného closure. D = žiadny nevyriešený prípad. Nič sa teraz nemaže. Deväť dočasných porúch v pamäti preukázalo citlivosť na required, vlastníctvo PropertyRecord, cestu PRP, nesprávnu náhradu, MAT recordId aj všetky štyri referencedId. Produkcia zostala nezmenená.
+
 ## ADR-0017: ManufacturingProcess, súbežné overenie
 
 Supplier pilot je ukončený ako dôkaz vzoru. Pre TEC sa 27 pôvodných metód a 11 platných/148 neplatných fixtures stále spúšťa spolu s profilom v `test_entity_profiles.py`. Jeho povinné polia zahŕňajú description, voliteľné sú iba classifications a notes. Index má definíciu manufacturingProcess bez kolekcie. Nová tabuľka [manufacturing-process.json](fixtures/invalid-cases/manufacturing-process.json) obsahuje 12 explicitných prípadov a 125 samostatne pomenovaných vylúčených polí, nie jeden zástupný príklad. Spolu s 30 generovanými vstupmi ide o 167 spoločných negatívnych prípadov; prázdny objekt sa posudzuje navyše. Root provenance má 18 kombinácií.

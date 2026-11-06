@@ -10,6 +10,18 @@ from tests.validation_support import BASE, FIXTURES, INDEX, INVALID, VALID, enti
 
 COMMON = set("id schemaVersion recordVersion revision status createdAt createdBy updatedAt updatedBy sourceLinks changeSummary".split())
 ENTITY_PROFILES = {
+    "material": {
+        "idFamily": "MAT", "required": COMMON | {"name"},
+        "optional": {"description", "notes", "properties", "classifications", "replaces", "replacedBy"},
+        "owned": {"properties": "property-record", "classifications": "classification"},
+        "indexDef": "material", "collection": "materials", "caseBase": "legacy-draft",
+        "deferredValue": [],
+        "deferredValues": {
+            "chemicalComposition": {}, "deliveryCondition": "Example state", "designation": "Example designation",
+            "materialFamily": "Example family", "heatTreatment": "Example process", "materialCondition": "Example state",
+            "supplierId": "SUP-9001", "materialType": "Example type", "verificationStatus": "Draft",
+        },
+    },
     "supplier": {
         "idFamily": "SUP", "required": COMMON | {"name"},
         "optional": {"description", "notes", "classifications"},
@@ -50,7 +62,7 @@ def mutate(record, op):
 
 
 def negative_cases(family, profile, table):
-    base = entity_fixture(family)
+    base = entity_fixture(family, profile.get("caseBase", "minimal-draft"))
     for field in sorted(profile["required"]):
         path = "$." + field
         yield "missing-" + field, {k: v for k, v in base.items() if k != field}, [("schema_validation.required", path)]
@@ -75,7 +87,8 @@ def negative_cases(family, profile, table):
     for field in table["deferred"]:
         if field in profile["required"] | profile["optional"]:
             raise ValueError(f"Deferred field is allowed: {field}")
-        yield "deferred-" + field, {**base, field: profile["deferredValue"]}, [
+        value = profile.get("deferredValues", {}).get(field, profile["deferredValue"])
+        yield "deferred-" + field, {**base, field: value}, [
             ("schema_validation.additionalProperties", "$." + field)]
 
 

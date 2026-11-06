@@ -1,5 +1,9 @@
 # BACKLOG
 
+## Aktuálne: kontrola migrácie Material
+
+Paralelná skúška Material podľa ADR-0017 je úspešná. Nasleduje review dôkazov a samostatné rozhodnutie o closure a vyradení; žiadna rodina v tomto kroku nestratila fixtures. Machine zostáva blokovaný. Staršie sekcie sú historické.
+
 ## Aktuálne: kontrola migrácie testov ManufacturingProcess
 
 Supplier pilot bol prijatý ako dôkaz vzoru. Pre ManufacturingProcess je súbežné overenie dokončené; skontrolovať mapu a výsledky v tests/README.md pred samostatným rozhodnutím o vyradení. Material je samostatný nasledujúci migračný krok. Implementácia Machine čaká na dokončenie migrácie podľa ADR-0017.
