@@ -1,5 +1,9 @@
 # scripts
 
+## Validácia Machine
+
+Registrácia fyzickej jednotky používa existujúcu kontrolu root sourceLinks a priechod cez vnorené tvrdenia a klasifikácie. Nevzniká Machine resolver ani pravidlo pre schopnosť vykonať operáciu. Podrobnosti: [CDR-0023](../docs/contracts/CDR-0023_Machine_Entity_Integration_Closure_Review.md). Nižšie sú historické záznamy.
+
 ## Míľnik 0.2C.3 - ManufacturingProcess validácia
 
 ManufacturingProcess schema ID je zaregistrované pre embedded Classification traversal a automatickú root source kontrolu. Existujúca entity provenance vetva a Supplier CLS vetva sú rozšírené bez duplikácie helperov. Draft môže mať sourceLinks prázdne; Review/Approved nie, nezávisle od explicitného has_verifiable_claims flagu a bez duplicitnej chyby.

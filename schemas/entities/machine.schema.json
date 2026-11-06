@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/schemas/entities/machine.schema.json",
+  "title": "EOS Machine",
+  "description": "Knowledge Entity and Aggregate Root identifying one physical manufacturing or inspection unit, not a model or capability.",
+  "type": "object",
+  "required": [
+    "id",
+    "schemaVersion",
+    "recordVersion",
+    "revision",
+    "status",
+    "createdAt",
+    "createdBy",
+    "updatedAt",
+    "updatedBy",
+    "sourceLinks",
+    "changeSummary",
+    "name"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/MAC",
+      "description": "Stable identity of one physical machine, not its name, model, location or external identifier."
+    },
+    "schemaVersion": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/schemaVersion",
+      "description": "Version of the serialization contract, not the unit."
+    },
+    "recordVersion": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/recordVersion",
+      "description": "Version of the record, not the model."
+    },
+    "revision": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/revision",
+      "description": "Record revision, not configuration history."
+    },
+    "status": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/status",
+      "description": "Record lifecycle, not operating state."
+    },
+    "createdAt": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/createdAt",
+      "description": "Record creation timestamp, not manufacture date."
+    },
+    "createdBy": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/createdBy",
+      "description": "Creator of the record, not manufacturer."
+    },
+    "updatedAt": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/updatedAt",
+      "description": "Record update timestamp, not last service."
+    },
+    "updatedBy": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/updatedBy",
+      "description": "Editor of the record, not owner."
+    },
+    "sourceLinks": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/sourceLinks",
+      "description": "Evidence for the identity and root definition, not for every embedded claim."
+    },
+    "changeSummary": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/changeSummary",
+      "description": "Summary of the record change, not a maintenance event."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Non-unique human-readable label, not a serial number or identity."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Boundary of the individual physical unit, not its configuration or capability."
+    },
+    "properties": {
+      "type": "array",
+      "items": {
+        "$ref": "https://eos.local/schemas/knowledge-core/property-record.schema.json"
+      },
+      "description": "Sourced specification claims applicable to this unit, not measurements, capabilities, commands or operation settings."
+    },
+    "classifications": {
+      "type": "array",
+      "items": {
+        "$ref": "https://eos.local/schemas/knowledge-core/classification.schema.json"
+      },
+      "description": "Category assignments, not proof of suitability for a process."
+    },
+    "notes": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/notes",
+      "description": "Optional remarks, not a substitute for deferred structured fields."
+    }
+  },
+  "additionalProperties": false
+}

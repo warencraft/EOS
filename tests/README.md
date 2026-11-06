@@ -1,5 +1,9 @@
 # tests
 
+## Regresie Machine
+
+test_machine_validation.py overuje integráciu Machine. owned_claim_checks.py obsahuje spoločné kontroly pre Material a Machine. Testovací profil pridáva dve fiktívne fixtures a 107 negatívnych prípadov; cielené testy chránia aj koreňové MAC ID a vnorené cesty po PR #7. Podrobnosti: [CDR-0023](../docs/contracts/CDR-0023_Machine_Entity_Integration_Closure_Review.md). Nižšie sú historické záznamy.
+
 ## Diagnostika vlastníka ValueRange
 
 Regresia `test_value_range_errors_keep_owning_record_id` v `test_material_migration.py` porovnáva celý zoznam kódov, ciest, ID a závažností pre vnorený a samostatný rozsah. Pri obrátených hraniciach očakáva jednu aplikačnú chybu; pri príznaku inkluzivity bez príslušnej hranice zachováva aj existujúcu schémovú diagnostiku. Celá sada po oprave: 277/277.

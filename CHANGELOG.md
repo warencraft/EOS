@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Machine Entity v1 - 2026-11-06
+
+Pridaný Machine v1, registrácia v indexe a existujúcich validačných pravidlách. Dve fiktívne fixtures, 107 negatívnych prípadov, 7 nových testovacích metód. Výsledok 277 → 284 úspešných; 24 schém, 230 odkazov. Podrobnosti: [CDR-0023](docs/contracts/CDR-0023_Machine_Entity_Integration_Closure_Review.md). Nižšie sú historické záznamy.
+
 ## Diagnostika vnoreného ValueRange - 2026-11-06
 
 Aplikačná chyba vnoreného ValueRange teraz pri svojom vzniku dostane ID vlastníka záznamu. Na baseline `a2bac5b` regresia pre Material zlyhala: pri obrátených hraniciach vznikla jedna chyba na `$.properties[0].valueRange.minValue` s `recordId = None` namiesto `MAT-9001`. Po oprave sa zmenilo iba toto ID. Samostatný rozsah bez vlastníka zostáva bez ID. Pravidlá platnosti dát, schémy, závislosti a katalógové politiky sa nemenia. Testy: 276 → 277 úspešných metód, bez zlyhaní, chýb a preskočení.

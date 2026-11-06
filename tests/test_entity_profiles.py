@@ -10,6 +10,13 @@ from tests.validation_support import BASE, FIXTURES, INDEX, VALID, entity_fixtur
 
 COMMON = set("id schemaVersion recordVersion revision status createdAt createdBy updatedAt updatedBy sourceLinks changeSummary".split())
 ENTITY_PROFILES = {
+    "machine": {
+        "validCases": ["minimal-draft", "populated-source-links"],
+        "idFamily": "MAC", "required": COMMON | {"name"},
+        "optional": {"description", "notes", "properties", "classifications"},
+        "owned": {"properties": "property-record", "classifications": "classification"},
+        "indexDef": "machine", "collection": None, "deferredValue": "fictional",
+    },
     "material": {
         "validCases": (
             "conflicting-claims description empty-classifications empty-properties "
