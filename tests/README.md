@@ -1,5 +1,9 @@
 # tests
 
+## ADR-0017: aktuálne testy entít
+
+Supplier, ManufacturingProcess a Material používajú ENTITY_PROFILES, tri tabuľky invalid-cases a malé zdieľané pomôcky. 41 explicitných riadkov, 239 pomenovaných deferred polí a 92 ďalších generovaných/zložených prípadov chránia 372 negatívnych vstupov. Špecifické testy zostávajú samostatné. Z pôvodných fixtures sa odstránilo iba 321 presne nahradených neplatných záznamov. Povinných zostáva všetkých 39 pôvodných platných príkladov entít a spoločný katalógový kontext. Sada: 276/276. Úplný inventár náhrad, metód a validačných dôkazov: [CDR-0022](../docs/contracts/CDR-0022_ADR-0017_Shared_Test_Architecture_Closure_Review.md). Nižšie sekcie zachovávajú historický stav.
+
 ## ADR-0017: Material, súbežné overenie
 
 Na baseline bee4bc9 bolo 295 metód; po pridaní štyroch v `test_material_migration.py` je ich 299. Pôvodných 13 Material metód v test_validation a 10 v test_catalog_validation zostáva. Kontrakt a root provenance používa spoločný profil; význam claims, indexová kolekcia materials, katalógová politika, zdroje a replacement zostávajú viditeľné v špecifických testoch. Spoločný test vykoná 59 negatívnych prípadov (28 generovaných + 14 riadkov + 17 deferred), 18 kombinácií provenance a všetkých 16 platných fixtures. SubTest nie je ďalšia unittest metóda.

@@ -140,3 +140,4 @@ EOS-000/001/002/003/006/007; ADR-0013 a ADR-0018; AGENTS.md a TECH_STACK.md; tes
 | --- | --- | --- |
 | 2026-11-05 | 0 | Prvý Draft na základe merania af7cb9e; žiadna migrácia ani implementácia. |
 | 2026-11-05 | 1 | Používateľ prijal rozhodnutie a povolil implementáciu spoločnej infraštruktúry. Kontrola pilotu pred vyradením starých fixtures zostáva povinná. |
+| 2026-11-06 | 2 | Lokálne uzavretie migrácie troch entít podľa [CDR-0022](../docs/contracts/CDR-0022_ADR-0017_Shared_Test_Architecture_Closure_Review.md); Accepted rozhodnutie sa nemení. |

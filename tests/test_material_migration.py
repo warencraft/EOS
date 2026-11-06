@@ -1,11 +1,9 @@
-"""Material-only equivalence and contextual diagnostics (ADR-0017, CDR-0016)."""
-import re
+"""Material-specific contextual diagnostics (ADR-0017, CDR-0016)."""
 import unittest
 
 from scripts.validation import CatalogLifecyclePolicy, EosValidator, ValidationContext
 from tests.test_catalog_validation import build_registry, classification, condition, load_catalog_data, property_record
-from tests.test_entity_profiles import ENTITY_PROFILES, negative_cases
-from tests.validation_support import BASE, FIXTURES, INVALID, entity_fixture, load_json
+from tests.validation_support import BASE, entity_fixture
 
 
 URI = BASE + "entities/material.schema.json"
@@ -19,42 +17,6 @@ class MaterialMigrationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.validator = EosValidator()
-
-    def test_legacy_input_and_diagnostic_equivalence(self):
-        profile = ENTITY_PROFILES["material"]
-        base = entity_fixture("material", "legacy-draft")
-        self.assertTrue(self.validator.validate(base, URI).ok)
-        table = load_json(FIXTURES / "invalid-cases/material.json")
-        generated = {n: (v, errors) for n, v, errors in negative_cases("material", profile, table)}
-        mapping = {row["name"]: row["name"] for row in table["cases"]}
-        for field in table["deferred"]:
-            legacy = {"materialFamily": "family", "materialType": "type"}.get(
-                field, re.sub(r"(?<!^)([A-Z])", r"-\1", field).lower())
-            mapping[legacy] = "deferred-" + field
-        for field, label in (("id", "id"), ("name", "name"), ("sourceLinks", "source-links")):
-            mapping["missing-" + label] = "missing-" + field
-            mapping["null-" + label] = field + "-null"
-        mapping.update({"empty-name": "name-empty", "array-instead-of-object": "array"})
-        generated["empty-object"] = {}, [("schema_validation.required", "$." + f) for f in profile["required"]]
-        for name, field, child, required, keyword in (
-            ("malformed-source-link", "sourceLinks", {}, ("sourceReferenceId", "sourceClass", "usageType", "verificationStatus"), "anyOf"),
-            ("invalid-property-record", "properties", {"propertyId": "PRP-980001"}, ("valueType", "verificationStatus", "sourceLinks"), "oneOf"),
-        ):
-            path = "$." + field + "[0]"
-            generated[name] = {**base, field: [child]}, [
-                ("schema_validation.required", path + "." + k) for k in required
-            ] + [("schema_validation." + keyword, path)]
-        mapping.update({k: k for k in ("empty-object", "malformed-source-link", "invalid-property-record")})
-        files = {p.name[len("material-"):-len("-invalid.json")]: p for p in INVALID.glob("material-*-invalid.json")}
-        self.assertEqual(set(mapping), set(files))
-        for old, target in mapping.items():
-            with self.subTest(legacy=old, target=target):
-                record, errors = generated[target]
-                self.assertEqual(load_json(files[old]), record)
-                root_id = record.get("id") if isinstance(record, dict) else None
-                expected = [(code, path, root_id, None, "error") for code, path in errors]
-                for r in (self.validator.validate_json_file(files[old], URI), self.validator.validate(record, URI)):
-                    self.assertCountEqual(diagnostics(r), expected)
 
     def test_unresolved_reference_has_no_dependent_diagnostics(self):
         ctx = ValidationContext(build_registry())

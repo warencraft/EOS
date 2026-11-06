@@ -8,7 +8,6 @@ BASE = "https://eos.local/schemas/"
 INDEX = BASE + "index.schema.json"
 FIXTURES = ROOT / "tests/fixtures"
 VALID = FIXTURES / "valid/entities"
-INVALID = FIXTURES / "invalid/entities"
 
 
 def load_json(path):

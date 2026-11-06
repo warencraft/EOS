@@ -1,5 +1,9 @@
 # ROADMAP
 
+## ADR-0017: migrácia COMPLETE
+
+Všetky tri existujúce entity používajú spoločný profil a tabuľky. Uzavretý je iba infraštruktúrny predpoklad: Machine nezačal. Výsledok lokálneho closure pred finálnym review: [CDR-0022](docs/contracts/CDR-0022_ADR-0017_Shared_Test_Architecture_Closure_Review.md). Nižšie sekcie zachovávajú historický stav.
+
 ## Aktuálny stav migrácie ADR-0017
 
 Supplier a ManufacturingProcess overené; Material overený v súbehu s pôvodnými testami. Celá migrácia ešte nie je uzatvorená. Machine zostáva READY FOR IMPLEMENTATION podľa CDR-0021, ale nezačal. Nižšie je história.
