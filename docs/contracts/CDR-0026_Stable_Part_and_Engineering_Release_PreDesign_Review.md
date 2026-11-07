@@ -4,7 +4,7 @@ Project: EOS – Engineering Operating System\
 Contract Review ID: CDR-0026\
 Review type: Doménový pre-design\
 Version: 0.1\
-Revision: 2\
+Revision: 3\
 Status: Review\
 Document basis: Prijatý model D a rozhodnutia používateľa vrátane PI-0004 a PI-0005 (§17–18).
 
@@ -31,7 +31,7 @@ Základ je main po PR #9 (`8f60132`). Autority: EOS-003 §2–5 (ID a verzie), E
 | Variant, Configuration | Variant označuje zámerne rozlišovanú alternatívu. Konfigurácia je výber či kombinácia požiadaviek; nemusí to byť nová stabilná položka. |
 | Drawing, Document | Výkres je technický dokument. DocumentRecord eviduje dokument; nevymedzuje všetky požiadavky na diel. |
 
-Autoritatívne názvy určuje rozhodnutie v §18. Pred tvorbou schém treba zosúladiť aj slovník alebo schválené RFC podľa RFC-0003 §7.
+Názvy boli prijaté v §18; ich slovníkové definície G-0082 a G-0083 sú doplnené v [RFC-0003](../rfc/RFC-0003_EOS_Engineering_Glossary.md), revízia 4 prijatá podľa ADR-0014.
 
 ## 5. Stabilná technická identita
 
@@ -94,7 +94,9 @@ Koreň dielu preukazuje existenciu a kontinuitu identity, vlastníka označenia 
 
 ## 14. Klasifikácie a tvrdenia
 
-Diel môže voliteľne niesť Classification pre stabilné zaradenie, nie pre identitu variantu. Properties na diele vo v1 odložiť: príklad nepreukázal požiadavku na stabilné technické tvrdenie naprieč vydaniami. Classification na vydaní tiež odložiť, nekopírovať z dielu. PropertyRecord môže raz vyjadriť zdrojované opisné tvrdenie, ale nie povinný rozmer, toleranciu, výnimku ani výsledok kontroly. Preto žiadne pole PropertyRecord na žiadnom z koreňov v navrhovanom v1.
+**EngineeringItem v1:** vlastníctvo voliteľného `Classification[]` je prijaté iba pre stabilné zaradenie samotnej položky naprieč vydaniami. Klasifikácia neurčuje identitu: jej zmena sama nerozhoduje o pridelení nového EIT. Kontinuita sa posudzuje podľa CDR-0025 a §7. Klasifikácia nenesie požiadavky jedného vydania, rozmery, tolerancie, materiálový predpis, revíziu výkresu, životný cyklus vydania, identitu variantu, zaradenie zákazkovej položky, výrobnú spôsobilosť ani údaje operácie.
+
+Vlastníctvo `PropertyRecord[]` je pre EngineeringItem v1 zamietnuté. Technický predpis konkrétneho vydania nepatrí na stabilnú položku len preto, že existuje `PropertyRecord`. Rozsah EngineeringRelease sa týmto rozhodnutím nemení.
 
 ## 15. Dopyt a ponuka
 
@@ -126,7 +128,20 @@ Kardinalita: **EngineeringItem 1 → 0..N EngineeringRelease**. Položka môže 
 
 ## 19. Minimálne v1: obsah, nie JSON
 
-R = REQUIRED v1 / CORE v1; O = OPTIONAL v1; D = DEFERRED; X = DOES NOT BELONG HERE. Názvy vyjadrujú význam, nie schválené polia.
+### Záväzný zoznam polí EngineeringItem v1: FROZEN
+
+| Stav | Presné názvy polí |
+| --- | --- |
+| REQUIRED | `id`, `schemaVersion`, `recordVersion`, `revision`, `status`, `createdAt`, `createdBy`, `updatedAt`, `updatedBy`, `sourceLinks`, `changeSummary`, `name` |
+| OPTIONAL | `description` (administratívny opis), `classifications` (stabilné zaradenie podľa §14) |
+
+Zoznam je uzavretý. `sourceLinks` je povinné pole s dôkazmi pre stabilnú identitu a záznam EngineeringItem. Samo nepreukazuje technické požiadavky vydania, revíziu výkresu, materiálový predpis, zameniteľnosť ani výrobnú spôsobilosť. Povinnosť poľa sa nesmie zameniť za nové pravidlo neprázdnosti mimo existujúcich pravidiel životného cyklu EOS.
+
+**EXCLUDED FROM v1:** `notes`, `properties`, `engineeringReleaseIds`, `releases` a iné spätné vlastníctvo vydaní; externé aliasy a identita podľa čísla výkresu; materiál, rozmery, tolerancie, povrch a tepelné spracovanie ako požiadavky vydania; údaje výrobného procesu, operácie alebo stroja, množstvo, cena, kalkulácia nákladov, zásoby a BOM. Voliteľné polia iných entít sa nededia.
+
+### Porovnanie rozsahu položky a vydania
+
+R = povinné; O = voliteľné; D = odložené; X = nepatrí sem. Pre EngineeringItem je záväzný presný zoznam vyššie. Stĺpec technického vydania ostáva koncepčný.
 
 | Obsah | Stabilná položka | Technické vydanie |
 | --- | --- | --- |
@@ -138,8 +153,8 @@ R = REQUIRED v1 / CORE v1; O = OPTIONAL v1; D = DEFERRED; X = DOES NOT BELONG HE
 | Označenie technickej revízie | X | O prevzatý štítok; vlastná identita vydania je R aj bez štítka. |
 | Začiatok účinnosti | X | O doložený, nie automaticky deň vydania. Podrobné pravidlá použiteľnosti D. |
 | Materiálový predpis; rozmer/geometria; tolerancia; povrch; spracovanie | X | D ako samostatné štruktúrované polia; existujúce platné požiadavky nemožno vynechať zo záväzného podkladu. |
-| Classification; PropertyRecord | O stabilná klasifikácia; D tvrdenia | D oboje. |
-| Voľné poznámky | D | D. Nepoužiť ako náhradu záväzného podkladu. |
+| Classification; PropertyRecord | O stabilná klasifikácia; X vlastníctvo PropertyRecord vo v1 | D oboje. |
+| Voľné poznámky | X vo v1 | D. Nepoužiť ako náhradu záväzného podkladu. |
 | Množstvo, jednotka zákazky, cena, zásoba, skutočná výroba | X | X; patria používateľom vydania. |
 
 ## 20. Skúška prípadu 001
@@ -179,5 +194,6 @@ Pripravené na kontrolu pred publikovaním dokumentácie; bez zmien produkčnýc
 | 0.1 | 0 | Prvé porovnanie vlastníctva, technického uvoľnenia a podkladov pre budúci kontrakt. |
 | 0.1 | 1 | Zapísané prijatie SPER-0001/0002, SPER-0003 pre v1 a rozlíšenie súbežnej platnosti a náhrady v SPER-0005. PI-0004/0005 zostávajú otvorené. |
 | 0.1 | 2 | Po kontrole kolízií prijaté názvy a rodiny ID; PI-0004, PI-0005 a SPER-0004 uzavreté. Doplnené integračné uzatvorenie po každom budúcom kontrakte. |
+| 0.1 | 3 | Zmrazených 12 povinných a 2 voliteľné polia EngineeringItem v1; prijaté stabilné klasifikácie, zamietnuté properties a vylúčené notes. Slovníkové zosúladenie bez implementácie a bez aktivácie EIT/ERL. |
 
 READY FOR USER REVIEW BEFORE GIT PUBLISH
