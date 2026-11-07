@@ -2,7 +2,7 @@
 
 ## Aktuálne: Phase 0.2C.4 Machine Entity v1
 
-Profil CDR-0021 §64.7–64.8 je implementovaný. [Lokálne closure CDR-0023](docs/contracts/CDR-0023_Machine_Entity_Integration_Closure_Review.md) určilo stav COMPLETE; nasleduje používateľské review pred publikovaním. MachineModel, capability, prevádzkové údaje a onboarding ostávajú mimo rozsahu. Žiadna ďalšia doménová fáza nezačala.
+Profil CDR-0021 §64.7–64.8 je implementovaný. [Lokálne closure CDR-0023](docs/contracts/CDR-0023_Machine_Entity_Integration_Closure_Review.md) určilo stav COMPLETE; PR #8 bol zlúčený do main v commite `f0aeec5`. MachineModel, capability, prevádzkové údaje a onboarding ostávajú mimo rozsahu. Žiadna ďalšia doménová fáza nezačala.
 
 ## Aktuálne: uzavretie predpokladu Machine
 
