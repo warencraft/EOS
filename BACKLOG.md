@@ -1,5 +1,9 @@
 # BACKLOG
 
+## Stabilný diel a technické vydanie
+
+[CDR-0025](docs/contracts/CDR-0025_Part_Identity_and_Drawing_Revision_Boundary_Review.md): rozhodnutie o identite COMPLETE. [CDR-0026](docs/contracts/CDR-0026_Stable_Part_and_Engineering_Release_PreDesign_Review.md): názvy a rodiny ID schválené, SPER-0004 uzavreté. Ďalší možný samostatne schválený krok: EngineeringItem v1. Implementácia NOT STARTED.
+
 ## Aktuálne: Phase 0.2C.4 Machine Entity v1
 
 Profil CDR-0021 §64.7–64.8 je implementovaný. [Lokálne closure CDR-0023](docs/contracts/CDR-0023_Machine_Entity_Integration_Closure_Review.md) určilo stav COMPLETE; PR #8 bol zlúčený do main v commite `f0aeec5`. MachineModel, capability, prevádzkové údaje a onboarding ostávajú mimo rozsahu. Žiadna ďalšia doménová fáza nezačala.

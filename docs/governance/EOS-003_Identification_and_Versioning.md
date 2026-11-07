@@ -3,10 +3,10 @@
 **Project:** EOS - Engineering Operating System  
 **Document ID:** EOS-003  
 **Version:** 0.1  
-**Revision:** 2  
+**Revision:** 3\
 **Status:** Approved  
 **Author:** Chief Engineering Knowledge Architect + Codex  
-**Last update:** 2026-08-01  
+**Last update:** 2026-11-07\
 **Document basis:** Internal governance decision  
 
 ---
@@ -35,6 +35,8 @@ Stavy:
 | `NRM` | externé normy, štandardy a záväzné technické predpisy | `NRM-xxxx` | Active |
 | `SRC` | autoritatívne zdrojové referencie | `SRC-xxxxxx` | Active |
 | `MAT` | materiálové karty | `MAT-xxxx` | Active |
+| `EIT` | stabilná technická položka EngineeringItem | `EIT-xxxx` | Candidate |
+| `ERL` | presné autorizované vydanie EngineeringRelease jednej položky | `ERL-xxxx` | Candidate |
 | `POL` | polotovary a skladové formy | `POL-xxxx` | Active |
 | `TEC` | výrobné technológie a procesy | `TEC-xxxx` | Active |
 | `MAC` | stroje a výrobné zariadenia | `MAC-xxxx` | Active |
@@ -55,6 +57,8 @@ Stavy:
 | `EVT` | budúci všeobecný event object | `EVT-xxxxxx` | Deferred |
 | `CAL` | kalkulátory | `CAL-xxxx` | Active |
 | `FRM` | formuláre a šablóny | `FRM-xxxx` | Active |
+
+Pre `EIT` aj `ERL` znamená `xxxx` presne štyri číslice ASCII. Obe rodiny sú rezervované podľa CDR-0026; pred aktiváciou príslušného kontraktu sa nesmú používať na autoritatívne uložené záznamy.
 
 ### 2.1 Príklady ID
 
@@ -189,3 +193,4 @@ Pri zrušení sa uvedie:
 | 2026-07-13 | 0.1 | 0 | Chief Engineering Knowledge Architect + Codex | Initial draft |
 | 2026-07-13 | 0.1 | 1 | Codex | Governance Alignment 0.1.1: oddelenie `STD-xxx` a `NRM-xxxx`, doplnenie ID pre zdroje, dodávateľov a entity vlastnené zákazkou |
 | 2026-08-01 | 0.1 | 2 | Codex | Phase 0.2B.0: doplnenie RFC, Observation, property, unit, classification, condition, decision, relationship a event prefix governance; označenie `DEC` ako Candidate a `REL`/`EVT` ako Deferred; zjednotenie hierarchických JOB ID |
+| 2026-11-07 | 0.1 | 3 | Codex | Rezervácia dvoch rodín Candidate podľa CDR-0026; existujúce ID a ich význam sa nemenia. |
