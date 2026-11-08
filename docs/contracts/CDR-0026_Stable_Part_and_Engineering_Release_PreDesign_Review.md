@@ -4,7 +4,7 @@ Project: EOS – Engineering Operating System\
 Contract Review ID: CDR-0026\
 Review type: Doménový pre-design\
 Version: 0.1\
-Revision: 3\
+Revision: 4\
 Status: Review\
 Document basis: Prijatý model D a rozhodnutia používateľa vrátane PI-0004 a PI-0005 (§17–18).
 
@@ -185,7 +185,7 @@ Všetky zistenia sú uzavreté podľa §21, SPER-0003 iba pre v1. Schválenie n�
 
 ## 25. Pripravenosť
 
-Pripravené na kontrolu pred publikovaním dokumentácie; bez zmien produkčných kontraktov.
+EngineeringItem v1: READY FOR IMPLEMENTATION. PR #11 priniesol prijatý slovník a zmrazenú maticu §19; používateľ poveril implementáciou iba EngineeringItem.
 
 ## 26. História zmien
 
@@ -195,5 +195,6 @@ Pripravené na kontrolu pred publikovaním dokumentácie; bez zmien produkčnýc
 | 0.1 | 1 | Zapísané prijatie SPER-0001/0002, SPER-0003 pre v1 a rozlíšenie súbežnej platnosti a náhrady v SPER-0005. PI-0004/0005 zostávajú otvorené. |
 | 0.1 | 2 | Po kontrole kolízií prijaté názvy a rodiny ID; PI-0004, PI-0005 a SPER-0004 uzavreté. Doplnené integračné uzatvorenie po každom budúcom kontrakte. |
 | 0.1 | 3 | Zmrazených 12 povinných a 2 voliteľné polia EngineeringItem v1; prijaté stabilné klasifikácie, zamietnuté properties a vylúčené notes. Slovníkové zosúladenie bez implementácie a bez aktivácie EIT/ERL. |
+| 0.1 | 4 | Zaznamenaná pripravenosť EngineeringItem na implementáciu bez zmeny polí alebo identity. |
 
-READY FOR USER REVIEW BEFORE GIT PUBLISH
+READY FOR IMPLEMENTATION

@@ -2,7 +2,7 @@
 
 ## Stabilný diel a technické vydanie
 
-[CDR-0025](docs/contracts/CDR-0025_Part_Identity_and_Drawing_Revision_Boundary_Review.md): rozhodnutie o identite COMPLETE. [CDR-0026](docs/contracts/CDR-0026_Stable_Part_and_Engineering_Release_PreDesign_Review.md): identita a názov EngineeringItem ACCEPTED, kontrakt polí v1 FROZEN (revízia 3). Implementácia NOT STARTED. Slovníková revízia 4 je prijatá; implementácia ostáva samostatným krokom.
+[CDR-0027](docs/contracts/CDR-0027_EngineeringItem_Entity_Integration_Closure_Review.md): EngineeringItem v1 COMPLETE lokálne, čaká na publikovanie; EIT Active. Nasleduje kontrola pred publikovaním, nie implementácia ďalšej entity.
 
 ## Aktuálne: Phase 0.2C.4 Machine Entity v1
 

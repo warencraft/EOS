@@ -2,6 +2,8 @@
 
 ## EngineeringItem v1
 
+- [Integračné uzatvorenie v1](contracts/CDR-0027_EngineeringItem_Entity_Integration_Closure_Review.md)
+
 - [Uzavretý zoznam polí a hranice vlastníctva](contracts/CDR-0026_Stable_Part_and_Engineering_Release_PreDesign_Review.md)
 - Slovník: [EngineeringItem](rfc/RFC-0003_EOS_Engineering_Glossary.md#g-0082-engineeringitem), [EngineeringRelease](rfc/RFC-0003_EOS_Engineering_Glossary.md#g-0083-engineeringrelease)
 

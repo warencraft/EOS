@@ -20,6 +20,7 @@
     "MAC": { "type": "string", "pattern": "^MAC-[0-9]{4}$" },
     "TOOL": { "type": "string", "pattern": "^TOOL-[0-9]{4}$" },
     "SUP": { "type": "string", "pattern": "^SUP-[0-9]{4}$" },
+    "EIT": { "type": "string", "pattern": "^EIT-[0-9]{4}$" },
     "JOB": { "type": "string", "pattern": "^JOB-[0-9]{4}-[0-9]{4}$" },
     "JOB_OPERATION": { "type": "string", "pattern": "^JOB-[0-9]{4}-[0-9]{4}-OP-[0-9]{3}$" },
     "JOB_TIME_RECORD": { "type": "string", "pattern": "^JOB-[0-9]{4}-[0-9]{4}-OP-[0-9]{3}-TM-[0-9]{3}$" },

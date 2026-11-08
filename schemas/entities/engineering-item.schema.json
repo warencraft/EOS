@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/schemas/entities/engineering-item.schema.json",
+  "title": "EOS EngineeringItem",
+  "description": "Stable, repeatably specifiable engineering item across governed technical releases; not a physical piece or a release.",
+  "type": "object",
+  "required": [
+    "id",
+    "schemaVersion",
+    "recordVersion",
+    "revision",
+    "status",
+    "createdAt",
+    "createdBy",
+    "updatedAt",
+    "updatedBy",
+    "sourceLinks",
+    "changeSummary",
+    "name"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "https://eos.local/schemas/common/identifiers.schema.json#/$defs/EIT",
+      "description": "Stable item identity; not a drawing or external part number."
+    },
+    "schemaVersion": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/schemaVersion",
+      "description": "EOS schema version, not an engineering release."
+    },
+    "recordVersion": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/recordVersion",
+      "description": "EOS record version, not an engineering release."
+    },
+    "revision": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/revision",
+      "description": "EOS record revision, not a drawing issue."
+    },
+    "status": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/status",
+      "description": "Record lifecycle, not manufacturing or release status."
+    },
+    "createdAt": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/createdAt",
+      "description": "Record creation timestamp, not release effectivity."
+    },
+    "createdBy": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/createdBy",
+      "description": "Record creator, not technical release authority."
+    },
+    "updatedAt": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/updatedAt",
+      "description": "Record update timestamp, not release date."
+    },
+    "updatedBy": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/updatedBy",
+      "description": "Last record editor, not release authority."
+    },
+    "sourceLinks": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/sourceLinks",
+      "description": "Evidence for stable identity and naming, not technical requirements or interchangeability."
+    },
+    "changeSummary": {
+      "$ref": "https://eos.local/schemas/common/metadata.schema.json#/properties/changeSummary",
+      "description": "Summary of record changes, not a release history."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable name, not an identity key."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Administrative description, not a specification."
+    },
+    "classifications": {
+      "type": "array",
+      "items": {
+        "$ref": "https://eos.local/schemas/knowledge-core/classification.schema.json"
+      },
+      "description": "Stable item classifications, not variant identity or requirements."
+    }
+  },
+  "additionalProperties": false
+}

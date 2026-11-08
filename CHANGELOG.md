@@ -2,7 +2,7 @@
 
 ## Stabilný diel a technické vydanie
 
-[CDR-0025](docs/contracts/CDR-0025_Part_Identity_and_Drawing_Revision_Boundary_Review.md): rozhodnutie o identite COMPLETE. [CDR-0026](docs/contracts/CDR-0026_Stable_Part_and_Engineering_Release_PreDesign_Review.md): identita a názov EngineeringItem ACCEPTED, kontrakt polí v1 FROZEN (revízia 3). Implementácia NOT STARTED. Prijatá revízia 4 RFC-0003 dopĺňa G-0082/G-0083; bez produkčných zmien.
+[CDR-0027](docs/contracts/CDR-0027_EngineeringItem_Entity_Integration_Closure_Review.md): EngineeringItem v1 COMPLETE lokálne, čaká na publikovanie; EIT Active. Dve platné fixtures, 60 negatívnych prípadov, 287 testov, 25 schém a 243 odkazov. Bez novej závislosti.
 
 ## Machine Entity v1 - 2026-11-06
 
