@@ -59,6 +59,7 @@ Skilly sú v `.agents/skills/<názov>/SKILL.md` (spoločný priečinok pre Codex
 .venv/bin/python -m unittest discover -s tests -v       # celá sada
 .venv/bin/python -m scripts.validation.cli <record.json> <schema_id>
 python scripts/export_viewer.py                         # HTML prehľad → exports/viewer/
+python scripts/job_intake.py check                      # príjem reálnej zákazky (intake/README.md)
 ```
 
 ## Nikdy
@@ -67,4 +68,5 @@ python scripts/export_viewer.py                         # HTML prehľad → expo
 - nevkladaj reálne technické, cenové ani materiálové hodnoty bez zdroja; fixtúry sú fiktívne,
 - nehlás testy ako úspešné, keď chýba `jsonschema` alebo sa nespustili všetky,
 - nemeň Accepted/Approved ADR ani uzavreté CDR; navrhni amendment,
-- necommituj do `main`, nepoužívaj `--force` ani `reset --hard`.
+- necommituj do `main`, nepoužívaj `--force` ani `reset --hard`,
+- necommituj nič z `intake/` (reálne zákazky) a nečítaj obsah ich súborov bez `aiProcessingAllowed: true` v manifeste a výslovného zadania (ADR-0019).

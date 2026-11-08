@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Príjem podkladov reálnej zákazky (ADR-0019 Draft) - 2026-11-06
+
+Pripravené na nahratie prvej reálnej zákazky. Podklady zostávajú lokálne v `intake/`, ktorý git ignoruje; do gitu ide iba nástroj a návod. `scripts/job_intake.py` (new / scan / check) a schéma manifestu `scripts/job_intake_manifest.schema.json`: súpis súborov s SHA-256, kategóriou, klasifikáciou zdroja N/L/P/V, dôvernosťou a súhlasom na spracovanie AI (predvolene nie). Manifest nie je znalostný záznam ani entita Job. Pravidlo v AGENTS.md a CLAUDE.md. Nové `tests/test_job_intake.py` (6 metód, fiktívne súbory v dočasnom priečinku), 4 skúšky citlivosti. 287 → 293 úspešných metód, 0 failures/errors/skipped. Produkčné schémy, validátor a závislosti bez zmien.
+
 ## Stabilný diel a technické vydanie
 
 [CDR-0027](docs/contracts/CDR-0027_EngineeringItem_Entity_Integration_Closure_Review.md): EngineeringItem v1 COMPLETE lokálne, čaká na publikovanie; EIT Active. Dve platné fixtures, 60 negatívnych prípadov, 287 testov, 25 schém a 243 odkazov. Bez novej závislosti.

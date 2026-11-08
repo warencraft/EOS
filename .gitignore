@@ -44,3 +44,6 @@ exports/*
 .env
 .env.*
 !.env.example
+# Reálne zákazky: podklady zostávajú iba lokálne (ADR-0019)
+intake/*
+!intake/README.md

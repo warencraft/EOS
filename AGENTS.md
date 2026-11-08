@@ -26,6 +26,7 @@ Tento súbor je trvalá inštrukcia pre Codex a ďalších agentov pracujúcich 
 - Neimplementuj kalkulačky, kým nie sú schválené dátové kontrakty.
 - Neodstraňuj historické záznamy bez náhrady alebo dôvodu.
 - Nepoužívaj exporty ako autoritatívny zdroj znalostí.
+- Necommituj nič z `intake/` a nečítaj obsah súborov reálnej zákazky, kým manifest nemá `aiProcessingAllowed: true` a používateľ to výslovne nezadá (ADR-0019).
 
 ## Povinné kontroly
 
