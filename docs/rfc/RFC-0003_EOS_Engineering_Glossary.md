@@ -3,10 +3,10 @@
 **Project:** EOS - Engineering Operating System  
 **RFC ID:** RFC-0003  
 **Version:** 0.1  
-**Revision:** 3  
-**Status:** Accepted  
+**Revision:** 4\
+**Status:** Accepted\
 **Author:** Chief Engineering Knowledge Architect + Codex  
-**Last update:** 2026-08-01  
+**Last update:** 2026-11-07\
 **Document basis:** Internal architecture proposal  
 
 ---
@@ -1015,6 +1015,30 @@ Tento RFC:
 - Related concepts: `Reference Catalog`, `Catalog Entry`, `Condition`, `PropertyRecord`.
 - Future implementation notes: Prefix `CLS-xxxxxx` má byť riešený pred `0.2B.2`, nie v tejto revízii.
 
+### G-0082 EngineeringItem
+
+- Identifier: `G-0082`
+- Preferred term: `EngineeringItem`
+- Definition: Jedna stabilná, opakovane špecifikovateľná technická položka naprieč jej riadenými technickými vydaniami.
+- Allowed usage: Označuje tú istú položku aj pred jej prvým vydaním alebo pri odkaze na viaceré jej vydania, ak je kontinuita identity doložená.
+- Not allowed usage: Neoznačuje fyzický vyrobený kus, EngineeringRelease, výkres ani vydanie výkresu, polotovar, zákazkovú položku, obchodný SKU, rodinu výrobkov ani výrobnú trasu.
+- Examples: Dopyty na dve rôzne schválené vydania môžu smerovať k tej istej stabilnej položke.
+- Counterexamples: Prideliť nový EngineeringItem iba preto, že sa zmenilo číslo výkresu.
+- Related concepts: `EngineeringRelease`, `Aggregate Root`, `Identity`, `Classification`, `StockMaterial`.
+- Future implementation notes: Hranice polí v1 určuje [CDR-0026 §19](../contracts/CDR-0026_Stable_Part_and_Engineering_Release_PreDesign_Review.md). Rodina EIT je Candidate; definícia ju neaktivuje.
+
+### G-0083 EngineeringRelease
+
+- Identifier: `G-0083`
+- Preferred term: `EngineeringRelease`
+- Definition: Jedno presné, autorizované technické vydanie práve jedného EngineeringItem. Po uvoľnení označuje nemenný technický základ.
+- Allowed usage: Odkaz na vydanie zachováva presnú definíciu, ktorá bola použitá napríklad pri nacenení alebo kontrole.
+- Not allowed usage: Neoznačuje EOS `recordVersion` ani EOS `revision`, samotný výkres či DrawingRevision, históriu editácií záznamu ani stabilnú identitu EngineeringItem.
+- Examples: Ponuka zostáva viazaná na pôvodné vydanie aj po uvoľnení ďalšieho vydania tej istej položky.
+- Counterexamples: Vyhlásiť auditovanú opravu administratívneho metadáta mimo technického základu za nové technické vydanie.
+- Related concepts: `EngineeringItem`, `Aggregate Root`, `Document`, `Revision`.
+- Future implementation notes: Samostatný koreň agregátu, nie vnorená história položky. EngineeringRelease nie je implementovaný a rodina ERL zostáva Candidate.
+
 ## 5. Terminology Rules
 
 1. Každý autoritatívny pojem má jeden preferovaný názov.
@@ -1078,3 +1102,4 @@ Tieto pojmy alebo oblasti ešte môžu potrebovať samostatné RFC alebo ADR. Ne
 | 2026-07-25 | 0.1 | 1 | Codex | Doplnenie chýbajúcich core pojmov, zjednotenie názvu Engineering Knowledge Layer, uzavretie názvu MeasurementQuality a spresnenie Observation, PropertyRecord, Decision, Snapshot, Relationship, Source Classification a katalógových pojmov pre prípravu Architecture Closure |
 | 2026-08-01 | 0.1 | 2 | Codex | Phase 0.2B.0: prijatie slovníka po splnení ARR podmienok, prijatí ADR-0014 až ADR-0016 a doplnení required prefixov v `EOS-003` Revision 2 |
 | 2026-08-01 | 0.1 | 3 | Codex | Accepted RFC vrátený do Review pre zosúladenie `MeasurementQuality` s RFC-0001 Revision 4; produktová tolerancia odstránená z definície `MeasurementQuality`, requirement/tolerance model odložený; interná kontrola konzistencie splnená a RFC znovu prijaté ako Accepted |
+| 2026-11-07 | 0.1 | 4 | Codex | Accepted → Review podľa ADR-0014: doplnené iba G-0082 a G-0083 podľa prijatých významov v CDR-0026. Po kontrole súladu s CDR-0026 používateľ schválil prechod Review → Accepted. G-0082 a G-0083 sú autoritatívne; pôvodných 81 definícií a stav identifikátorov sa nemenia. |

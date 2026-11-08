@@ -2,7 +2,7 @@
 
 ## Stabilný diel a technické vydanie
 
-[CDR-0025](docs/contracts/CDR-0025_Part_Identity_and_Drawing_Revision_Boundary_Review.md): rozhodnutie o identite COMPLETE. [CDR-0026](docs/contracts/CDR-0026_Stable_Part_and_Engineering_Release_PreDesign_Review.md): názvy a rodiny ID schválené, SPER-0004 uzavreté. Odporúčané poradie: EngineeringItem v1, jeho integračné uzatvorenie, EngineeringRelease v1, jeho integračné uzatvorenie. Implementácia NOT STARTED.
+[CDR-0025](docs/contracts/CDR-0025_Part_Identity_and_Drawing_Revision_Boundary_Review.md): rozhodnutie o identite COMPLETE. [CDR-0026](docs/contracts/CDR-0026_Stable_Part_and_Engineering_Release_PreDesign_Review.md): identita a názov EngineeringItem ACCEPTED, kontrakt polí v1 FROZEN (revízia 3). Implementácia NOT STARTED. EngineeringRelease nie je implementovaný. EIT aj ERL zostávajú Candidate.
 
 ## Phase 0.2C.4: Machine v1
 
