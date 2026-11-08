@@ -1,0 +1,52 @@
+# Automatické testy EOS pri každom pull requeste a pushi do main (ADR-0020).
+# Etapa A: iba Python, štandardná knižnica a jsonschema (TECH_STACK.md).
+name: tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unittest:
+    name: unittest (${{ matrix.os }}, Python ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    env:
+      # Iba kódovanie konzoly (diakritika vo výpisoch na Windows); čítanie súborov sa nemení.
+      PYTHONIOENCODING: utf-8
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            python: "3.11"
+          - os: ubuntu-latest
+            python: "3.12"
+          - os: windows-latest
+            python: "3.12"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Inštalácia projektu a jsonschema
+        run: python -m pip install -e .
+
+      - name: Kontrola, že jsonschema je dostupné
+        run: python -c "from importlib.metadata import version; import jsonschema; print('jsonschema', version('jsonschema'))"
+
+      - name: Celá testovacia sada
+        run: python -m unittest discover -s tests -v
+
+      - name: Žiadne podklady reálnej zákazky v gite (ADR-0019)
+        run: python scripts/job_intake.py check

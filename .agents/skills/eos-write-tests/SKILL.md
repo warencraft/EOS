@@ -1,84 +1,119 @@
 ---
 name: eos-write-tests
-description: Ako písať a meniť testy a fixtúry v EOS, aby sa nerozrastali a neduplikovali. Použi vždy pred pridaním testu, fixtúry alebo neplatného prípadu, aj pri novej entite.
+description: Ako písať a meniť testy a fixtúry v EOS podľa ADR-0017 (spoločný profil entít, tabuľky neplatných prípadov s presnou diagnostikou). Použi vždy pred pridaním testu, fixtúry alebo neplatného prípadu, aj pri novej entite.
 ---
 
-# Písanie testov v EOS
+# Testy a fixtúry v EOS (ADR-0017)
 
-Cieľ: **najmenej testov, ktoré chránia najviac pravidiel.** Testy sa v minulosti rozrástli na 671 súborov fixtúr a 130 KB v jednom súbore (pozri ADR-0017). Tento skill zabraňuje, aby sa to zopakovalo.
+Platí `adr/ADR-0017_Shared_Entity_Test_Architecture.md` a uzavretie migrácie v CDR-0022. Vzor pre novú entitu: Machine (CDR-0023) a EngineeringItem (CDR-0027).
 
-## 0. Najprv zisti, čo už existuje
+## 0. Najprv sa opýtaj
 
-Pred napísaním testu odpovedz na otázky:
-
-1. **Pokrýva to už spoločný test?** `tests/test_entity_profiles.py` overuje pre každú entitu: uzavretú schému, centrálne ID, common metadata, presnú množinu polí, minimálnu fixtúru, root `sourceLinks` pri Review/Approved, index, všetky platné a neplatné fixtúry a generované negatívne prípady (chýbajúce alebo `null` povinné pole, zlý prefix ID, prázdny `name`, neznáme pole, koreň typu pole). **Tieto veci znova nepíš.**
-2. **Je to len nový neplatný vstup?** Potom je to **riadok v tabuľke**, nie nový test (časť 2).
+1. **Pokrýva to už spoločný profil?** `tests/test_entity_profiles.py` overuje pre každú entitu tvar schémy, povinné a voliteľné polia, centrálne ID, index, platné fixtúry, root provenance a negatívne prípady. Ak áno, nepíš nový test.
+2. **Je to len nový neplatný vstup?** Potom je to **riadok v tabuľke** `tests/fixtures/invalid-cases/<family>.json`, nie nový test.
 3. **Existuje podobný test inde?** `grep -rn "<pole alebo errorCode>" tests/`. Rozšír existujúci test cez `subTest`, nevytváraj kópiu.
 
 ## 1. Kam čo patrí
 
 | Čo testuješ | Kam |
 | --- | --- |
-| nová entita, spoločné kritériá | riadok v `ENTITY_PROFILES` v `tests/test_entity_profiles.py` |
-| neplatný záznam (zlá hodnota, chýbajúce pole, odložené pole) | riadok v `tests/fixtures/invalid-cases/<family>.json` (ADR-0017) |
-| platný príklad kontraktu | `tests/fixtures/valid/<directory>/<family>-<name>-valid.json` |
-| pravidlo **iba pre jednu entitu** (napr. CDR výnimka) | `tests/test_<entity>_validation.py` |
-| validačný engine, `$ref`, formáty | `tests/test_validation_core.py` |
-| knowledge core, katalógy | príslušný `test_knowledge_core_*.py`, `test_catalog_*.py` |
-| spoločné konštanty a pomocné funkcie | `tests/validation_support.py` (nie kópia v každom súbore) |
+| spoločné kritériá entity | riadok v `ENTITY_PROFILES` v `tests/test_entity_profiles.py` |
+| neplatný vstup s jedným dôvodom zlyhania | riadok v `cases` v `tests/fixtures/invalid-cases/<family>.json` |
+| pole, ktoré CDR odkladá alebo zakazuje | názov poľa v zozname `deferred` tej istej tabuľky |
+| platný príklad odlišného tvaru | `tests/fixtures/valid/entities/<family>-<case>-valid.json` + názov v `validCases` profilu |
+| CLS lifecycle, nenájdené referencie, nezávislosť root a claim zdrojov | zdedené kontroly z `tests/owned_claim_checks.py` (`OwnedClassificationChecks`, `OwnedClaimChecks`) |
+| pravidlo iba pre jednu entitu (výnimka z CDR) | `tests/test_<entity>_validation.py` |
+| kontextová validácia voči katalógom | `tests/test_catalog_validation.py` |
+| jadro validátora, knowledge core, katalógové schémy, referencie | existujúce testy v `tests/test_validation.py`; nový súbor iba pre novú oblasť |
+| cesty a načítanie fixtúr | `tests/validation_support.py` (`entity_fixture`, `load_json`), nie kópia v každom súbore |
+| nástroj na príjem zákazky | `tests/test_job_intake.py` (iba fiktívne súbory v dočasnom priečinku) |
 
-Nový testovací súbor vytvor iba pre novú oblasť. Pridaj ho do tabuľky v `tests/README.md`.
+## 2. Riadok v `ENTITY_PROFILES`
 
-## 2. Neplatné prípady = riadky tabuľky
-
-```json
-{"name": "id-lowercase", "base": "minimal-draft", "ops": [["set", "/id", "mac-9001"]]}
+```python
+"machine": {
+    "validCases": ["minimal-draft", "populated-source-links"],
+    "idFamily": "MAC", "required": COMMON | {"name"},
+    "optional": {"description", "notes", "properties", "classifications"},
+    "owned": {"properties": "property-record", "classifications": "classification"},
+    "indexDef": "machine", "collection": None, "deferredValue": "fictional",
+},
 ```
 
-- Jeden prípad = **jeden dôvod zlyhania.** Ak meníš dve veci naraz, sú to dva riadky.
-- `base` je vždy najmenšia platná fixtúra, ktorá stačí (`minimal-draft`).
-- Pole, ktoré CDR odkladá, patrí do bloku `deferred`, nie ako ručný prípad.
-- `record` (celý záznam) použi iba pre malé value objects alebo koreň typu pole.
+- `required` a `optional` sa berú presne z CDR (zmrazený zoznam polí), nie zo schémy. Profil je nezávislé očakávanie, ktoré schému kontroluje.
+- `validCases` = presný zoznam platných fixtúr rodiny. Každá musí existovať a prejsť validáciou.
+- `owned`: pole → vnorený kontrakt (`property-record`, `classification`).
+- `deferredValue` = hodnota pre všetky odložené polia; `deferredValues` iba pre polia s inou hodnotou.
+- `caseBase` iba výnimočne (Material, `legacy-draft`); nová entita ho nepoužíva.
+
+## 3. Tabuľka neplatných prípadov
+
+```json
+{
+  "cases": [
+    {"name":"eit-too-short","base":"minimal-draft","ops":[["set","/id","EIT-901"]],"expect":{"errorCode":"schema_validation.pattern","path":"$.id"}}
+  ],
+  "deferred": ["properties", "notes", "releases"]
+}
+```
+
+- Kľúče tabuľky sú presne `cases` a `deferred`; `cases` nesmie byť prázdne.
+- Každý riadok má **presne jednu** operáciu: `["set", "/json/pointer", hodnota]` alebo `["remove", "/json/pointer"]`. Viac zmien = viac riadkov.
+- Každý riadok má `expect` s **jedným** `errorCode` a `path`. Runner porovná presnú množinu diagnostík (kód, cesta, recordId, referencedId, severity, kategória), nie iba to, že validácia zlyhala.
+- `base` je názov platnej fixtúry tej istej rodiny (`minimal-draft`, `populated-source-links`…).
+- **Negeneruj ručne** to, čo runner vytvára sám pre každú entitu: `missing-<pole>` a `<pole>-null` pre každé povinné pole, `name-empty`, `generic-wrong-family`, `generic-unknown`, `array`, `empty-object`, pri `properties` aj `invalid-property-record`.
+- Zložený vstup s viacerými diagnostikami nepatrí do tabuľky; ak je potrebný pre všetky entity, doplní sa do `negative_cases` v `test_entity_profiles.py`.
 - **Nikdy** nevytváraj samostatné `*-invalid.json` súbory.
 
-## 3. Platné fixtúry
+## 4. Platné fixtúry
 
-- Iba tie, ktoré ukazujú **odlišný tvar** kontraktu (minimálna, plná, s viacerými claims…). Nie varianty, ktoré sa líšia len hodnotou.
-- Spoločný test vyžaduje `<family>-minimal-draft-valid.json` a `<family>-populated-source-links-valid.json`.
-- Hodnoty sú **fiktívne a netechnické**: ID z rozsahu `-9xxx`, názvy typu „Fiktívny stroj A“. Žiadne reálne materiály, normy, rozmery, časy ani ceny.
+- Povinné sú `<family>-minimal-draft-valid.json` (iba povinné polia) a `<family>-populated-source-links-valid.json` (root zdroj, prípadne klasifikácia a tvrdenie s vlastným zdrojom).
+- Ďalšie iba pre **odlišný tvar** kontraktu, nie pre inú hodnotu. Machine aj EngineeringItem majú iba tieto dve.
+- Hodnoty sú **fiktívne a netechnické**: ID z rozsahu `-9xxx` a `-98xxxx`, žiadne reálne materiály, normy, rozmery, časy ani ceny.
 
-## 4. Ako písať samotný test
+## 5. Vlastný test entity
 
-- **Testuj správanie cez verejné API** (`EosValidator.validate`, `validate_with_context`), nie vnútorné funkcie.
-- **Over presný výsledok:** `errorCode` a `path`, prípadne `recordId` a `referencedId`. Nie iba `assertFalse(result.ok)`.
-- **Matice cez `subTest`:** stavy × politiky, flagy, viac fixtúr. Nie päť kópií tej istej metódy.
-- **Názov hovorí pravidlo:** `test_context_missing_property_keeps_nested_path_and_machine_id`, nie `test_case_7`.
-- **Docstring alebo komentár odkazuje na zdroj pravidla:** `# CDR-0021 §64.8`.
-- Netestuj text schémy (napr. presný reťazec `$ref`), ak to už robí spoločný test alebo to nie je architektonické pravidlo.
-- **Nepridávaj nové kontroly presného počtu súborov** (`assertEqual(len(glob), 63)`). Pri každej zmene sa musia ručne prepisovať. Existujúce ponechaj a pri zmene ich uprav.
+```python
+class MachineValidationTests(OwnedClaimChecks, unittest.TestCase):
+    family = "machine"
+    uri = BASE + "entities/machine.schema.json"
+    claim_fixture = "populated-source-links"
+```
 
-## 5. Každý nový test musí vedieť zlyhať
+- Zdeď `OwnedClassificationChecks` (iba klasifikácie) alebo `OwnedClaimChecks` (klasifikácie a PropertyRecord). Nepíš tieto kontroly znova.
+- Pridaj iba pravidlá špecifické pre entitu z CDR. Docstring triedy odkazuje na CDR (`"""CDR-0021: …"""`).
+- Over presnú diagnostiku cez `diagnostics(result)`: `(errorCode, path, recordId, referencedId, severity)`. Nie iba `assertFalse(result.ok)`.
+- Matice cez `subTest` (stavy × politiky, viac vstupov), nie kópie metód.
+- Testuj cez verejné API (`EosValidator.validate`, `validate_with_context`, `validate_json_file`).
 
-Pred commitom dočasne pokaz to, čo test chráni (zmeň pravidlo vo validátore alebo hodnotu vo fixtúre), a over, že test **zlyhá**. Potom zmenu vráť. Test, ktorý nikdy nezlyhá, je zbytočný.
+## 6. Skúšky citlivosti (povinné)
 
-## 6. Nikdy
+Každý nový alebo zmenený test musí vedieť zlyhať. Pred dokončením:
+
+1. Dočasne, **iba v pamäti testovacieho procesu**, vnes poruchu, ktorú má test zachytiť (napr. povol odložené pole, zmeň prefix ID, poškoď vnorenú cestu, strať `recordId`).
+2. Over, že zlyhá **konkrétny subTest**, nie chyba spustenia.
+3. Poruchu odstráň a spusti čistú sadu.
+4. Zapíš do CDR tabuľku `| # | Vnesená porucha | Pozorovaný signál |` (vzor: CDR-0022, CDR-0027).
+
+## 7. Nikdy
 
 - neoslabuj test ani schému, aby testy prešli,
-- nemaž ani nepreskakuj (`skip`) existujúce testy bez dôvodu zapísaného v CDR alebo ADR,
-- nekopíruj pomocné funkcie a konštanty medzi súbormi (patria do `validation_support.py`),
-- nepridávaj `pytest`, `hypothesis` ani inú testovaciu knižnicu (TECH_STACK.md).
+- neodvodzuj očakávania z výstupu testovanej schémy; berú sa z CDR,
+- nemaž ani nepreskakuj (`skip`) testy bez dôvodu zapísaného v CDR alebo ADR,
+- nekopíruj pomocné funkcie a konštanty medzi súbormi,
+- nepridávaj `pytest`, `hypothesis` ani inú testovaciu knižnicu (TECH_STACK.md),
+- nepridávaj kontroly presného počtu súborov (`assertEqual(len(glob), 63)`).
 
-## 7. Strážne limity
+## 8. Strážne limity
 
-Ak niečo z tohto platí, **zastav sa a navrhni zjednodušenie** skôr, než budeš pokračovať:
+Zastav sa a navrhni zjednodušenie, ak:
 
-- testovací súbor presiahne ~25 KB alebo ~600 riadkov,
-- jedna entita má viac ako ~10 platných fixtúr,
-- nový test opakuje viac ako 5 riadkov z iného testu,
-- nová entita potrebuje vo vlastnom súbore viac ako ~15 testov (väčšinu má pokryť `ENTITY_PROFILES`).
+- vlastný test entity má viac ako ~10 metód (väčšinu má pokryť profil a zdedené kontroly),
+- entita potrebuje viac ako ~3 platné fixtúry,
+- nový test opakuje viac ako 5 riadkov z iného testu.
 
-## 8. Na záver
+## 9. Na záver
 
-1. Spusti celú sadu (`eos-run-tests`).
-2. Aktuálne počty: `python scripts/project_status.py`. Ak sa zmenili, aktualizuj `tests/README.md` a `CHANGELOG.md`.
-3. V hlásení uveď: koľko testov a prípadov pribudlo, kam a prečo; ktoré veci pokryl spoločný test a preto sa nepísali.
+1. Spusti celú sadu (`eos-run-tests`). Počet testov ber z výstupu `Ran N tests`.
+2. Nový počet a skúšky citlivosti zapíš do CDR, sekcie v `tests/README.md` (formát: tabuľka `Súbor | Overenie`) a `CHANGELOG.md`.
+3. V hlásení uveď: koľko metód a negatívnych prípadov pribudlo, čo pokryl spoločný profil a preto sa nepísalo.

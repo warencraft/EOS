@@ -28,7 +28,7 @@ Vždy spúšťaj celú sadu, nie iba testy, ktoré si menil.
 
 ## 3. Vyhodnotenie
 
-- Porovnaj počet testov s posledným známym stavom: `python scripts/project_status.py` (ak skript existuje), inak posledný záznam v `CHANGELOG.md`.
+- Porovnaj počet testov (`Ran N tests`) s posledným záznamom v `CHANGELOG.md` a v hornej sekcii `tests/README.md`. Každú zmenu počtu vysvetli.
 - Počet má zostať rovnaký, alebo narásť iba o testy, ktoré si pridal. Ak klesol, niečo sa prestalo spúšťať. Zisti prečo.
 - `skipped` > 0 nie je úspech, ak nejde o zámerný a zdokumentovaný skip.
 - Pri zlyhaní oprav príčinu. Neoslabuj test ani schému len preto, aby prešli.

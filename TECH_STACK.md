@@ -3,9 +3,9 @@
 **Project:** EOS - Engineering Operating System  
 **Document ID:** (pridelí sa po schválení, napr. `EOS-011`)  
 **Version:** 0.2  
-**Revision:** 0  
+**Revision:** 1  
 **Status:** Approved  
-**Last update:** 2026-11-04  
+**Last update:** 2026-11-08  
 **Document basis:** platné ADR + ADR-0018  
 
 ---
@@ -87,7 +87,7 @@ Kým nie je schválený presun, nový kód patrí do `scripts/` podľa existujú
 
 | Nástroj | Účel | Stav |
 | --- | --- | --- |
-| GitHub Actions | `unittest` pri každom pushi a PR (Python 3.11 a 3.12) | návrh |
+| GitHub Actions | `unittest` a kontrola `intake/` pri každom PR a pushi do `main` (Ubuntu 3.11, 3.12; Windows 3.12), `.github/workflows/tests.yml` | zavedené, ADR-0020 (Draft) |
 | `ruff` | jednotný formát a lint, iba ako dev závislosť | návrh |
 | `gh` (GitHub CLI) | pull requesty z príkazového riadka | odporúčané |
 
@@ -115,3 +115,4 @@ py -m venv .venv
 | --- | --- | --- | --- | --- |
 | 2026-11-04 | 0.1 | 0 | Návrh (Claude) | Zhrnutie platných ADR + návrhy P1–P5 |
 | 2026-11-04 | 0.2 | 0 | Software Architect + Claude | Cieľová architektúra po etapách A–E podľa ADR-0018 (Accepted) |
+| 2026-11-08 | 0.2 | 1 | Software Architect + Claude | GitHub Actions zavedené podľa ADR-0020 (§7) |

@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Automatické testy a aktualizované postupy agentov - 2026-11-08
+
+GitHub Actions (`.github/workflows/tests.yml`, ADR-0020 Draft) spustí pri každom pull requeste a pushi do `main` celú sadu na Ubuntu s Pythonom 3.11 a 3.12 a na Windows s Pythonom 3.12, plus kontrolu, že v gite nie sú podklady reálnej zákazky (ADR-0019). TECH_STACK.md §7: GitHub Actions zavedené. Skilly `eos-write-tests`, `eos-schema-change` a `eos-run-tests` zosúladené so skutočným postupom po ADR-0017, CDR-0022, CDR-0023 a CDR-0027: tabuľky s presným `expect`, `deferred` ako zoznam polí, kľúče profilu (`validCases`, `deferredValues`), zdedené kontroly z `owned_claim_checks.py`, prechod prefixu Candidate → Active, uzatváracie CDR so skúškami citlivosti; odstránené odkazy na neexistujúce súbory. Testy, schémy, validátor a závislosti bez zmien: 293 úspešných, 0 failures/errors/skipped.
+
 ## Príjem podkladov reálnej zákazky (ADR-0019 Draft) - 2026-11-06
 
 Pripravené na nahratie prvej reálnej zákazky. Podklady zostávajú lokálne v `intake/`, ktorý git ignoruje; do gitu ide iba nástroj a návod. `scripts/job_intake.py` (new / scan / check) a schéma manifestu `scripts/job_intake_manifest.schema.json`: súpis súborov s SHA-256, kategóriou, klasifikáciou zdroja N/L/P/V, dôvernosťou a súhlasom na spracovanie AI (predvolene nie). Manifest nie je znalostný záznam ani entita Job. Pravidlo v AGENTS.md a CLAUDE.md. Nové `tests/test_job_intake.py` (6 metód, fiktívne súbory v dočasnom priečinku), 4 skúšky citlivosti. 287 → 293 úspešných metód, 0 failures/errors/skipped. Produkčné schémy, validátor a závislosti bez zmien.
