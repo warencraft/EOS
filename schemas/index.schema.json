@@ -23,6 +23,7 @@
     "classificationCatalogEntry": { "$ref": "https://eos.local/schemas/catalogs/classification-catalog-entry.schema.json" },
     "material": { "$ref": "https://eos.local/schemas/entities/material.schema.json" },
     "supplier": { "$ref": "https://eos.local/schemas/entities/supplier.schema.json" },
+    "engineeringItem": { "$ref": "https://eos.local/schemas/entities/engineering-item.schema.json" },
     "manufacturingProcess": { "$ref": "https://eos.local/schemas/entities/manufacturing-process.schema.json" },
     "machine": { "$ref": "https://eos.local/schemas/entities/machine.schema.json" }
   },

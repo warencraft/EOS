@@ -1,0 +1,11 @@
+{
+  "cases": [
+    {"name":"eit-too-short","base":"minimal-draft","ops":[["set","/id","EIT-901"]],"expect":{"errorCode":"schema_validation.pattern","path":"$.id"}},
+    {"name":"eit-too-long","base":"minimal-draft","ops":[["set","/id","EIT-90001"]],"expect":{"errorCode":"schema_validation.pattern","path":"$.id"}},
+    {"name":"release-not-item","base":"minimal-draft","ops":[["set","/id","ERL-9001"]],"expect":{"errorCode":"schema_validation.pattern","path":"$.id"}},
+    {"name":"description-empty","base":"minimal-draft","ops":[["set","/description",""]],"expect":{"errorCode":"schema_validation.minLength","path":"$.description"}},
+    {"name":"classifications-not-array","base":"minimal-draft","ops":[["set","/classifications",{}]],"expect":{"errorCode":"schema_validation.type","path":"$.classifications"}},
+    {"name":"invalid-classification-id","base":"populated-source-links","ops":[["set","/classifications/0/classificationId","EIT-9001"]],"expect":{"errorCode":"schema_validation.pattern","path":"$.classifications[0].classificationId"}}
+  ],
+  "deferred": ["properties","notes","releases","engineeringReleases","engineeringReleaseIds","releaseHistory","externalAliases","drawingRevision","drawingNumber","customerPartNumber","supplierPartNumber","sku","materialRequirement","dimensions","tolerances","surfaceRequirements","heatTreatment","operations","processIds","machineIds","quantity","price","cost","stock","bom"]
+}

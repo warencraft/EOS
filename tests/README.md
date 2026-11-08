@@ -1,5 +1,14 @@
 # tests
 
+## EngineeringItem v1
+
+| Súbor | Overenie |
+| --- | --- |
+| test_entity_profiles.py a [tabuľka](fixtures/invalid-cases/engineering-item.json) | Dve fixtures, nezávislá kontrola 12+2 polí, 60 negatívnych prípadov a koreňový pôvod. |
+| test_engineering_item_validation.py a owned_claim_checks.py | Tri testové metódy: stav CLS, chýbajúci druhý odkaz a oddelenie dôkazov. |
+
+Úplná sada: 287 úspešných testov. [Dôkazy vrátane mutácií](../docs/contracts/CDR-0027_EngineeringItem_Entity_Integration_Closure_Review.md).
+
 ## Regresie Machine
 
 test_machine_validation.py overuje integráciu Machine. owned_claim_checks.py obsahuje spoločné kontroly pre Material a Machine. Testovací profil pridáva dve fiktívne fixtures a 107 negatívnych prípadov; cielené testy chránia aj koreňové MAC ID a vnorené cesty po PR #7. Podrobnosti: [CDR-0023](../docs/contracts/CDR-0023_Machine_Entity_Integration_Closure_Review.md). Nižšie sú historické záznamy.

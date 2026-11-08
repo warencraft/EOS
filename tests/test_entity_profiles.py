@@ -10,6 +10,13 @@ from tests.validation_support import BASE, FIXTURES, INDEX, VALID, entity_fixtur
 
 COMMON = set("id schemaVersion recordVersion revision status createdAt createdBy updatedAt updatedBy sourceLinks changeSummary".split())
 ENTITY_PROFILES = {
+    "engineering-item": {
+        "validCases": ["minimal-draft", "populated-source-links"],
+        "idFamily": "EIT", "required": COMMON | {"name"},
+        "optional": {"description", "classifications"},
+        "owned": {"classifications": "classification"}, "indexDef": "engineeringItem",
+        "collection": None, "deferredValue": "fictional",
+    },
     "machine": {
         "validCases": ["minimal-draft", "populated-source-links"],
         "idFamily": "MAC", "required": COMMON | {"name"},
@@ -147,7 +154,7 @@ class EntityProfileTests(unittest.TestCase):
                 self.assertEqual(set(entity_fixture(family)), profile["required"])
                 self.assertTrue(entity_fixture(family, "populated-source-links")["sourceLinks"])
                 self.assertEqual(schema["properties"]["id"]["$ref"], BASE + "common/identifiers.schema.json#/$defs/" + profile["idFamily"])
-                for field in COMMON - {"id"} | {"notes"}:
+                for field in COMMON - {"id"} | ({"notes"} & profile["optional"]):
                     self.assertEqual(schema["properties"][field]["$ref"], BASE + "common/metadata.schema.json#/properties/" + field)
                 for field, contract in profile["owned"].items():
                     self.assertEqual(schema["properties"][field]["items"]["$ref"], BASE + f"knowledge-core/{contract}.schema.json")

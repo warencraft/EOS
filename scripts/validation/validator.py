@@ -86,6 +86,7 @@ CLASSIFICATION_CATALOG_ENTRY_SCHEMA_ID = "https://eos.local/schemas/catalogs/cla
 MATERIAL_SCHEMA_ID = "https://eos.local/schemas/entities/material.schema.json"
 MACHINE_SCHEMA_ID = "https://eos.local/schemas/entities/machine.schema.json"
 SUPPLIER_SCHEMA_ID = "https://eos.local/schemas/entities/supplier.schema.json"
+ENGINEERING_ITEM_SCHEMA_ID = "https://eos.local/schemas/entities/engineering-item.schema.json"
 MANUFACTURING_PROCESS_SCHEMA_ID = "https://eos.local/schemas/entities/manufacturing-process.schema.json"
 INDEX_SCHEMA_ID = "https://eos.local/schemas/index.schema.json"
 
@@ -109,6 +110,9 @@ EMBEDDED_CONTRACT_FIELDS: dict[str, dict[str, tuple[str, bool]]] = {
         "valueRange": (VALUE_RANGE_SCHEMA_ID, False),
         "measurementQuality": (MEASUREMENT_QUALITY_SCHEMA_ID, False),
         "conditions": (CONDITION_SCHEMA_ID, True),
+    },
+    ENGINEERING_ITEM_SCHEMA_ID: {
+        "classifications": (CLASSIFICATION_SCHEMA_ID, True),
     },
     SUPPLIER_SCHEMA_ID: {
         "classifications": (CLASSIFICATION_SCHEMA_ID, True),
@@ -486,6 +490,7 @@ class EosValidator:
             MATERIAL_SCHEMA_ID,
             MACHINE_SCHEMA_ID,
             SUPPLIER_SCHEMA_ID,
+            ENGINEERING_ITEM_SCHEMA_ID,
             MANUFACTURING_PROCESS_SCHEMA_ID,
         }:
             self._validate_source_links_rule(instance, result, has_verifiable_claims=has_verifiable_claims)
@@ -545,7 +550,7 @@ class EosValidator:
                 has_verifiable_claims=True,
                 path=path,
             )
-        elif schema_id in {MATERIAL_SCHEMA_ID, MACHINE_SCHEMA_ID, SUPPLIER_SCHEMA_ID, MANUFACTURING_PROCESS_SCHEMA_ID}:
+        elif schema_id in {MATERIAL_SCHEMA_ID, MACHINE_SCHEMA_ID, SUPPLIER_SCHEMA_ID, ENGINEERING_ITEM_SCHEMA_ID, MANUFACTURING_PROCESS_SCHEMA_ID}:
             self._validate_source_links_rule(
                 instance,
                 result,
@@ -610,7 +615,7 @@ class EosValidator:
                 f"{path}.classificationId",
                 record_id,
             )
-        elif schema_id in {SUPPLIER_SCHEMA_ID, MANUFACTURING_PROCESS_SCHEMA_ID}:
+        elif schema_id in {SUPPLIER_SCHEMA_ID, ENGINEERING_ITEM_SCHEMA_ID, MANUFACTURING_PROCESS_SCHEMA_ID}:
             for index, child in enumerate(instance.get("classifications", [])):
                 self._validate_catalog_contract(
                     child,

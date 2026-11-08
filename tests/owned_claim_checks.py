@@ -9,11 +9,32 @@ def diagnostics(result):
     return [(e.errorCode, e.path, e.recordId, e.referencedId, e.severity) for e in result.errors]
 
 
-class OwnedClaimChecks:
+class OwnedClassificationChecks:
     @classmethod
     def setUpClass(cls):
         cls.validator = EosValidator()
 
+    def test_cls_lifecycle_matrix(self):
+        for status in ("Draft", "Review", "Approved", "Deprecated", "Archived"):
+            data = load_catalog_data()
+            entry = data["classificationEntries"][0]
+            entry["status"] = status
+            for policy in (CatalogLifecyclePolicy.DEFAULT, CatalogLifecyclePolicy.AUTHORING):
+                with self.subTest(status=status, policy=policy):
+                    record = {**entity_fixture(self.family), "classifications": [classification(entry["id"])]}
+                    result = self.validator.validate_with_context(record, self.uri, ValidationContext(build_registry(data), policy))
+                    allowed = status in {"Approved", "Deprecated"} or (
+                        policy == CatalogLifecyclePolicy.AUTHORING and status in {"Draft", "Review"})
+                    expected = []
+                    if not allowed or status == "Deprecated":
+                        code = "deprecated_reference" if allowed else "catalog_status_not_allowed"
+                        expected = [("catalog_validation." + code, "$.classifications[0].classificationId",
+                                     record["id"], entry["id"], "warning" if allowed else "error")]
+                    self.assertEqual(diagnostics(result), expected)
+                    self.assertEqual(result.ok, allowed)
+
+
+class OwnedClaimChecks(OwnedClassificationChecks):
     def test_unresolved_reference_has_no_dependent_diagnostics(self):
         ctx = ValidationContext(build_registry())
         for field, child, path, ref in (
@@ -41,22 +62,3 @@ class OwnedClaimChecks:
                     ("application_validation.source_links_required", "$.sourceLinks", record["id"], None, "error")]
                 self.assertEqual(diagnostics(result), expected)
                 self.assertEqual(data["properties"][0]["sourceLinks"], child)
-
-    def test_cls_lifecycle_matrix(self):
-        for status in ("Draft", "Review", "Approved", "Deprecated", "Archived"):
-            data = load_catalog_data()
-            entry = data["classificationEntries"][0]
-            entry["status"] = status
-            for policy in (CatalogLifecyclePolicy.DEFAULT, CatalogLifecyclePolicy.AUTHORING):
-                with self.subTest(status=status, policy=policy):
-                    record = {**entity_fixture(self.family), "classifications": [classification(entry["id"])]}
-                    result = self.validator.validate_with_context(record, self.uri, ValidationContext(build_registry(data), policy))
-                    allowed = status in {"Approved", "Deprecated"} or (
-                        policy == CatalogLifecyclePolicy.AUTHORING and status in {"Draft", "Review"})
-                    expected = []
-                    if not allowed or status == "Deprecated":
-                        code = "deprecated_reference" if allowed else "catalog_status_not_allowed"
-                        expected = [("catalog_validation." + code, "$.classifications[0].classificationId",
-                                     record["id"], entry["id"], "warning" if allowed else "error")]
-                    self.assertEqual(diagnostics(result), expected)
-                    self.assertEqual(result.ok, allowed)

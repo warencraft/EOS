@@ -1,5 +1,9 @@
 # schemas
 
+## EngineeringItem v1
+
+[Schéma stabilnej technickej položky](entities/engineering-item.schema.json) používa centrálne EIT a spoločné metadáta. Jediný vnorený doménový kontrakt je Classification; bez vlastností technického vydania a spätnej kolekcie vydaní. Index poskytuje iba definíciu engineeringItem. [Integračné uzatvorenie](../docs/contracts/CDR-0027_EngineeringItem_Entity_Integration_Closure_Review.md).
+
 ## Machine v1
 
 entities/machine.schema.json: centrálne MAC, spoločné metadáta a name; voliteľné description, classifications, properties a notes. Objaviteľná cez $defs.machine bez novej kolekcie. Podrobnosti: [CDR-0023](../docs/contracts/CDR-0023_Machine_Entity_Integration_Closure_Review.md). Nižšie sú historické záznamy.
