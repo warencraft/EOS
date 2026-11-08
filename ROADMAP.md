@@ -2,7 +2,7 @@
 
 ## Stabilný diel a technické vydanie
 
-[CDR-0027](docs/contracts/CDR-0027_EngineeringItem_Entity_Integration_Closure_Review.md): EngineeringItem v1 COMPLETE lokálne, čaká na publikovanie; EIT Active. EngineeringRelease NOT STARTED; ERL zostáva Candidate.
+[CDR-0027](docs/contracts/CDR-0027_EngineeringItem_Entity_Integration_Closure_Review.md): EngineeringItem v1 COMPLETE, publikovaný v PR #12; EIT Active. [CDR-0028](docs/contracts/CDR-0028_EngineeringRelease_v1_Contract_Freeze_and_Implementation_Readiness_Review.md): kontrakt EngineeringRelease FROZEN, implementácia NOT STARTED, ERL Candidate. Ďalšou možnou etapou je osobitne schválená implementácia, nie aktivácia ERL v tomto kroku.
 
 ## Phase 0.2C.4: Machine v1
 

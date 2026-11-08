@@ -2,7 +2,7 @@
 
 ## Stabilný diel a technické vydanie
 
-[CDR-0027](docs/contracts/CDR-0027_EngineeringItem_Entity_Integration_Closure_Review.md): EngineeringItem v1 COMPLETE lokálne, čaká na publikovanie; EIT Active. Dve platné fixtures, 60 negatívnych prípadov, 287 testov, 25 schém a 243 odkazov. Bez novej závislosti.
+[CDR-0027](docs/contracts/CDR-0027_EngineeringItem_Entity_Integration_Closure_Review.md): EngineeringItem v1 COMPLETE, publikovaný v PR #12; EIT Active. [CDR-0028](docs/contracts/CDR-0028_EngineeringRelease_v1_Contract_Freeze_and_Implementation_Readiness_Review.md): kontrakt EngineeringRelease FROZEN, implementácia NOT STARTED, ERL Candidate. Revízia 1 uzatvára ER-0001 až ER-0005: 14 povinných koreňových polí, žiadne voliteľné; presnosť autorizácie a podklady podľa zdroja.
 
 ## Machine Entity v1 - 2026-11-06
 
