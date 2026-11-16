@@ -20,6 +20,7 @@ EOS je interný inžiniersky znalostný systém pre strojársku výrobu a cenov�
 ## Na čom programujeme
 
 - **Aktuálna etapa: A – Kontrakty.** Iba Python + štandardná knižnica + `jsonschema`. Dáta sú JSON súbory, testy `unittest`.
+- **Výnimka UI v0 (ADR-0021):** `scripts/web/` (FastAPI + Jinja + HTMX) a `scripts/calc/` (pracovná kalkulácia, import šablóny). Kalkulácia nie je kontrakt EOS; jej formát je `scripts/calc/kalkulacia.schema.json` a súbory sú v `intake/_eos/` mimo gitu. Návod: `docs/manual/UI.md`.
 - Ďalšie etapy (SQLite, kalkulátory, Excel, FastAPI + HTMX, AI) sú v `TECH_STACK.md` §3. **Nepoužívaj ich, kým Software Architect nezmení etapu.**
 - JSON Schema v `schemas/` je jediný zdroj pravdy o tvare dát. Nevytváraj paralelné modely (Pydantic, ORM, dataclasses ako náhradu).
 - Nová závislosť smie pribudnúť iba vtedy, ak patrí do aktuálnej etapy. Zapíš ju do `pyproject.toml` aj `TECH_STACK.md`.

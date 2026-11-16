@@ -4,6 +4,8 @@
 
 | Súbor | Overenie |
 | --- | --- |
+| test_kalkulacia.py | Pracovná kalkulácia (ADR-0021): výpočet, sadzby, porovnanie s ponukou, história zmien, formát; import fiktívnej šablóny .xlsx a jej upozornenia. Import sa bez `openpyxl` preskočí. |
+| test_web_ui.py | Lokálne UI v0 nad fiktívnou zákazkou v dočasnom intake/: zoznam, detail, úprava, neplatná hodnota, sadzba, import mimo manifestu, model. Bez `.[ui]` sa preskočí. |
 | test_job_intake.py | Nástroj scripts/job_intake.py (new / scan / check) iba na fiktívnych súboroch v dočasnom priečinku: .gitignore, bezpečné predvolené hodnoty, kontrolné súčty, chýbajúce a nezapísané súbory, neplatný manifest, súbory zákazky v gite. |
 
 ## EngineeringItem v1

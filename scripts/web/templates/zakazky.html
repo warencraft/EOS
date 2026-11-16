@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% set active = "zakazky" %}
+{% block title %}Zákazky{% endblock %}
+{% block content %}
+<div class="head">
+  <div>
+    <span class="eyebrow">Príjem podkladov · ADR-0019</span>
+    <h1>Zákazky</h1>
+    <p class="muted">{{ zakazky|length }} zákaziek v <code>{{ intake }}</code>. Kalkuláciu importuješ z excelovej šablóny v detaile zákazky.</p>
+  </div>
+</div>
+{% if zakazky %}
+<div class="panel tbl">
+<table>
+  <thead><tr><th>Zákazka</th><th>Názov</th><th class="num">Podklady</th><th class="num">Ks</th><th class="num">Kalkulácia €</th><th class="num">Ponuka €</th><th class="num">Za kus €</th><th>Stav</th></tr></thead>
+  <tbody>
+  {% for z in zakazky %}
+    <tr>
+      <td><a class="mono" href="/zakazka/{{ z.jobRef }}">{{ z.jobRef }}</a></td>
+      <td>{{ z.nazov or "–" }}</td>
+      <td class="num">{{ z.subory|length }}</td>
+      {% if z.kalkulacia %}
+        <td class="num">{{ z.mnozstvo|cas }}</td>
+        <td class="num">{{ z.spolu|eur }}</td>
+        <td class="num">{{ z.ponuka|eur if z.ponuka is not none else "–" }}</td>
+        <td class="num">{{ z.zaKus|eur }}</td>
+        <td><span class="chips">{% if not z.sedi %}<span class="chip bad">nesedí s ponukou</span>{% endif %}{% if z.upozorneni %}<span class="chip warn">{{ z.upozorneni }} upozornení</span>{% else %}<span class="chip ok">bez upozornení</span>{% endif %}</span></td>
+      {% else %}
+        <td class="num">–</td><td class="num">–</td><td class="num">–</td><td class="num">–</td>
+        <td>{% if z.tabulky %}<span class="chip blue">kalkulácia na import</span>{% else %}<span class="chip">iba podklady</span>{% endif %}</td>
+      {% endif %}
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}
+<div class="empty">V <code>{{ intake }}</code> nie sú žiadne zákazky. Založ ich príkazom <code>python scripts/job_intake.py new JOB-rrrr-cccc --title "…" --by meno</code>.</div>
+{% endif %}
+{% endblock %}

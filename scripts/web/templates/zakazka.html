@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% set active = "zakazky" %}
+{% block title %}{{ z.jobRef }}{% endblock %}
+{% block content %}
+<div class="head">
+  <div>
+    <span class="eyebrow"><a href="/">Zákazky</a> / {{ z.jobRef }}</span>
+    <h1>{{ z.nazov or z.jobRef }}</h1>
+  </div>
+  <div class="chips">
+    <span class="chip">{{ z.doveronost }}</span>
+    <span class="chip {{ 'ok' if z.aiPovolene else '' }}">AI {{ "povolené" if z.aiPovolene else "nepovolené" }}</span>
+  </div>
+</div>
+
+<div class="grid2">
+  <section class="panel" aria-labelledby="h-podklady">
+    <h3 id="h-podklady">Podklady ({{ z.subory|length }})</h3>
+    <ul class="files">
+    {% for f in z.subory %}
+      <li><span class="chip">{{ f.category }}</span> <code>{{ f.path }}</code>
+        {% if f.sourceClass %}<span class="chip blue">{{ f.sourceClass }}</span>{% endif %}
+        {% if f.description %}<span class="desc">{{ f.description }}</span>{% endif %}</li>
+    {% endfor %}
+    </ul>
+  </section>
+  <section class="panel" aria-labelledby="h-import">
+    <h3 id="h-import">Kalkulácia z Excelu</h3>
+    {% if z.tabulky %}
+    <form method="post" action="/zakazka/{{ z.jobRef }}/import"
+          {% if k %}onsubmit="return confirm('Znova importovať? Ručné zmeny v kalkulácii sa prepíšu.')"{% endif %}>
+      <label for="subor" class="lbl">Súbor šablóny</label><br>
+      <select id="subor" name="subor">
+        {% for t in z.tabulky %}<option value="{{ t }}" {% if k and k.zdroj and k.zdroj.subor == t %}selected{% endif %}>{{ t }}</option>{% endfor %}
+      </select>
+      <button class="primary" type="submit">{{ "Znova importovať" if k else "Importovať kalkuláciu" }}</button>
+    </form>
+    {% if k and k.zdroj %}<p class="muted small">Importované {{ k.zdroj.importovane }} zo súboru <code>{{ k.zdroj.subor }}</code>.</p>{% endif %}
+    {% else %}
+    <p class="muted">Zákazka nemá excelovú kalkuláciu (.xls, .xlsx). Kalkulácia sa zatiaľ dá vytvoriť iba importom šablóny.</p>
+    {% endif %}
+  </section>
+</div>
+
+<div id="kalkulacia">
+{% include "_kalkulacia.html" %}
+</div>
+{% endblock %}

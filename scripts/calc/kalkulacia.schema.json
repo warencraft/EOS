@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/tools/kalkulacia.schema.json",
+  "title": "Pracovná kalkulácia zákazky v0",
+  "description": "Nástrojový formát pre UI v0 (ADR-0021). Nie je kontrakt EOS, nie je v schemas/ ani v indexe. Ukladá sa iba v intake/_eos/kalkulacie/ mimo gitu. Nahradí ho entita Job a kalkulácia po ich návrhu.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["formatVersion", "jobRef", "mnozstvo", "sadzby", "material", "operacie", "nakup", "dalsie", "upozornenia", "zmeny"],
+  "properties": {
+    "formatVersion": { "const": "0.1.0" },
+    "jobRef": { "type": "string", "pattern": "^JOB-[0-9]{4}-[0-9]{4}$" },
+    "nazov": { "type": ["string", "null"] },
+    "zakaznik": { "type": ["string", "null"] },
+    "vykres": { "type": ["string", "null"] },
+    "materialPopis": { "type": ["string", "null"] },
+    "mnozstvo": { "type": "number", "exclusiveMinimum": 0 },
+    "terminDodania": { "type": ["string", "null"] },
+    "zdroj": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subor", "sha256", "importovane"],
+      "properties": {
+        "subor": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "importovane": { "type": "string", "format": "date-time" }
+      }
+    },
+    "sadzby": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pracaEurH"],
+      "properties": {
+        "pracaEurH": { "type": "number", "minimum": 0 },
+        "predajEurH": { "type": ["number", "null"], "minimum": 0 }
+      }
+    },
+    "material": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "diel", "kg", "eurZaKg"],
+        "properties": {
+          "id": { "type": "string" },
+          "diel": { "type": "string" },
+          "polotovar": { "type": ["string", "null"] },
+          "norma": { "type": ["string", "null"] },
+          "material": { "type": ["string", "null"] },
+          "kg": { "type": "number", "minimum": 0 },
+          "eurZaKg": { "type": "number", "minimum": 0 },
+          "polozkaPonuky": { "type": "string" },
+          "zdrojBunka": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "operacie": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "diel", "proces", "casNaKusMin", "kusov"],
+        "properties": {
+          "id": { "type": "string" },
+          "diel": { "type": "string" },
+          "proces": { "type": "string" },
+          "casNaKusMin": { "type": "number", "minimum": 0 },
+          "kusov": { "type": "number", "minimum": 0 },
+          "sadzbaEurH": { "type": ["number", "null"], "minimum": 0, "description": "Iná sadzba len pre túto operáciu; null = sadzby.pracaEurH." },
+          "polozkaPonuky": { "type": "string" },
+          "zdrojBunka": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "nakup": { "$ref": "#/$defs/polozky" },
+    "dalsie": { "$ref": "#/$defs/polozky" },
+    "referencia": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "riadky": { "type": "object", "additionalProperties": { "type": "number" } },
+        "spolu": { "type": ["number", "null"] },
+        "zaKus": { "type": ["number", "null"] }
+      }
+    },
+    "upozornenia": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kod", "text"],
+        "properties": {
+          "kod": { "type": "string" },
+          "text": { "type": "string" },
+          "bunka": { "type": ["string", "null"] },
+          "dopadEur": { "type": ["number", "null"] }
+        }
+      }
+    },
+    "zmeny": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["cas", "pole", "povodne", "nove"],
+        "properties": {
+          "cas": { "type": "string", "format": "date-time" },
+          "pole": { "type": "string" },
+          "povodne": {},
+          "nove": {}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "polozky": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "nazov", "eurZaKs", "kusov", "zapocitat"],
+        "properties": {
+          "id": { "type": "string" },
+          "nazov": { "type": "string" },
+          "eurZaKs": { "type": "number", "minimum": 0 },
+          "kusov": { "type": "number", "minimum": 0 },
+          "zapocitat": { "type": "boolean" },
+          "polozkaPonuky": { "type": "string" },
+          "zdrojBunka": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}

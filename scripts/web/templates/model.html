@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% set active = "model" %}
+{% block title %}Model{% endblock %}
+{% block content %}
+<div class="head">
+  <div>
+    <span class="eyebrow">Dátové kontrakty · etapa A</span>
+    <h1>Model EOS</h1>
+    <p class="muted">{{ pocet }} schém v repozitári. Podrobný prehľad polí: <code>python scripts/export_viewer.py</code>.</p>
+  </div>
+</div>
+
+<section aria-labelledby="h-gaps">
+  <h2 id="h-gaps" style="margin-bottom:10px">Čo model ešte nevie</h2>
+  <p class="muted small" style="margin-top:0">Zistené pri prepise zákazky V949 do EOS (vertical slice, 2026-11-15). O poradí a obsahu rozhoduje Marco.</p>
+  <div class="gaps">
+    {% for nazov, popis in medzery %}<div><b>{{ nazov }}</b>{{ popis }}</div>{% endfor %}
+  </div>
+</section>
+
+{% for o in oblasti %}
+<section aria-label="{{ o.nazov }}">
+  <h2>{{ o.nazov }} <span class="muted small">({{ o.schemy|length }})</span></h2>
+  <p class="muted small" style="margin:2px 0 10px">{{ o.popis }}</p>
+  <div class="cards">
+    {% for s in o.schemy %}
+    <div class="card">
+      <b>{{ s.title }}</b>
+      {% if s.orig != s.title %}<span class="orig">{{ s.orig }}</span>{% endif %}
+      <span class="small muted">{{ s.desc[:180] }}{% if s.desc|length > 180 %}…{% endif %}</span>
+      <span class="chips">{% if s.fields %}<span class="chip">{{ s.fields|length }} polí</span>{% endif %}
+        {% if s.common %}<span class="chip blue">+ metadáta</span>{% endif %}
+        {% if s.used_by %}<span class="chip">použité v {{ s.used_by|length }}</span>{% endif %}</span>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endfor %}
+{% endblock %}

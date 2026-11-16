@@ -17,6 +17,8 @@ Jedno miesto, kde človek aj AI agent zistí, **na čom sa EOS programuje, čo j
 ## 2. Aktuálna etapa
 
 > **Etapa A – Kontrakty.** Povolené sú iba technológie z riadku A v časti 3.
+>
+> **Výnimka – UI v0 (ADR-0021):** lokálna aplikácia `scripts/web/` (fastapi, uvicorn, jinja2, HTMX) a import excelovej šablóny `scripts/calc/` (openpyxl, xlrd), všetko ako voliteľné závislosti `.[ui,import]`. Iné technológie etapy D, B ani C výnimka nepovoľuje.
 
 Etapu mení Software Architect (IT strana) po dohode s Chief Engineering Knowledge Architect. Agent nesmie použiť technológiu z neskoršej etapy ani „na skúšku“.
 
