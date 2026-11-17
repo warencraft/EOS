@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## UI v0 a pracovná kalkulácia (ADR-0021) - 2026-11-16
+
+Lokálna webová aplikácia `python -m scripts.web` (FastAPI + Jinja + HTMX, iba 127.0.0.1): zoznam zákaziek z `intake/`, import excelovej kalkulačnej šablóny, súhrn ceny oproti ponuke, úprava časov operácií a sadzby s okamžitým prepočtom a históriou zmien, prehľad modelu. `scripts/calc/kalkulacia.py` (čistý výpočet), `scripts/calc/import_sablona.py` (stĺpce podľa hlavičiek; upozornenia na inú sadzbu, nesúlad množstiev, nezapočítané položky, zvyšky šablóny a rozdiel oproti ponuke), formát `scripts/calc/kalkulacia.schema.json` (nie je kontrakt EOS). Kalkulácie sa ukladajú do `intake/_eos/kalkulacie/` mimo gitu. Na troch reálnych kalkuláciách: V949 a CP 289 sedia s ponukou na cent, pri V795 importér našiel 1 897,60 € mimo rozpisu. Voliteľné závislosti `.[ui,import]`; jadro bez zmeny. Nové `tests/test_kalkulacia.py` (9) a `tests/test_web_ui.py` (8) na fiktívnych dátach. 293 → 310 úspešných metód, 0 failures/errors; bez voliteľných závislostí 10 preskočených. Návod `docs/manual/UI.md`. Do `scripts/viewer_sk.json` doplnené preklady Machine a EngineeringItem.
+
 ## Príjem podkladov reálnej zákazky (ADR-0019 Draft) - 2026-11-06
 
 Pripravené na nahratie prvej reálnej zákazky. Podklady zostávajú lokálne v `intake/`, ktorý git ignoruje; do gitu ide iba nástroj a návod. `scripts/job_intake.py` (new / scan / check) a schéma manifestu `scripts/job_intake_manifest.schema.json`: súpis súborov s SHA-256, kategóriou, klasifikáciou zdroja N/L/P/V, dôvernosťou a súhlasom na spracovanie AI (predvolene nie). Manifest nie je znalostný záznam ani entita Job. Pravidlo v AGENTS.md a CLAUDE.md. Nové `tests/test_job_intake.py` (6 metód, fiktívne súbory v dočasnom priečinku), 4 skúšky citlivosti. 287 → 293 úspešných metód, 0 failures/errors/skipped. Produkčné schémy, validátor a závislosti bez zmien.

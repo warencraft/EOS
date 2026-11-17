@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}EOS{% endblock %} · EOS</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/static/eos.css">
+<script src="/static/htmx-1.9.12.min.js" defer></script>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/">EOS</a>
+    <nav aria-label="Hlavná navigácia">
+      <a href="/" {% if active == "zakazky" %}aria-current="page"{% endif %}>Zákazky</a>
+      <a href="/model" {% if active == "model" %}aria-current="page"{% endif %}>Model</a>
+    </nav>
+    <span class="note">Lokálne na tomto počítači · údaje zákaziek sú dôverné a mimo gitu</span>
+  </div>
+</header>
+<main class="wrap">
+{% block content %}{% endblock %}
+<footer>EOS UI v0 (ADR-0021). Kalkulácia je pracovný nástroj, nie kontrakt EOS: nahradí ju entita Job po jej návrhu.</footer>
+</main>
+</body>
+</html>

@@ -58,3 +58,7 @@ Po každej zmene súborov zopakuj `scan` a `check`.
 - `confidentiality`: `internal`, `confidential` (predvolené), `restricted`.
 - Zálohu priečinka rieš mimo gitu (napr. firemné úložisko).
 - Údaje zo zákazky sa do `data/`, fixtúr ani dokumentácie neprepisujú bez zdroja a klasifikácie (AGENTS.md, TECH_STACK.md §5).
+
+## Pracovné kalkulácie (ADR-0021)
+
+`intake/_eos/kalkulacie/<zákazka>.json` vytvára lokálne UI (`python -m scripts.web`, návod `docs/manual/UI.md`) importom excelovej šablóny. Priečinok `_eos` nie je zákazka, `check` ho preskakuje a git ho ignoruje rovnako ako zvyšok `intake/`.

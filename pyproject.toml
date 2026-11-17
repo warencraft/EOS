@@ -7,10 +7,19 @@ dependencies = [
   "jsonschema>=4.18.0"
 ]
 
+[project.optional-dependencies]
+# ADR-0021: lokálne UI v0 (etapa D) a import excelovej kalkulačnej šablóny
+ui = ["fastapi>=0.110", "uvicorn>=0.29", "jinja2>=3.1", "python-multipart>=0.0.9", "httpx>=0.27"]
+import = ["openpyxl>=3.1", "xlrd>=2.0"]
+
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["scripts*"]
+
+[tool.setuptools.package-data]
+"scripts.calc" = ["*.json"]
+"scripts.web" = ["templates/*.html", "static/*"]
 

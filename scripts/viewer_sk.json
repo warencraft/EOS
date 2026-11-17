@@ -199,7 +199,12 @@
     "desc": "Odkaz na externú normu, štandard alebo záväzný technický predpis. Celý text normy sa ukladať nesmie."
   },
   "machine": {
-    "title": "Stroj"
+    "title": "Stroj",
+    "desc": "Entita pre jeden konkrétny fyzický stroj (nie model ani typ stroja). Vlastní zápisy vlastností a klasifikácie."
+  },
+  "engineering-item": {
+    "title": "Stabilný diel",
+    "desc": "Opakovane špecifikovateľný technický diel naprieč riadenými technickými vydaniami; nie fyzický kus ani vydanie."
   },
   "source-reference": {
     "title": "Zdroj",
