@@ -1,0 +1,22 @@
+{
+  "formatVersion": "0.1.0",
+  "id": "20261117T172229Z-agent-kontrola-technika-vetvy-ui-zakazka-a",
+  "cas": "2026-11-17T17:22:29Z",
+  "autor": "agent",
+  "pre": "robino",
+  "typ": "kontrola",
+  "stav": "otvorene",
+  "tema": "Kontrola: technika vetvy ui-zakazka-a-stav",
+  "text": "Testy: 324 passed, 0 failed; bez .[ui,import] 15 skipped. Nová závislosť: žiadna (python-multipart už bol v .[ui]).\n\nNa čo sa pozrieť:\n1. Nahrávanie: súbor sa číta celý do pamäte (await f.read()) a nemá limit veľkosti. Lokálne pre jedného používateľa je to OK; pri veľkých STEP modeloch zvážiť streamovanie.\n2. Náhľad: iba cesty z manifestu a typy PDF/PNG/JPG/GIF/WEBP/SVG/TXT. SVG má CSP sandbox, ostatné nosniff + frame-ancestors 'self'. Testy pokrývajú ../ aj manifest.json.\n3. Pribudla ochrana proti CSRF: POST z cudzej stránky (hlavička Origin alebo Sec-Fetch-Site: cross-site) aplikácia odmietne s 403. Bez tokenov; test test_cross_site_posts_are_rejected.\n4. Nástenka: ochrana citlivých údajov porovnáva iba názvy zákaziek a zákazníkov z lokálneho intake/. Na počítači bez intake/ nič nezachytí.\n5. ADR čísla: ADR-0020 je stále na nezlúčenej vetve tools/ci-and-skills, preto je tu ADR-0022.\n6. Mac: aplikácia potrebuje Python ≥ 3.11 (python3.12 -m venv .venv).\n7. pyflakes hlási nepoužitý import json v scripts/web/app.py a tests/test_kalkulacia.py (bolo už na main).",
+  "zavaznost": "poznamka",
+  "vetva": "feature/ui-zakazka-a-stav",
+  "commit": null,
+  "subory": [
+    "scripts/web/app.py",
+    "scripts/web/sklad.py",
+    "scripts/status/spravy.py"
+  ],
+  "odpovedNa": null,
+  "vyriesil": null,
+  "vyriesene": null
+}

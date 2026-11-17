@@ -38,7 +38,7 @@ EOS je interný inžiniersky znalostný systém pre strojársku výrobu a cenov�
 3. Drž sa existujúcich vzorov: nová entita = štruktúra `schemas/entities/material.schema.json`, testy podľa `eos-write-tests` (riadok v `ENTITY_PROFILES`, nie kópia testov).
 4. Po každej zmene spusti celú testovaciu sadu (`eos-run-tests`).
 5. Pred ukončením prejdi kontrolu (`eos-governance-check`).
-6. Ponúkni uloženie a pull request (`eos-git-publish`).
+6. Ponúkni uloženie a pull request (`eos-git-publish`); pred commitom vždy `eos-pre-commit-review`.
 
 ## Skilly
 
@@ -51,6 +51,7 @@ Skilly sú v `.agents/skills/<názov>/SKILL.md` (spoločný priečinok pre Codex
 | `eos-write-tests` | pred pridaním testu, fixtúry alebo neplatného prípadu |
 | `eos-adr` | zmena architektúry, závislostí, etapy alebo pravidiel |
 | `eos-governance-check` | vždy pred ukončením práce |
+| `eos-pre-commit-review` | pred každým commitom a pushom; nálezy zapíše na nástenku pre Marca (doména) a Robina (technika) |
 | `eos-git-publish` | „ulož to“, „pushni“, „sprav PR“; všetko urob a vysvetli za používateľa |
 
 ## Príkazy

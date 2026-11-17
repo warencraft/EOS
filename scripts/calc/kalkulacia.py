@@ -8,6 +8,7 @@ prichádzajú zo vstupu (EOS-000, ADR-0003).
 from __future__ import annotations
 
 import json
+import re
 from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
@@ -102,7 +103,9 @@ def zmen(kalkulacia: dict, pole: str, nova_hodnota: Any) -> dict:
     """Zmení jedno pole a zapíše zmenu do histórie. pole: 'sadzby.pracaEurH' alebo 'operacie.<id>.casNaKusMin' a pod."""
     k = deepcopy(kalkulacia)
     cast, *zvysok = pole.split(".")
-    if cast == "sadzby":
+    if cast == "mnozstvo" and not zvysok:
+        ciel, kluc = k, "mnozstvo"
+    elif cast == "sadzby":
         ciel, kluc = k["sadzby"], zvysok[0]
     elif cast in {"operacie", "material", "nakup", "dalsie"}:
         ciel = next((x for x in k[cast] if x["id"] == zvysok[0]), None)
@@ -117,4 +120,79 @@ def zmen(kalkulacia: dict, pole: str, nova_hodnota: Any) -> dict:
     ciel[kluc] = nova_hodnota
     k["zmeny"].append({"cas": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
                        "pole": pole, "povodne": povodne, "nove": nova_hodnota})
+    return k
+
+
+CASTI = {"operacie": "O", "material": "M", "nakup": "N", "dalsie": "D"}
+
+
+def _cas() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def prazdna(job_ref: str, *, nazov: str | None, mnozstvo: float, praca_eur_h: float,
+            zakaznik: str | None = None) -> dict:
+    """Nová kalkulácia bez excelovej šablóny. Všetky hodnoty zadáva používateľ."""
+    return {
+        "formatVersion": "0.1.0", "jobRef": job_ref, "nazov": nazov, "zakaznik": zakaznik,
+        "vykres": None, "materialPopis": None, "mnozstvo": mnozstvo, "terminDodania": None,
+        "sadzby": {"pracaEurH": praca_eur_h, "predajEurH": None},
+        "material": [], "operacie": [], "nakup": [], "dalsie": [],
+        "referencia": None, "upozornenia": [], "zmeny": [],
+    }
+
+
+def skopiruj(zdroj: dict, job_ref: str, *, nazov: str | None, mnozstvo: float) -> dict:
+    """Kalkulácia novej zákazky podľa staršej. Kusy operácií, kg materiálu a kusy nákupu
+    sa prepočítajú pomerom množstiev; ďalšie položky (dokumentácia, doprava…) ostanú.
+    Výsledok nesie upozornenie, že pomer treba overiť – nie je to technologické pravidlo."""
+    k = deepcopy(zdroj)
+    pomer = mnozstvo / zdroj["mnozstvo"]
+    for o in k["operacie"]:
+        o["kusov"] = round(o["kusov"] * pomer, 4)
+    for m in k["material"]:
+        m["kg"] = round(m["kg"] * pomer, 4)
+    for n in k["nakup"]:
+        n["kusov"] = round(n["kusov"] * pomer, 4)
+    k.update({"jobRef": job_ref, "nazov": nazov, "mnozstvo": mnozstvo, "referencia": None,
+              "zmeny": [], "terminDodania": None})
+    k.pop("zdroj", None)
+    k["upozornenia"] = [{
+        "kod": "kopia",
+        "text": (f"Skopírované z {zdroj['jobRef']} ({cas_sk(zdroj['mnozstvo'])} ks → {cas_sk(mnozstvo)} ks). "
+                 "Kusy operácií, kg materiálu a kusy nákupu sú prepočítané pomerom množstiev; "
+                 "časy na kus, sadzby a ceny sú prevzaté. Over ich podľa výkresov tejto zákazky."),
+        "bunka": None, "dopadEur": None}]
+    return k
+
+
+def cas_sk(v: float) -> str:
+    return f"{v:.2f}".rstrip("0").rstrip(".").replace(".", ",")
+
+
+def pridaj(kalkulacia: dict, cast: str, polozka: dict) -> dict:
+    """Pridá riadok (operáciu, materiál, nákup, ďalšiu položku) s novým id a zapíše to do histórie."""
+    if cast not in CASTI:
+        raise KeyError(f"nepodporovaná časť {cast}")
+    k = deepcopy(kalkulacia)
+    # Id sa nepoužije znova ani po odobratí riadku, aby história zmien zostala jednoznačná.
+    vzor = re.compile(rf"^{CASTI[cast]}(\d+)$")
+    pouzite = [x["id"] for x in k[cast]] + [z["pole"].split(".")[1] for z in k["zmeny"]
+                                             if z["pole"].startswith(cast + ".") and "." in z["pole"]]
+    n = max((int(m.group(1)) for i in pouzite if (m := vzor.match(i))), default=0) + 1
+    nova = {"id": f"{CASTI[cast]}{n}", **polozka}
+    k[cast].append(nova)
+    k["zmeny"].append({"cas": _cas(), "pole": f"{cast}.{nova['id']}", "povodne": None, "nove": nova})
+    return k
+
+
+def odober(kalkulacia: dict, cast: str, id_: str) -> dict:
+    if cast not in CASTI:
+        raise KeyError(f"nepodporovaná časť {cast}")
+    k = deepcopy(kalkulacia)
+    stara = next((x for x in k[cast] if x["id"] == id_), None)
+    if stara is None:
+        raise KeyError(f"{cast}: neznáme id {id_}")
+    k[cast].remove(stara)
+    k["zmeny"].append({"cas": _cas(), "pole": f"{cast}.{id_}", "povodne": stara, "nove": None})
     return k

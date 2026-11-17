@@ -92,6 +92,44 @@ H1 = {"B": "Číslo výkresu", "J": "Názov materiálu", "K": "Priemer", "N": "D
 H3 = {"V": "zákazku", "AW": "Čas/1ks min", "BE": "Čas/1ks min", "CL": "Cena spolu", "AQ": "€", "W": "[kg]"}
 
 
+class UpravyBezExceluTests(unittest.TestCase):
+    def test_empty_calculation_rows_and_quantity(self):
+        k = K.prazdna("JOB-2026-9002", nazov="Fiktívna", mnozstvo=2, praca_eur_h=30.0)
+        self.assertEqual(K.chyby_formatu(k), [])
+        self.assertEqual(K.vypocitaj(k)["spolu"], 0)
+        k = K.pridaj(k, "operacie", {"diel": "Diel A", "proces": "Proces X", "casNaKusMin": 30.0, "kusov": 2,
+                                     "sadzbaEurH": None})
+        k = K.pridaj(k, "material", {"diel": "Diel A", "kg": 3.0, "eurZaKg": 2.0})
+        k = K.pridaj(k, "nakup", {"nazov": "Kúpená", "eurZaKs": 4.0, "kusov": 1, "zapocitat": True})
+        self.assertEqual([x["id"] for x in k["operacie"] + k["material"] + k["nakup"]], ["O1", "M1", "N1"])
+        self.assertEqual(K.vypocitaj(k)["spolu"], 40.0)  # 30 + 6 + 4
+        k = K.zmen(k, "mnozstvo", 4)
+        self.assertEqual(K.vypocitaj(k)["zaKus"], 10.0)
+        k = K.odober(k, "material", "M1")
+        k = K.pridaj(k, "material", {"diel": "Diel B", "kg": 1.0, "eurZaKg": 1.0})
+        self.assertEqual(k["material"][0]["id"], "M2")  # id sa po odobratí nepoužije znova
+        self.assertEqual(K.chyby_formatu(k), [])
+        self.assertEqual([z["pole"] for z in k["zmeny"]],
+                         ["operacie.O1", "material.M1", "nakup.N1", "mnozstvo", "material.M1", "material.M2"])
+        with self.assertRaises(KeyError):
+            K.odober(k, "operacie", "O9")
+        with self.assertRaises(KeyError):
+            K.pridaj(k, "referencia", {})
+
+    def test_copy_scales_counts_and_warns(self):
+        zdroj = fiktivna_kalkulacia()
+        k = K.skopiruj(zdroj, "JOB-2026-9003", nazov="Kópia", mnozstvo=4)
+        self.assertEqual(K.chyby_formatu(k), [])
+        self.assertEqual([o["kusov"] for o in k["operacie"]], [4, 4, 4])
+        self.assertEqual(k["material"][0]["kg"], 20.0)
+        self.assertEqual(k["nakup"][0]["kusov"], 8)
+        self.assertEqual(k["dalsie"][0]["kusov"], 1)  # dokumentácia sa neprepočítava
+        self.assertEqual((k["jobRef"], k["referencia"], k["zmeny"]), ("JOB-2026-9003", None, []))
+        self.assertNotIn("zdroj", k)
+        self.assertEqual([u["kod"] for u in k["upozornenia"]], ["kopia"])
+        self.assertEqual(zdroj["operacie"][0]["kusov"], 2)  # vzor sa nezmenil
+
+
 @unittest.skipIf(openpyxl is None, "openpyxl nie je nainštalované (pip install -e .[import])")
 class ImportTests(unittest.TestCase):
     def setUp(self):

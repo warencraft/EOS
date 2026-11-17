@@ -8,17 +8,31 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from urllib.parse import urlencode, urlsplit
 
-from fastapi import FastAPI, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from scripts.calc import import_sablona as I
 from scripts.calc import kalkulacia as K
+from scripts.status import spravy as S
 from scripts.export_viewer import AREAS, TRANSLATIONS, load_schemas, load_translations
 
-from .sklad import Sklad
+from .sklad import KATEGORIE, Sklad
+
+# Polia, ktoré sa dajú v UI prepísať číslom (časť → kľúče).
+CISELNE_POLIA = {
+    "operacie": {"casNaKusMin", "kusov"},
+    "material": {"kg", "eurZaKg"},
+    "nakup": {"eurZaKs", "kusov"},
+    "dalsie": {"eurZaKs", "kusov"},
+}
+POLOZKY_PONUKY = [K.PRACA, K.TESNENIA, K.PRIPRAVKY, K.NAKUP, K.DOKUMENTACIA, K.KOOPERACIA, K.DOPRAVA]
+PRIECINKY = {"vykresy": "Výkresy", "modely": "3D modely", "dopyt": "Dopyt", "ponuka": "Ponuka / kalkulácia",
+             "objednavka": "Objednávka", "vyroba": "Výroba", "merania": "Merania",
+             "korespondencia": "Korešpondencia", "ine": "Iné"}
 
 TU = Path(__file__).resolve().parent
 ROOT = TU.parents[1]
@@ -53,14 +67,51 @@ def rozdiel(v) -> str:
     return ("+" if v > 0 else "−" if v < 0 else "±") + cislo(abs(v))
 
 
-def create_app(root: Path = ROOT, intake: Path | None = None) -> FastAPI:
+def cislo_z_formulara(hodnota: str) -> float:
+    v = float(str(hodnota).replace(",", ".").replace(" ", "").replace("\u00a0", ""))
+    if v < 0 or v != v:
+        raise ValueError
+    return v
+
+
+def zmena(v) -> str:
+    if v is None:
+        return "–"
+    if isinstance(v, dict):
+        return " · ".join(str(v[x]) for x in ("diel", "proces", "nazov") if v.get(x))
+    if isinstance(v, bool):
+        return "áno" if v else "nie"
+    if isinstance(v, (int, float)):
+        return cas(v)
+    return str(v)
+
+
+def create_app(root: Path = ROOT, intake: Path | None = None, status: Path | None = None) -> FastAPI:
     sklad = Sklad(intake or root / "intake")
+    nastenka = S.Nastenka(status or root / "status" / "spravy", intake=sklad.intake)
     app = FastAPI(title="EOS", docs_url=None, redoc_url=None, openapi_url=None)
     app.mount("/static", StaticFiles(directory=TU / "static"), name="static")
+
+    @app.middleware("http")
+    async def iba_z_tejto_aplikacie(request: Request, call_next):
+        # Zmeny (POST) prijme iba z vlastných stránok: cudzia stránka v prehliadači nesmie
+        # poslať formulár na 127.0.0.1 (ochrana proti CSRF bez tokenov).
+        if request.method == "POST":
+            origin = request.headers.get("origin")
+            if origin and urlsplit(origin).hostname not in {"127.0.0.1", "localhost", "::1", "testserver"}:
+                return HTMLResponse("Požiadavka z inej stránky bola odmietnutá.", status_code=403)
+            if request.headers.get("sec-fetch-site") == "cross-site":
+                return HTMLResponse("Požiadavka z inej stránky bola odmietnutá.", status_code=403)
+        return await call_next(request)
     sablony = Jinja2Templates(directory=TU / "templates")
     sablony.env.filters["eur"] = cislo
     sablony.env.filters["cas"] = cas
     sablony.env.filters["rozdiel"] = rozdiel
+    sablony.env.filters["zmena"] = zmena
+    sablony.env.globals.update(LUDIA=S.LUDIA, PRE=S.PRE, TYPY=S.TYPY, ZAVAZNOST=S.ZAVAZNOST,
+                               PRIECINKY=PRIECINKY, POLOZKY_PONUKY=POLOZKY_PONUKY)
+    sablony.env.globals["otvorene_spravy"] = lambda: sum(1 for x in nastenka.vsetky()
+                                                         if x["stav"] == "otvorene" and not x.get("odpovedNa"))
     TRANSLATIONS.update(load_translations(root / "scripts" / "viewer_sk.json"))
 
     def zakazka_alebo_404(job_ref: str) -> dict:
@@ -69,9 +120,17 @@ def create_app(root: Path = ROOT, intake: Path | None = None) -> FastAPI:
         except KeyError:
             raise HTTPException(404, f"Zákazka {job_ref} nie je v intake/") from None
 
+    def ine_kalkulacie(job_ref: str) -> list[dict]:
+        out = []
+        for z in sklad.zakazky():
+            if z["jobRef"] != job_ref and z["kalkulacia"]:
+                kk = sklad.nacitaj_kalkulaciu(z["jobRef"])
+                out.append({"jobRef": z["jobRef"], "nazov": z["nazov"], "mnozstvo": kk["mnozstvo"]})
+        return out
+
     def kontext_kalkulacie(job_ref: str, k: dict | None, chyba: str | None = None) -> dict:
         if k is None:
-            return {"k": None, "jobRef": job_ref, "chyba": chyba}
+            return {"k": None, "jobRef": job_ref, "chyba": chyba, "vzory": ine_kalkulacie(job_ref)}
         v = K.vypocitaj(k)
         jednotna = K.vypocitaj(k, jednotna_sadzba=k["sadzby"]["pracaEurH"])
         predaj = (K.vypocitaj(k, jednotna_sadzba=k["sadzby"]["predajEurH"])
@@ -98,10 +157,11 @@ def create_app(root: Path = ROOT, intake: Path | None = None) -> FastAPI:
         return sablony.TemplateResponse(request, "zakazky.html", {"zakazky": zoznam, "intake": sklad.intake})
 
     @app.get("/zakazka/{job_ref}", response_class=HTMLResponse)
-    def zakazka(request: Request, job_ref: str):
+    def zakazka(request: Request, job_ref: str, preskocene: str = ""):
         z = zakazka_alebo_404(job_ref)
         k = sklad.nacitaj_kalkulaciu(job_ref)
-        return sablony.TemplateResponse(request, "zakazka.html", {"z": z, **kontext_kalkulacie(job_ref, k)})
+        return sablony.TemplateResponse(request, "zakazka.html", {"z": z, "preskocene": preskocene,
+                                                                  **kontext_kalkulacie(job_ref, k)})
 
     @app.post("/zakazka/{job_ref}/import")
     def importuj(request: Request, job_ref: str, subor: str = Form(...)):
@@ -123,8 +183,8 @@ def create_app(root: Path = ROOT, intake: Path | None = None) -> FastAPI:
         if k is None:
             raise HTTPException(404, "Zákazka nemá kalkuláciu.")
         try:
-            cislo_hodnota = float(hodnota.replace(",", ".").replace(" ", ""))
-            if cislo_hodnota < 0:
+            cislo_hodnota = cislo_z_formulara(hodnota)
+            if pole == "mnozstvo" and cislo_hodnota == 0:
                 raise ValueError
         except ValueError:
             return vykresli_kalkulaciu(request, job_ref, k, f"„{hodnota}“ nie je nezáporné číslo. Zmena sa neuložila.")
@@ -164,6 +224,175 @@ def create_app(root: Path = ROOT, intake: Path | None = None) -> FastAPI:
         nova = K.zmen(k, f"{cast}.{n_id}.zapocitat", not polozka["zapocitat"])
         sklad.uloz_kalkulaciu(nova)
         return vykresli_kalkulaciu(request, job_ref, nova)
+
+    # --- nová zákazka a podklady -------------------------------------------------
+    @app.get("/nova", response_class=HTMLResponse)
+    def nova_formular(request: Request):
+        return sablony.TemplateResponse(request, "nova.html", {"active": "zakazky", "dalsie": sklad.dalsie_cislo()})
+
+    @app.post("/nova")
+    async def nova_zakazka(request: Request, nazov: str = Form(""), kto: str = Form(""),
+                           priecinok: str = Form("vykresy"), subory: list[UploadFile] = File(default=[])):
+        if priecinok not in KATEGORIE:
+            priecinok = "ine"
+        try:
+            job_ref = sklad.nova_zakazka(nazov, kto)
+        except ValueError as e:
+            return sablony.TemplateResponse(request, "nova.html", {"active": "zakazky", "chyba": str(e),
+                                            "dalsie": sklad.dalsie_cislo(), "nazov": nazov, "kto": kto},
+                                            status_code=422)
+        return await uloz_podklady(job_ref, priecinok, subory)
+
+    async def uloz_podklady(job_ref: str, priecinok: str, subory: list[UploadFile]):
+        preskocene = []
+        for f in subory:
+            if not f.filename:
+                continue
+            try:
+                sklad.uloz_podklad(job_ref, priecinok, f.filename, await f.read())
+            except ValueError:
+                preskocene.append(f.filename)
+        ciel = f"/zakazka/{job_ref}"
+        if preskocene:
+            ciel += "?" + urlencode({"preskocene": ", ".join(preskocene)})
+        return RedirectResponse(ciel, status_code=303)
+
+    @app.post("/zakazka/{job_ref}/podklady")
+    async def nahraj_podklady(job_ref: str, priecinok: str = Form("vykresy"),
+                              subory: list[UploadFile] = File(default=[])):
+        zakazka_alebo_404(job_ref)
+        if priecinok not in KATEGORIE:
+            raise HTTPException(400, "Neznámy druh podkladu.")
+        return await uloz_podklady(job_ref, priecinok, subory)
+
+    @app.get("/zakazka/{job_ref}/subor/{cesta:path}")
+    def subor(job_ref: str, cesta: str):
+        zakazka_alebo_404(job_ref)
+        try:
+            p, typ = sklad.nahlad(job_ref, cesta)
+        except KeyError:
+            raise HTTPException(404, "Súbor nie je v manifeste zákazky alebo sa nedá zobraziť.") from None
+        return FileResponse(p, media_type=typ, content_disposition_type="inline", filename=p.name,
+                            headers={"X-Content-Type-Options": "nosniff",
+                                     "Content-Security-Policy": "sandbox; default-src 'none'; img-src 'self'; style-src 'unsafe-inline'"
+                                     if p.suffix.lower() == ".svg" else "frame-ancestors 'self'"})
+
+    # --- kalkulácia bez Excelu ------------------------------------------------------
+    @app.post("/zakazka/{job_ref}/kalkulacia/nova")
+    def nova_kalkulacia(request: Request, job_ref: str, mnozstvo: str = Form(...), pracaEurH: str = Form(""),
+                        vzor: str = Form("")):
+        z = zakazka_alebo_404(job_ref)
+        if sklad.nacitaj_kalkulaciu(job_ref) is not None:
+            raise HTTPException(409, "Zákazka už kalkuláciu má.")
+        try:
+            ks = cislo_z_formulara(mnozstvo)
+            if ks == 0:
+                raise ValueError
+            if vzor:
+                zdroj = sklad.nacitaj_kalkulaciu(vzor)
+                if zdroj is None:
+                    raise HTTPException(404, "Vzorová zákazka nemá kalkuláciu.")
+                k = K.skopiruj(zdroj, job_ref, nazov=z["nazov"], mnozstvo=ks)
+                if pracaEurH.strip():
+                    k["sadzby"]["pracaEurH"] = cislo_z_formulara(pracaEurH)
+            else:
+                k = K.prazdna(job_ref, nazov=z["nazov"], mnozstvo=ks, praca_eur_h=cislo_z_formulara(pracaEurH))
+        except ValueError:
+            return sablony.TemplateResponse(request, "zakazka.html", {"z": z, **kontext_kalkulacie(
+                job_ref, None, "Množstvo musí byť kladné číslo a sadzba nezáporné číslo.")}, status_code=422)
+        sklad.uloz_kalkulaciu(k)
+        return RedirectResponse(f"/zakazka/{job_ref}", status_code=303)
+
+    @app.post("/zakazka/{job_ref}/mnozstvo", response_class=HTMLResponse)
+    def uprav_mnozstvo(request: Request, job_ref: str, mnozstvo: str = Form(...)):
+        return uprav(request, job_ref, "mnozstvo", mnozstvo)
+
+    @app.post("/zakazka/{job_ref}/pole/{cast}/{id_}/{kluc}", response_class=HTMLResponse)
+    def uprav_pole(request: Request, job_ref: str, cast: str, id_: str, kluc: str, hodnota: str = Form(...)):
+        if kluc not in CISELNE_POLIA.get(cast, set()):
+            raise HTTPException(404, "Toto pole sa nedá upraviť.")
+        return uprav(request, job_ref, f"{cast}.{id_}.{kluc}", hodnota)
+
+    @app.post("/zakazka/{job_ref}/pridaj/{cast}", response_class=HTMLResponse)
+    def pridaj_riadok(request: Request, job_ref: str, cast: str, diel: str = Form(""), proces: str = Form(""),
+                      nazov: str = Form(""), polotovar: str = Form(""), material: str = Form(""),
+                      a: str = Form("0"), b: str = Form("0"), polozkaPonuky: str = Form("")):
+        k = sklad.nacitaj_kalkulaciu(job_ref)
+        if k is None or cast not in CISELNE_POLIA:
+            raise HTTPException(404, "Zákazka nemá kalkuláciu.")
+        try:
+            x, y = cislo_z_formulara(a or "0"), cislo_z_formulara(b or "0")
+        except ValueError:
+            return vykresli_kalkulaciu(request, job_ref, k, "Čísla musia byť nezáporné. Riadok sa nepridal.")
+        pp = polozkaPonuky if polozkaPonuky in POLOZKY_PONUKY else None
+        if cast == "operacie":
+            if not diel.strip() or not proces.strip():
+                return vykresli_kalkulaciu(request, job_ref, k, "Operácia potrebuje diel a proces.")
+            riadok = {"diel": diel.strip(), "proces": proces.strip(), "casNaKusMin": x, "kusov": y, "sadzbaEurH": None}
+            if pp and pp != K.PRACA:
+                riadok["polozkaPonuky"] = pp
+        elif cast == "material":
+            if not diel.strip():
+                return vykresli_kalkulaciu(request, job_ref, k, "Materiál potrebuje diel.")
+            riadok = {"diel": diel.strip(), "polotovar": polotovar.strip() or None,
+                      "material": material.strip() or None, "kg": x, "eurZaKg": y}
+        else:
+            if not nazov.strip():
+                return vykresli_kalkulaciu(request, job_ref, k, "Položka potrebuje názov.")
+            riadok = {"nazov": nazov.strip(), "eurZaKs": x, "kusov": y, "zapocitat": True}
+            if pp:
+                riadok["polozkaPonuky"] = pp
+        nova = K.pridaj(k, cast, riadok)
+        sklad.uloz_kalkulaciu(nova)
+        return vykresli_kalkulaciu(request, job_ref, nova)
+
+    @app.post("/zakazka/{job_ref}/odober/{cast}/{id_}", response_class=HTMLResponse)
+    def odober_riadok(request: Request, job_ref: str, cast: str, id_: str):
+        k = sklad.nacitaj_kalkulaciu(job_ref)
+        if k is None:
+            raise HTTPException(404, "Zákazka nemá kalkuláciu.")
+        try:
+            nova = K.odober(k, cast, id_)
+        except KeyError:
+            raise HTTPException(404, "Neznámy riadok.") from None
+        sklad.uloz_kalkulaciu(nova)
+        return vykresli_kalkulaciu(request, job_ref, nova)
+
+    # --- stavová nástenka (ADR-0022) ---------------------------------------------------
+    def kontext_stavu(vsetky: bool = False, chyba: str | None = None, formular: dict | None = None) -> dict:
+        return {"active": "stav", "marco": nastenka.pre("marco", aj_vyriesene=vsetky),
+                "robino": nastenka.pre("robino", aj_vyriesene=vsetky), "vsetky": vsetky,
+                "chyba": chyba, "f": formular or {}}
+
+    @app.get("/stav", response_class=HTMLResponse)
+    def stav(request: Request, vsetky: int = 0):
+        return sablony.TemplateResponse(request, "stav.html", kontext_stavu(bool(vsetky)))
+
+    @app.post("/stav")
+    def stav_nova(request: Request, autor: str = Form(...), pre: str = Form(""), typ: str = Form("feedback"),
+                  tema: str = Form(""), text: str = Form(""), odpovedNa: str = Form("")):
+        try:
+            if odpovedNa:
+                povodna = nastenka.nacitaj(odpovedNa)
+                tema = tema or f"Re: {povodna['tema']}"[:120]
+                # Odpoveď ide druhému človeku; agent si odpovede prečíta zo súborov.
+                pre = pre or {"marco": "robino", "robino": "marco"}.get(autor, "oba")
+            nastenka.pridaj(autor=autor, pre=pre, typ=typ, tema=tema, text=text, odpoved_na=odpovedNa or None)
+        except (KeyError, ValueError) as e:
+            return sablony.TemplateResponse(request, "stav.html", kontext_stavu(
+                chyba=f"Správa sa neuložila: {e}", formular={"autor": autor, "pre": pre, "typ": typ,
+                                                               "tema": tema, "text": text}), status_code=422)
+        return RedirectResponse("/stav", status_code=303)
+
+    @app.post("/stav/{id_}/vyriesit")
+    def stav_vyries(id_: str, kto: str = Form(...), znovu: str = Form("")):
+        if kto not in S.LUDIA:
+            raise HTTPException(400, "Neznámy človek.")
+        try:
+            nastenka.vyries(id_, kto, znovu_otvor=bool(znovu))
+        except KeyError:
+            raise HTTPException(404, "Neznáma správa.") from None
+        return RedirectResponse("/stav", status_code=303)
 
     @app.get("/model", response_class=HTMLResponse)
     def model(request: Request):

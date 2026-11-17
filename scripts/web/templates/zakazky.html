@@ -6,8 +6,9 @@
   <div>
     <span class="eyebrow">Príjem podkladov · ADR-0019</span>
     <h1>Zákazky</h1>
-    <p class="muted">{{ zakazky|length }} zákaziek v <code>{{ intake }}</code>. Kalkuláciu importuješ z excelovej šablóny v detaile zákazky.</p>
+    <p class="muted">{{ zakazky|length }} zákaziek v <code>{{ intake }}</code>. Kalkuláciu importuješ z excelovej šablóny, skopíruješ z podobnej zákazky alebo zadáš ručne v detaile zákazky.</p>
   </div>
+  <a class="btn primary" href="/nova">+ Nová zákazka</a>
 </div>
 {% if zakazky %}
 <div class="panel tbl">
@@ -27,7 +28,7 @@
         <td><span class="chips">{% if not z.sedi %}<span class="chip bad">nesedí s ponukou</span>{% endif %}{% if z.upozorneni %}<span class="chip warn">{{ z.upozorneni }} upozornení</span>{% else %}<span class="chip ok">bez upozornení</span>{% endif %}</span></td>
       {% else %}
         <td class="num">–</td><td class="num">–</td><td class="num">–</td><td class="num">–</td>
-        <td>{% if z.tabulky %}<span class="chip blue">kalkulácia na import</span>{% else %}<span class="chip">iba podklady</span>{% endif %}</td>
+        <td>{% if z.tabulky %}<span class="chip blue">kalkulácia na import</span>{% else %}<span class="chip">bez kalkulácie</span>{% endif %}</td>
       {% endif %}
     </tr>
   {% endfor %}

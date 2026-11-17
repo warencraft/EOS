@@ -59,6 +59,10 @@ Po každej zmene súborov zopakuj `scan` a `check`.
 - Zálohu priečinka rieš mimo gitu (napr. firemné úložisko).
 - Údaje zo zákazky sa do `data/`, fixtúr ani dokumentácie neprepisujú bez zdroja a klasifikácie (AGENTS.md, TECH_STACK.md §5).
 
+## Zákazka z UI (ADR-0022)
+
+Zákazku možno založiť aj v UI (**+ Nová zákazka**): dostane ďalšie voľné číslo a nahraté podklady sa uložia do zvoleného podpriečinka, manifest doplní `scan`. Pravidlá vyššie platia rovnako; `sourceClass` nahratých súborov ostáva `null`, kým ich niekto nezaradí.
+
 ## Pracovné kalkulácie (ADR-0021)
 
-`intake/_eos/kalkulacie/<zákazka>.json` vytvára lokálne UI (`python -m scripts.web`, návod `docs/manual/UI.md`) importom excelovej šablóny. Priečinok `_eos` nie je zákazka, `check` ho preskakuje a git ho ignoruje rovnako ako zvyšok `intake/`.
+`intake/_eos/kalkulacie/<zákazka>.json` vytvára lokálne UI (`python -m scripts.web`, návod `docs/manual/UI.md`) importom excelovej šablóny, podľa podobnej zákazky alebo ručne (ADR-0022). Priečinok `_eos` nie je zákazka, `check` ho preskakuje a git ho ignoruje rovnako ako zvyšok `intake/`.

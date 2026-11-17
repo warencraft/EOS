@@ -53,9 +53,8 @@ Ak už si vo vetve, ktorá patrí k tejto práci, zostaň v nej.
 
 ### 3. Kontroly pred uložením
 
-1. Spusti skill `eos-run-tests`. Ak testy neprejdú, **necommituj**. Povedz používateľovi, čo zlyhalo.
-2. Prejdi skill `eos-governance-check`.
-3. Pozri, čo sa mení: `git status --short` a `git diff --stat`. Over, že tam nie sú súbory, ktoré tam nepatria (pozri pravidlá vyššie).
+1. **Prejdi skill `eos-pre-commit-review`.** Spustí testy a kontrolu EOS, prezrie zmeny a nálezy zapíše na stavovú nástenku: doménové pre Marca, technické pre Robina. Ak niečo blokuje, **necommituj** a povedz používateľovi, čo treba opraviť.
+2. Pozri, čo sa mení: `git status --short` a `git diff --stat`. Over, že tam nie sú súbory, ktoré tam nepatria (pozri pravidlá vyššie). Nové správy v `status/spravy/` do commitu patria.
 
 ### 4. Potvrdenie od používateľa
 
@@ -64,7 +63,8 @@ Napíš krátke zhrnutie po slovensky, napríklad:
 > Pripravil som na odoslanie:
 > - nová schéma Stroj (`schemas/entities/machine.schema.json`),
 > - 25 nových testov, všetkých 315 prechádza,
-> - aktualizovaný ROADMAP, BACKLOG a CHANGELOG.
+> - aktualizovaný ROADMAP, BACKLOG a CHANGELOG,
+> - kontrola agenta: 2 správy pre Marca, 1 pre Robina (uvidíte ich v UI na stránke Stav).
 >
 > Uložím to do vetvy `feature/0.2c4-machine` a vytvorím na GitHube žiadosť o zlúčenie (pull request). Môžem?
 
@@ -131,6 +131,10 @@ Fáza <fáza> podľa <CDR-xxxx / zadania>.
 - [x] zdrojová klasifikácia
 - [x] ROADMAP / BACKLOG / CHANGELOG / docs/INDEX.md aktualizované
 - [ ] potrebné ADR: <áno – ADR-xxxx / nie>
+
+## Kontrola agenta
+- Pre Marca: <počet> (`status/spravy/…`)
+- Pre Robina: <počet> (`status/spravy/…`)
 
 ## Čo nie je súčasťou
 - <odložené veci podľa CDR>

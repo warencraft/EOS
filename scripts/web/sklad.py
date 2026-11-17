@@ -12,10 +12,18 @@ import os
 import re
 from pathlib import Path
 
+from datetime import date
+
+from scripts import job_intake
 from scripts.calc import kalkulacia as K
 
 JOB_RE = re.compile(r"^JOB-[0-9]{4}-[0-9]{4}$")
 TABULKY = {".xls", ".xlsx", ".xlsm"}
+# Súbory, ktoré prehliadač vie ukázať priamo v stránke.
+NAHLAD = {".pdf": "application/pdf", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+          ".gif": "image/gif", ".webp": "image/webp", ".svg": "image/svg+xml", ".txt": "text/plain; charset=utf-8"}
+KATEGORIE = job_intake.FOLDERS  # priečinok → kategória manifestu
+NAZOV_RE = re.compile(r"[^\w.\- ()+,]", re.UNICODE)
 
 
 class Sklad:
@@ -48,6 +56,7 @@ class Sklad:
             "aiPovolene": manifest.get("aiProcessingAllowed"),
             "subory": subory,
             "tabulky": [f["path"] for f in subory if Path(f["path"]).suffix.lower() in TABULKY],
+            "nahlady": [f["path"] for f in subory if Path(f["path"]).suffix.lower() in NAHLAD],
             "kalkulacia": (self.kalkulacie / f"{job_ref}.json").is_file(),
             "priecinok": d,
         }
@@ -73,3 +82,44 @@ class Sklad:
         if rel not in {f["path"] for f in z["subory"]}:
             raise KeyError(rel)
         return z["priecinok"] / rel
+
+    def nahlad(self, job_ref: str, rel: str) -> tuple[Path, str]:
+        """Súbor zo zákazky na zobrazenie v prehliadači. Iba cesty z manifestu a známe typy."""
+        cesta = self.cesta_suboru(job_ref, rel)
+        typ = NAHLAD.get(cesta.suffix.lower())
+        if typ is None or not cesta.is_file():
+            raise KeyError(rel)
+        return cesta, typ
+
+    def dalsie_cislo(self, rok: int | None = None) -> str:
+        rok = rok or date.today().year
+        cisla = [int(d.name[-4:]) for d in self.intake.glob(f"JOB-{rok}-*") if JOB_RE.match(d.name)]
+        return f"JOB-{rok}-{max(cisla, default=0) + 1:04d}"
+
+    def nova_zakazka(self, nazov: str, kto: str) -> str:
+        nazov, kto = nazov.strip(), kto.strip()
+        if not nazov or not kto:
+            raise ValueError("Vyplň názov zákazky aj kto ju zakladá.")
+        self.intake.mkdir(parents=True, exist_ok=True)
+        job_ref = self.dalsie_cislo()
+        job_intake.cmd_new(job_ref, nazov, kto, intake=self.intake)
+        return job_ref
+
+    def uloz_podklad(self, job_ref: str, priecinok: str, nazov_suboru: str, obsah: bytes) -> str:
+        """Uloží nahratý súbor do priečinka zákazky a doplní ho do manifestu (job_intake scan)."""
+        z = self.zakazka(job_ref)
+        if priecinok not in KATEGORIE:
+            raise ValueError(f"Neznámy priečinok {priecinok}.")
+        meno = NAZOV_RE.sub("_", Path(nazov_suboru.replace("\\", "/")).name).strip(" .")
+        if not meno or meno == job_intake.MANIFEST or meno.startswith("~$"):
+            raise ValueError(f"Súbor „{nazov_suboru}“ sa nedá uložiť.")
+        ciel_dir = z["priecinok"] / priecinok
+        ciel_dir.mkdir(parents=True, exist_ok=True)
+        ciel = ciel_dir / meno
+        n = 2
+        while ciel.exists():
+            ciel = ciel_dir / f"{Path(meno).stem}-{n}{Path(meno).suffix}"
+            n += 1
+        ciel.write_bytes(obsah)
+        job_intake.cmd_scan(z["priecinok"])
+        return ciel.relative_to(z["priecinok"]).as_posix()
