@@ -1,0 +1,20 @@
+{
+  "formatVersion": "0.1.0",
+  "id": "20261117T172229Z-agent-kopia-kalkulacie-ako-prepocitat-ine",
+  "cas": "2026-11-17T17:22:29Z",
+  "autor": "agent",
+  "pre": "marco",
+  "typ": "rozhodnutie",
+  "stav": "otvorene",
+  "tema": "Kópia kalkulácie: ako prepočítať iné množstvo?",
+  "text": "Keď vytvoríš kalkuláciu podľa podobnej zákazky s iným množstvom, kód teraz:\n- kusy v operáciách, kg materiálu a kusy nákupu prepočíta pomerom množstiev (napr. 4 ks → 8 ks = ×2),\n- časy na kus, sadzby a ceny prevezme bez zmeny,\n- dokumentáciu, dopravu a podobné položky nechá tak.\n\nTo je môj predpoklad, nie technologické pravidlo. Napríklad čas nastavenia stroja sa s množstvom nemení a v šablóne je dnes rozpočítaný do času na kus.\n\nMožnosti:\nA) Nechať pomer + upozornenie „over podľa výkresov“ (dnešný stav).\nB) Neprepočítavať nič, iba skopírovať. Všetky kusy upravíš ručne.\nC) Oddeliť čas nastavenia od času na kus. To je zmena modelu (patrí k entite Job a operácii).\n\nOdpíš A, B alebo C, prípadne inú možnosť.",
+  "zavaznost": "dolezite",
+  "vetva": "feature/ui-zakazka-a-stav",
+  "commit": null,
+  "subory": [
+    "scripts/calc/kalkulacia.py"
+  ],
+  "odpovedNa": null,
+  "vyriesil": null,
+  "vyriesene": null
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/tools/status-sprava.schema.json",
+  "title": "Správa na stavovej nástenke v0",
+  "description": "Nástrojový formát (ADR-0022). Nie je kontrakt EOS, nie je v schemas/ ani v indexe. Jedna správa = jeden súbor v status/spravy/. Nesmie obsahovať údaje zákazníkov ani ceny reálnych zákaziek.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["formatVersion", "id", "cas", "autor", "pre", "typ", "stav", "tema", "text"],
+  "properties": {
+    "formatVersion": { "const": "0.1.0" },
+    "id": { "type": "string", "pattern": "^[0-9]{8}T[0-9]{6}Z-(marco|robino|agent)-[a-z0-9-]{1,40}$" },
+    "cas": { "type": "string", "format": "date-time" },
+    "autor": { "enum": ["marco", "robino", "agent"] },
+    "pre": { "enum": ["marco", "robino", "oba"] },
+    "typ": { "enum": ["kontrola", "otazka", "feedback", "rozhodnutie", "info"] },
+    "stav": { "enum": ["otvorene", "vyriesene"] },
+    "tema": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "text": { "type": "string", "minLength": 1, "maxLength": 4000 },
+    "zavaznost": { "enum": ["blokuje", "dolezite", "poznamka", null] },
+    "vetva": { "type": ["string", "null"] },
+    "commit": { "type": ["string", "null"] },
+    "subory": { "type": "array", "items": { "type": "string" }, "maxItems": 30 },
+    "odpovedNa": { "type": ["string", "null"] },
+    "vyriesil": { "enum": ["marco", "robino", "agent", null] },
+    "vyriesene": { "type": ["string", "null"], "format": "date-time" }
+  }
+}

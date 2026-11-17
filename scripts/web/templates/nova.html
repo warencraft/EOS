@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% set active = "zakazky" %}
+{% block title %}Nová zákazka{% endblock %}
+{% block content %}
+<div class="head">
+  <div>
+    <span class="eyebrow"><a href="/">Zákazky</a> / nová</span>
+    <h1>Nová zákazka</h1>
+    <p class="muted">Dostane číslo <code>{{ dalsie }}</code>. Podklady sa uložia do <code>intake/{{ dalsie }}/</code> na tomto počítači; do gitu nejdú.</p>
+  </div>
+</div>
+{% if chyba %}<div class="err" role="alert">{{ chyba }}</div>{% endif %}
+<form class="panel form" method="post" action="/nova" enctype="multipart/form-data">
+  <label class="lbl" for="nazov">Názov zákazky</label>
+  <input id="nazov" type="text" name="nazov" value="{{ nazov or '' }}" required placeholder="napr. Hydraulický valec 4 ks – V950">
+  <label class="lbl" for="kto">Kto ju zakladá</label>
+  <select id="kto" name="kto">
+    <option value="Marco" {% if kto == "Marco" %}selected{% endif %}>Marco</option>
+    <option value="Robino" {% if kto == "Robino" %}selected{% endif %}>Robino</option>
+  </select>
+  <label class="lbl" for="subory">Podklady (výkresy PDF, dopyt, excelová kalkulácia…)</label>
+  <input id="subory" type="file" name="subory" multiple>
+  <label class="lbl" for="priecinok">Ulož ich ako</label>
+  <select id="priecinok" name="priecinok">
+    {% for k, v in PRIECINKY.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}
+  </select>
+  <p class="small muted">Ďalšie podklady (napr. kalkuláciu do „Ponuka / kalkulácia“) pridáš neskôr v detaile zákazky.</p>
+  <div><button class="primary" type="submit">Založiť zákazku</button> <a href="/">Zrušiť</a></div>
+</form>
+{% endblock %}

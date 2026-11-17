@@ -13,34 +13,74 @@
   </div>
 </div>
 
-<div class="grid2">
+{% if preskocene %}<div class="err" role="alert">Tieto súbory sa neuložili (nepovolený názov): {{ preskocene }}</div>{% endif %}
+<div class="grid-nahlad">
   <section class="panel" aria-labelledby="h-podklady">
     <h3 id="h-podklady">Podklady ({{ z.subory|length }})</h3>
     <ul class="files">
     {% for f in z.subory %}
-      <li><span class="chip">{{ f.category }}</span> <code>{{ f.path }}</code>
+      <li><span class="chip">{{ f.category }}</span>
+        {% if f.path in z.nahlady %}<a href="/zakazka/{{ z.jobRef }}/subor/{{ f.path|urlencode }}" target="nahlad"><code>{{ f.path }}</code></a>
+        {% else %}<code>{{ f.path }}</code>{% endif %}
         {% if f.sourceClass %}<span class="chip blue">{{ f.sourceClass }}</span>{% endif %}
         {% if f.description %}<span class="desc">{{ f.description }}</span>{% endif %}</li>
+    {% else %}<li class="muted">Zatiaľ bez podkladov.</li>
     {% endfor %}
     </ul>
-  </section>
-  <section class="panel" aria-labelledby="h-import">
-    <h3 id="h-import">Kalkulácia z Excelu</h3>
-    {% if z.tabulky %}
-    <form method="post" action="/zakazka/{{ z.jobRef }}/import"
-          {% if k %}onsubmit="return confirm('Znova importovať? Ručné zmeny v kalkulácii sa prepíšu.')"{% endif %}>
-      <label for="subor" class="lbl">Súbor šablóny</label><br>
-      <select id="subor" name="subor">
-        {% for t in z.tabulky %}<option value="{{ t }}" {% if k and k.zdroj and k.zdroj.subor == t %}selected{% endif %}>{{ t }}</option>{% endfor %}
+    <form class="upload" method="post" action="/zakazka/{{ z.jobRef }}/podklady" enctype="multipart/form-data">
+      <label class="lbl" for="subory">Pridať podklady</label>
+      <input id="subory" type="file" name="subory" multiple required>
+      <select name="priecinok" aria-label="Druh podkladu">
+        {% for k, v in PRIECINKY.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}
       </select>
-      <button class="primary" type="submit">{{ "Znova importovať" if k else "Importovať kalkuláciu" }}</button>
+      <button type="submit">Nahrať</button>
     </form>
-    {% if k and k.zdroj %}<p class="muted small">Importované {{ k.zdroj.importovane }} zo súboru <code>{{ k.zdroj.subor }}</code>.</p>{% endif %}
+  </section>
+  <section class="panel nahlad" aria-labelledby="h-nahlad">
+    <h3 id="h-nahlad">Náhľad</h3>
+    {% if z.nahlady %}
+    <iframe name="nahlad" title="Náhľad podkladu" src="/zakazka/{{ z.jobRef }}/subor/{{ z.nahlady[0]|urlencode }}"></iframe>
+    <p class="small muted">Klikni na podklad vľavo. PDF a obrázky sa zobrazia tu; ostatné súbory otvor v ich programe.</p>
     {% else %}
-    <p class="muted">Zákazka nemá excelovú kalkuláciu (.xls, .xlsx). Kalkulácia sa zatiaľ dá vytvoriť iba importom šablóny.</p>
+    <div class="empty">Zákazka nemá PDF ani obrázok na zobrazenie.</div>
     {% endif %}
   </section>
 </div>
+
+{% if z.tabulky or not k %}
+<section class="panel" aria-labelledby="h-vznik">
+  <h3 id="h-vznik">{{ "Kalkulácia" if k else "Vytvoriť kalkuláciu" }}</h3>
+  <div class="vznik">
+    {% if z.tabulky %}
+    <form method="post" action="/zakazka/{{ z.jobRef }}/import"
+          {% if k %}onsubmit="return confirm('Znova importovať? Ručné zmeny v kalkulácii sa prepíšu.')"{% endif %}>
+      <span class="lbl">Z excelovej šablóny</span><br>
+      <select id="subor" name="subor" aria-label="Súbor šablóny">
+        {% for t in z.tabulky %}<option value="{{ t }}" {% if k and k.zdroj and k.zdroj.subor == t %}selected{% endif %}>{{ t }}</option>{% endfor %}
+      </select>
+      <button class="{{ '' if k else 'primary' }}" type="submit">{{ "Znova importovať" if k else "Importovať" }}</button>
+      {% if k and k.zdroj %}<p class="muted small">Importované {{ k.zdroj.importovane }} zo súboru <code>{{ k.zdroj.subor }}</code>.</p>{% endif %}
+    </form>
+    {% endif %}
+    {% if not k %}
+    <form method="post" action="/zakazka/{{ z.jobRef }}/kalkulacia/nova">
+      <span class="lbl">Podľa podobnej zákazky alebo ručne</span><br>
+      <label class="small" for="vzor">Vzor</label>
+      <select id="vzor" name="vzor">
+        <option value="">– prázdna kalkulácia –</option>
+        {% for v in vzory %}<option value="{{ v.jobRef }}">{{ v.jobRef }} · {{ v.nazov }} ({{ v.mnozstvo|cas }} ks)</option>{% endfor %}
+      </select>
+      <label class="small" for="mnozstvo">Množstvo (ks)</label>
+      <input id="mnozstvo" class="num" type="text" inputmode="decimal" name="mnozstvo" required>
+      <label class="small" for="pracaEurH">Sadzba €/h</label>
+      <input id="pracaEurH" class="num" type="text" inputmode="decimal" name="pracaEurH" placeholder="zo vzoru">
+      <button class="primary" type="submit">Vytvoriť</button>
+      <p class="small muted">Zo vzoru sa prevezmú diely, operácie s časmi na kus, materiál a nákup; kusy a kilogramy sa prepočítajú pomerom množstiev. Všetko potom uprav podľa výkresov.</p>
+    </form>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
 
 <div id="kalkulacia">
 {% include "_kalkulacia.html" %}

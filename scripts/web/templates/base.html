@@ -14,6 +14,7 @@
     <a class="brand" href="/">EOS</a>
     <nav aria-label="Hlavná navigácia">
       <a href="/" {% if active == "zakazky" %}aria-current="page"{% endif %}>Zákazky</a>
+      <a href="/stav" {% if active == "stav" %}aria-current="page"{% endif %}>Stav{% set n = otvorene_spravy() %}{% if n %} <span class="badge">{{ n }}</span>{% endif %}</a>
       <a href="/model" {% if active == "model" %}aria-current="page"{% endif %}>Model</a>
     </nav>
     <span class="note">Lokálne na tomto počítači · údaje zákaziek sú dôverné a mimo gitu</span>
@@ -21,7 +22,7 @@
 </header>
 <main class="wrap">
 {% block content %}{% endblock %}
-<footer>EOS UI v0 (ADR-0021). Kalkulácia je pracovný nástroj, nie kontrakt EOS: nahradí ju entita Job po jej návrhu.</footer>
+<footer>EOS UI v0 (ADR-0021, ADR-0022). Kalkulácia je pracovný nástroj, nie kontrakt EOS: nahradí ju entita Job po jej návrhu.</footer>
 </main>
 </body>
 </html>

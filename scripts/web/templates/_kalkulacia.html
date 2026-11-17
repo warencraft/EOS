@@ -1,8 +1,17 @@
 {% if chyba %}<div class="err" role="alert">{{ chyba }}</div>{% endif %}
 {% if not k %}
-  {% if not chyba %}<div class="empty">Zákazka zatiaľ nemá kalkuláciu. Importuj ju z excelovej šablóny vyššie.</div>{% endif %}
+  {% if not chyba %}<div class="empty">Zákazka zatiaľ nemá kalkuláciu. Vytvor ju vyššie: z excelovej šablóny, podľa podobnej zákazky alebo prázdnu.</div>{% endif %}
 {% else %}
 {% set hx = 'hx-target="#kalkulacia" hx-swap="innerHTML"' %}
+{% macro pole(cast, r, kluc, popis) -%}
+<input class="num" type="text" inputmode="decimal" name="hodnota" value="{{ r[kluc]|cas }}" aria-label="{{ popis }}"
+       hx-post="/zakazka/{{ jobRef }}/pole/{{ cast }}/{{ r.id }}/{{ kluc }}" hx-trigger="change" hx-target="#kalkulacia" hx-swap="innerHTML">
+{%- endmacro %}
+{% macro zmaz(cast, r, popis) -%}
+<button class="x" title="Odstrániť {{ popis }}" aria-label="Odstrániť {{ popis }}" hx-post="/zakazka/{{ jobRef }}/odober/{{ cast }}/{{ r.id }}"
+        hx-confirm="Odstrániť {{ popis }}?" hx-target="#kalkulacia" hx-swap="innerHTML">×</button>
+{%- endmacro %}
+<datalist id="diely">{% for d in diely %}<option value="{{ d }}">{% endfor %}</datalist>
 <section class="grid2" aria-label="Súhrn kalkulácie">
   <div class="panel">
     <div class="kpis">
@@ -33,11 +42,17 @@
 
   <div class="panel">
     <h3>Sadzba a scenáre</h3>
+    <div class="vstupy">
     <form hx-post="/zakazka/{{ jobRef }}/sadzba" hx-trigger="change" {{ hx|safe }}>
       <label class="lbl" for="sadzba">Sadzba práce (€/h)</label><br>
       <input id="sadzba" class="num" type="text" inputmode="decimal" name="pracaEurH" value="{{ k.sadzby.pracaEurH|cas }}">
-      <span class="small muted">Zmena sa uloží a prepočíta hneď.</span>
     </form>
+    <form hx-post="/zakazka/{{ jobRef }}/mnozstvo" hx-trigger="change" {{ hx|safe }}>
+      <label class="lbl" for="mnozstvo-k">Množstvo (ks)</label><br>
+      <input id="mnozstvo-k" class="num" type="text" inputmode="decimal" name="mnozstvo" value="{{ k.mnozstvo|cas }}">
+    </form>
+    </div>
+    <p class="small muted">Zmena sa uloží a prepočíta hneď. Množstvo mení iba cenu za kus; kusy v operáciách a kg materiálu uprav v tabuľkách.</p>
     <div class="scen">
       <div>So sadzbami z riadkov<br><b>{{ v.spolu|eur }} €</b></div>
       <div>Jednotne {{ k.sadzby.pracaEurH|cas }} €/h<br><b>{{ jednotna.spolu|eur }} €</b></div>
@@ -53,40 +68,51 @@
       </li>
       {% endfor %}
     </ul>
-    <p class="small muted">Upozornenia vznikli pri importe zo šablóny a po úprave sa neprepočítavajú.</p>
+    <p class="small muted">Upozornenia vznikli pri vytvorení kalkulácie a po úprave sa neprepočítavajú.</p>
     {% else %}<p class="muted">Bez upozornení.</p>{% endif %}
   </div>
 </section>
 
 <section class="panel" aria-labelledby="h-op">
   <h2 id="h-op">Operácie ({{ k.operacie|length }})</h2>
-  <p class="small muted">Čas na kus uprav priamo v tabuľke; po opustení poľa sa kalkulácia uloží a prepočíta.</p>
+  <p class="small muted">Čas na kus a počet kusov uprav priamo v tabuľke; po opustení poľa sa kalkulácia uloží a prepočíta.</p>
   <div class="tbl">
   <table>
-    <thead><tr><th>Proces</th><th class="num">Čas na kus (min)</th><th class="num">Ks</th><th class="num">Min spolu</th><th class="num">Sadzba €/h</th><th class="num">Cena €</th><th>Bunka v Exceli</th></tr></thead>
+    <thead><tr><th>Proces</th><th class="num">Čas na kus (min)</th><th class="num">Ks</th><th class="num">Min spolu</th><th class="num">Sadzba €/h</th><th class="num">Cena €</th><th>Bunka v Exceli</th><th><span class="sr-only">Odstrániť</span></th></tr></thead>
     <tbody>
     {% for diel in diely %}
       {% set ops = k.operacie|selectattr("diel", "equalto", diel)|list %}
       {% if ops %}
-      <tr class="group"><td colspan="7">{{ diel }}</td></tr>
+      <tr class="group"><td colspan="8">{{ diel }}</td></tr>
       {% for o in ops %}{% set r = v.operacie[o.id] %}
       <tr>
         <td>{{ o.proces }}{% if o.polozkaPonuky and o.polozkaPonuky != "Priame mzdy" %} <span class="chip">{{ o.polozkaPonuky }}</span>{% endif %}</td>
         <td class="num"><input class="num" type="text" inputmode="decimal" name="casNaKusMin" value="{{ o.casNaKusMin|cas }}"
              aria-label="Čas na kus, {{ diel }}, {{ o.proces }}" hx-post="/zakazka/{{ jobRef }}/operacia/{{ o.id }}" hx-trigger="change" {{ hx|safe }}></td>
-        <td class="num">{{ o.kusov|cas }}</td>
+        <td class="num">{{ pole("operacie", o, "kusov", "Kusov, " ~ diel ~ ", " ~ o.proces) }}</td>
         <td class="num">{{ r.minutSpolu|cas }}</td>
         <td class="num">{% if r.inaSadzba %}<span class="chip bad">{{ r.sadzba|cas }}</span>
             <button class="link small" hx-post="/zakazka/{{ jobRef }}/operacia/{{ o.id }}/sadzba" {{ hx|safe }}>zjednotiť</button>{% else %}{{ r.sadzba|cas }}{% endif %}</td>
         <td class="num">{{ r.cena|eur }}</td>
         <td><span class="mono small muted">{{ o.zdrojBunka or "" }}</span></td>
+        <td>{{ zmaz("operacie", o, "operáciu " ~ o.proces ~ " (" ~ diel ~ ")") }}</td>
       </tr>
       {% endfor %}
       {% endif %}
     {% endfor %}
+    {% if not k.operacie %}<tr><td colspan="8" class="muted">Zatiaľ bez operácií.</td></tr>{% endif %}
     </tbody>
   </table>
   </div>
+  <form class="pridaj" hx-post="/zakazka/{{ jobRef }}/pridaj/operacie" {{ hx|safe }}>
+    <span class="lbl">Pridať operáciu</span>
+    <input type="text" name="diel" list="diely" placeholder="Diel" aria-label="Diel" required>
+    <input type="text" name="proces" placeholder="Proces (napr. sústruženie)" aria-label="Proces" required>
+    <input class="num" type="text" inputmode="decimal" name="a" placeholder="min/ks" aria-label="Čas na kus v minútach">
+    <input class="num" type="text" inputmode="decimal" name="b" value="{{ k.mnozstvo|cas }}" aria-label="Kusov">
+    <select name="polozkaPonuky" aria-label="Riadok ponuky">{% for p in POLOZKY_PONUKY[:3] %}<option>{{ p }}</option>{% endfor %}</select>
+    <button type="submit">Pridať</button>
+  </form>
 </section>
 
 <div class="grid2">
@@ -94,31 +120,51 @@
     <h3 id="h-mat">Materiál ({{ k.material|length }})</h3>
     <div class="tbl">
     <table>
-      <thead><tr><th>Diel</th><th>Polotovar</th><th>Materiál</th><th class="num">kg</th><th class="num">€/kg</th><th class="num">€</th></tr></thead>
+      <thead><tr><th>Diel</th><th>Polotovar</th><th>Materiál</th><th class="num">kg</th><th class="num">€/kg</th><th class="num">€</th><th></th></tr></thead>
       <tbody>
       {% for m in k.material %}
       <tr><td>{{ m.diel }}</td><td>{{ m.polotovar or "–" }}{% if m.norma %} <span class="chip">{{ m.norma }}</span>{% endif %}</td><td>{{ m.material or "–" }}</td>
-        <td class="num">{{ m.kg|eur }}</td><td class="num">{{ m.eurZaKg|eur }}</td><td class="num">{{ (m.kg * m.eurZaKg)|eur }}</td></tr>
-      {% else %}<tr><td colspan="6" class="muted">Bez materiálu.</td></tr>{% endfor %}
+        <td class="num">{{ pole("material", m, "kg", "kg, " ~ m.diel) }}</td><td class="num">{{ pole("material", m, "eurZaKg", "€/kg, " ~ m.diel) }}</td><td class="num">{{ (m.kg * m.eurZaKg)|eur }}</td>
+        <td>{{ zmaz("material", m, "materiál pre " ~ m.diel) }}</td></tr>
+      {% else %}<tr><td colspan="7" class="muted">Bez materiálu.</td></tr>{% endfor %}
       </tbody>
     </table>
     </div>
+    <form class="pridaj" hx-post="/zakazka/{{ jobRef }}/pridaj/material" {{ hx|safe }}>
+      <span class="lbl">Pridať materiál</span>
+      <input type="text" name="diel" list="diely" placeholder="Diel" aria-label="Diel" required>
+      <input type="text" name="polotovar" placeholder="Polotovar" aria-label="Polotovar">
+      <input type="text" name="material" placeholder="Materiál" aria-label="Materiál">
+      <input class="num" type="text" inputmode="decimal" name="a" placeholder="kg" aria-label="Kilogramov">
+      <input class="num" type="text" inputmode="decimal" name="b" placeholder="€/kg" aria-label="Cena za kg">
+      <button type="submit">Pridať</button>
+    </form>
   </section>
   <section class="panel" aria-labelledby="h-nak">
     <h3 id="h-nak">Nákup a ďalšie položky</h3>
     <div class="tbl">
     <table>
-      <thead><tr><th>Položka</th><th class="num">€/ks</th><th class="num">Ks</th><th class="num">€</th><th>V cene</th></tr></thead>
+      <thead><tr><th>Položka</th><th class="num">€/ks</th><th class="num">Ks</th><th class="num">€</th><th>V cene</th><th></th></tr></thead>
       <tbody>
       {% for n in k.nakup + k.dalsie %}
       <tr><td>{{ n.nazov }}{% if n.polozkaPonuky and n.polozkaPonuky not in ["Nakupované diely", n.nazov] %} <span class="chip">{{ n.polozkaPonuky }}</span>{% endif %}</td>
-        <td class="num">{{ n.eurZaKs|eur }}</td><td class="num">{{ n.kusov|cas }}</td><td class="num">{{ (n.eurZaKs * n.kusov)|eur }}</td>
+        {% set cast = "nakup" if n in k.nakup else "dalsie" %}
+        <td class="num">{{ pole(cast, n, "eurZaKs", "€/ks, " ~ n.nazov) }}</td><td class="num">{{ pole(cast, n, "kusov", "Kusov, " ~ n.nazov) }}</td><td class="num">{{ (n.eurZaKs * n.kusov)|eur }}</td>
         <td><button class="{{ '' if n.zapocitat else 'primary' }}" hx-post="/zakazka/{{ jobRef }}/nakup/{{ n.id }}/zapocitat" {{ hx|safe }}
-              aria-pressed="{{ 'true' if n.zapocitat else 'false' }}" title="{{ 'Vyradiť z ceny' if n.zapocitat else 'Pridať do ceny' }}">{{ "Áno" if n.zapocitat else "Nie" }}</button></td></tr>
-      {% else %}<tr><td colspan="5" class="muted">Bez položiek.</td></tr>{% endfor %}
+              aria-pressed="{{ 'true' if n.zapocitat else 'false' }}" title="{{ 'Vyradiť z ceny' if n.zapocitat else 'Pridať do ceny' }}">{{ "Áno" if n.zapocitat else "Nie" }}</button></td>
+        <td>{{ zmaz(cast, n, n.nazov) }}</td></tr>
+      {% else %}<tr><td colspan="6" class="muted">Bez položiek.</td></tr>{% endfor %}
       </tbody>
     </table>
     </div>
+    <form class="pridaj" hx-post="/zakazka/{{ jobRef }}/pridaj/nakup" {{ hx|safe }}>
+      <span class="lbl">Pridať položku</span>
+      <input type="text" name="nazov" placeholder="Názov (napr. tesnenie, doprava)" aria-label="Názov" required>
+      <input class="num" type="text" inputmode="decimal" name="a" placeholder="€/ks" aria-label="Cena za kus">
+      <input class="num" type="text" inputmode="decimal" name="b" value="1" aria-label="Kusov">
+      <select name="polozkaPonuky" aria-label="Riadok ponuky">{% for p in POLOZKY_PONUKY[3:] %}<option>{{ p }}</option>{% endfor %}</select>
+      <button type="submit">Pridať</button>
+    </form>
   </section>
 </div>
 
@@ -128,7 +174,7 @@
   <div class="tbl"><table>
     <thead><tr><th>Čas (UTC)</th><th>Pole</th><th class="num">Pôvodne</th><th class="num">Nové</th></tr></thead>
     <tbody>{% for z in k.zmeny|reverse %}{% if loop.index <= 15 %}
-      <tr><td class="mono small">{{ z.cas }}</td><td class="mono small">{{ z.pole }}</td><td class="num">{{ z.povodne if z.povodne is not none else "–" }}</td><td class="num">{{ z.nove if z.nove is not none else "–" }}</td></tr>
+      <tr><td class="mono small">{{ z.cas }}</td><td class="mono small">{{ z.pole }}</td><td class="num">{{ z.povodne|zmena }}</td><td class="num">{{ z.nove|zmena }}</td></tr>
     {% endif %}{% endfor %}</tbody>
   </table></div>
 </section>

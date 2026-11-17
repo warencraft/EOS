@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% set active = "stav" %}
+{% block title %}Stav{% endblock %}
+{% macro karta(s, kto) %}
+<article class="sprava {{ s.typ }} {{ 'hotovo' if s.stav == 'vyriesene' else '' }} {{ s.zavaznost or '' }}" id="{{ s.id }}">
+  <header>
+    <span class="chip {{ 'bad' if s.zavaznost == 'blokuje' else ('warn' if s.typ in ['rozhodnutie', 'otazka'] or s.zavaznost == 'dolezite' else ('blue' if s.typ == 'kontrola' else '')) }}">{{ TYPY[s.typ] }}{% if s.zavaznost %} · {{ ZAVAZNOST[s.zavaznost] }}{% endif %}</span>
+    {% if s.pre == "oba" %}<span class="chip">pre oboch</span>{% endif %}
+    {% if s.stav == "vyriesene" %}<span class="chip ok">vyriešené · {{ LUDIA[s.vyriesil] if s.vyriesil else "" }}</span>{% endif %}
+  </header>
+  <h3>{{ s.tema }}</h3>
+  <div class="text">{{ s.text }}</div>
+  <p class="meta">{{ LUDIA[s.autor] }} · {{ s.cas[:16]|replace("T", " ") }} UTC{% if s.vetva %} · vetva <code>{{ s.vetva }}</code>{% endif %}{% if s.commit %} · <code>{{ s.commit[:8] }}</code>{% endif %}</p>
+  {% if s.subory %}<p class="meta">Súbory: {% for f in s.subory %}<code>{{ f }}</code>{% if not loop.last %}, {% endif %}{% endfor %}</p>{% endif %}
+  {% for o in s.odpovede %}
+  <div class="odpoved"><b>{{ LUDIA[o.autor] }}</b> <span class="meta">{{ o.cas[:16]|replace("T", " ") }}</span><div class="text">{{ o.text }}</div></div>
+  {% endfor %}
+  <details>
+    <summary>Odpovedať{% if s.stav == "otvorene" %} alebo vyriešiť{% endif %}</summary>
+    <form method="post" action="/stav" class="form">
+      <input type="hidden" name="odpovedNa" value="{{ s.id }}">
+      <input type="hidden" name="typ" value="feedback">
+      <input type="hidden" name="tema" value="">
+      <label class="lbl" for="t-{{ s.id }}">Odpoveď</label>
+      <textarea id="t-{{ s.id }}" name="text" rows="3" required></textarea>
+      <div><select name="autor" aria-label="Kto odpovedá">{% for k in ["marco", "robino"] %}<option value="{{ k }}" {% if k == kto %}selected{% endif %}>{{ LUDIA[k] }}</option>{% endfor %}</select>
+        <button type="submit">Odoslať odpoveď</button></div>
+    </form>
+    <form method="post" action="/stav/{{ s.id }}/vyriesit">
+      <select name="kto" aria-label="Kto rieši">{% for k in ["marco", "robino"] %}<option value="{{ k }}" {% if k == kto %}selected{% endif %}>{{ LUDIA[k] }}</option>{% endfor %}</select>
+      {% if s.stav == "otvorene" %}<button class="primary" type="submit">Označiť ako vyriešené</button>
+      {% else %}<input type="hidden" name="znovu" value="1"><button type="submit">Znova otvoriť</button>{% endif %}
+    </form>
+  </details>
+</article>
+{% endmacro %}
+{% block content %}
+<div class="head">
+  <div>
+    <span class="eyebrow">Nástenka · ADR-0022</span>
+    <h1>Stav a feedback</h1>
+    <p class="muted">Správy medzi Marcom, Robinom a agentom. Agent sem pred každým commitom zapíše, čo našiel, a rozdelí to podľa toho, kto má čo riešiť. Správy idú s commitom do gitu, preto sem <b>nepíš mená zákazníkov ani ceny zákaziek</b>; odkáž na číslo zákazky (JOB-…).</p>
+  </div>
+  <a class="btn" href="/stav{{ '' if vsetky else '?vsetky=1' }}">{{ "Iba otvorené" if vsetky else "Zobraziť aj vyriešené" }}</a>
+</div>
+{% if chyba %}<div class="err" role="alert">{{ chyba }}</div>{% endif %}
+
+<div class="grid2 stav">
+  {% for kto, spravy in [("marco", marco), ("robino", robino)] %}
+  <section aria-labelledby="h-{{ kto }}">
+    <h2 id="h-{{ kto }}" class="stlpec">{{ PRE[kto] }} <span class="chip">{{ spravy|length }}</span></h2>
+    <p class="small muted">{{ "Doména: entity, hodnoty, zdroje, rozsah fázy, rozhodnutia CDR." if kto == "marco" else "Technika: kód, testy, závislosti, architektúra, git." }}</p>
+    {% for s in spravy %}{{ karta(s, kto) }}{% else %}<div class="empty">Nič otvorené.</div>{% endfor %}
+  </section>
+  {% endfor %}
+</div>
+
+<section class="panel" aria-labelledby="h-nova">
+  <h2 id="h-nova">Nová správa</h2>
+  <form method="post" action="/stav" class="form nova-sprava">
+    <div class="riadok">
+      <label><span class="lbl">Od</span><br><select name="autor">{% for k in ["marco", "robino"] %}<option value="{{ k }}" {% if f.autor == k %}selected{% endif %}>{{ LUDIA[k] }}</option>{% endfor %}</select></label>
+      <label><span class="lbl">Pre</span><br><select name="pre">{% for k, v in PRE.items() %}<option value="{{ k }}" {% if f.pre == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></label>
+      <label><span class="lbl">Typ</span><br><select name="typ">{% for k in ["feedback", "otazka", "rozhodnutie", "info"] %}<option value="{{ k }}" {% if f.typ == k %}selected{% endif %}>{{ TYPY[k] }}</option>{% endfor %}</select></label>
+    </div>
+    <label class="lbl" for="tema">Téma</label>
+    <input id="tema" type="text" name="tema" maxlength="120" required value="{{ f.tema or '' }}">
+    <label class="lbl" for="text">Text</label>
+    <textarea id="text" name="text" rows="4" required>{{ f.text or '' }}</textarea>
+    <div><button class="primary" type="submit">Uložiť správu</button>
+      <span class="small muted">Uloží sa do <code>status/spravy/</code>. Druhý ju uvidí po tom, čo ju commitneš a on si stiahne zmeny.</span></div>
+  </form>
+</section>
+{% endblock %}
