@@ -4,6 +4,10 @@ Lokálna aplikácia v prehliadači (ADR-0021, ADR-0022). Založíš v nej zákaz
 
 ## Spustenie
 
+**Najjednoduchšie:** povedz svojmu agentovi (Claude alebo Codex) v priečinku EOS „spusti EOS“. Podľa skillu `eos-spustit-ui` stiahne najnovšiu verziu, pripraví prostredie a otvorí aplikáciu v prehliadači.
+
+Ručne:
+
 Raz nainštaluj voliteľné závislosti (z priečinka EOS):
 
 ```bash

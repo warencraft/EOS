@@ -51,6 +51,7 @@ Skilly sú v `.agents/skills/<názov>/SKILL.md` (spoločný priečinok pre Codex
 | `eos-write-tests` | pred pridaním testu, fixtúry alebo neplatného prípadu |
 | `eos-adr` | zmena architektúry, závislostí, etapy alebo pravidiel |
 | `eos-governance-check` | vždy pred ukončením práce |
+| `eos-spustit-ui` | „spusti EOS“, „otvor UI“, „aktualizuj aplikáciu“; stiahne verziu, pripraví prostredie a spustí UI |
 | `eos-pre-commit-review` | pred každým commitom a pushom; nálezy zapíše na nástenku pre Marca (doména) a Robina (technika) |
 | `eos-git-publish` | „ulož to“, „pushni“, „sprav PR“; všetko urob a vysvetli za používateľa |
 
