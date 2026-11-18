@@ -1,0 +1,21 @@
+{
+  "formatVersion": "0.1.0",
+  "id": "20261118T200340Z-agent-kontrola-streamovanie-a-kontext-chat",
+  "cas": "2026-11-18T20:03:40Z",
+  "autor": "agent",
+  "pre": "robino",
+  "typ": "kontrola",
+  "stav": "otvorene",
+  "tema": "Kontrola: streamovanie a kontext chatu Claude",
+  "text": "Pred sprístupnením na VPS over cez Tailscale, že nová otázka vyvolá viditeľný text pred dokončením, zastavenie uvoľní reláciu a ďalšia otázka sa dá odoslať. Over aj návrh dodávateľa po dlhšom rozhovore. Lokálne prešlo 351 testov, sieťové volania Claude nahradil falošný klient.",
+  "zavaznost": "dolezite",
+  "vetva": "feature/eos-chat-context",
+  "commit": null,
+  "subory": [
+    "scripts/web/claude_chat.py",
+    "scripts/ai/chat_client.py"
+  ],
+  "odpovedNa": null,
+  "vyriesil": null,
+  "vyriesene": null
+}

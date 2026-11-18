@@ -3,6 +3,9 @@
 ## Spevnenie servera v návode (docs) - 2026-11-19
 
 `docs/manual/SERVER.md`: upozornenie, že väčšina stránok nemá vlastné prihlásenie, a z toho vyplývajúce pravidlá. Každý má vlastný Tailscale účet namiesto jedného spoločného, inak chat a odosielanie nerozlíšia osoby. Nový krok 1a: 2FA u poskytovateľa, automatické aktualizácie, SSH iba kľúčom, `ufw` bez verejných portov a SSH iba cez `tailscale0`, skúška `nmap`. Služba `eos-ui` beží v sandboxe systemd so zápisom iba do `intake/`, `status/` a `~/.config/eos`. Pravidlá prístupu v Tailnete (brat iba `tcp:443`, `tag:eos`), Device approval a zákaz Funnel. Claude API kľúč je zašifrovaný cez `systemd-creds` (`LoadCredentialEncrypted`) a má samostatný workspace s mesačným limitom. Záloha je šifrovaná cez `restic` mimo poskytovateľa a nahrádza nešifrovaný `tar` na tom istom serveri. K tomu skúšobná obnova a upozornenie na heslo aplikácie Gmailu. Plán a bezpečnostný dokument v `docs/handoff/` nesú poznámku, čo nahradilo ADR-0026. Iba dokumentácia, kód a závislosti bez zmien.
+## Výber kontextu a streamovanie v paneli Claude - 2026-11-18
+
+Panel Claude zobrazuje text priebežne a umožňuje prerušiť odpoveď. Do API posiela novú správu a najviac päť posledných výmen podľa rozpočtu. Celý uložený rozhovor ostáva dostupný v EOS. Pribudli štyri regresné testy.
 
 ## Odoslanie ponúk a Claude rozhovory v EOS (ADR-0026 Draft) - 2026-11-18
 

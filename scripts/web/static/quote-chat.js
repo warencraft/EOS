@@ -97,9 +97,74 @@ const chatMessages = document.querySelector(".chat-messages");
 if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
 
 const chatComposer = document.querySelector('form[action="/chat"]');
-chatComposer?.addEventListener("submit", () => {
+if (chatComposer && window.TextDecoderStream) {
   const button = chatComposer.querySelector(".chat-send");
-  button.disabled = true;
-  button.textContent = "…";
-  button.setAttribute("aria-label", "Claude pripravuje odpoveď");
-});
+  const stop = chatComposer.querySelector(".chat-stop");
+  const input = chatComposer.querySelector("#prompt");
+  let pending;
+
+  stop.addEventListener("click", () => pending?.abort());
+
+  chatComposer.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (pending || !input.value.trim()) return;
+
+    const form = new FormData(chatComposer);
+    const question = document.createElement("article");
+    question.className = "chat-message chat-message--user chat-text";
+    question.textContent = input.value.trim();
+    const answer = document.createElement("article");
+    answer.className = "chat-message chat-message--assistant chat-text";
+    answer.textContent = "Claude pripravuje odpoveď…";
+    chatMessages.append(question, answer);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    button.disabled = true;
+    stop.hidden = false;
+    input.readOnly = true;
+    pending = new AbortController();
+
+    try {
+      const response = await fetch("/chat/stream", {method: "POST", body: form, signal: pending.signal});
+      if (!response.ok || !response.body) throw new Error("Otázku sa nepodarilo odoslať.");
+      const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+      let buffer = "";
+      let hasText = false;
+      try {
+        while (true) {
+          const {value, done} = await reader.read();
+          if (done) break;
+          buffer += value;
+          const lines = buffer.split("\n");
+          buffer = lines.pop();
+          for (const line of lines) {
+            const message = JSON.parse(line);
+            if (message.type === "error") throw new Error(message.text);
+            if (message.type === "done") {
+              location.replace(message.text);
+              return;
+            }
+            if (message.type === "delta") {
+              if (!hasText) answer.textContent = "";
+              hasText = true;
+              answer.append(document.createTextNode(message.text));
+              chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+          }
+        }
+      } finally {
+        await reader.cancel().catch(() => {});
+      }
+      throw new Error("Spojenie sa prerušilo. Správu môžeš skúsiť znova.");
+    } catch (error) {
+      answer.textContent = pending.signal.aborted ? "Odpoveď bola zastavená." : error.message;
+      answer.setAttribute("role", "alert");
+      question.remove();
+    } finally {
+      pending = null;
+      input.readOnly = false;
+      button.disabled = false;
+      stop.hidden = true;
+      input.focus();
+    }
+  });
+}

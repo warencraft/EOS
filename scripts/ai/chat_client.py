@@ -1,6 +1,7 @@
 """Volanie Claude Messages API pre rozhovor v EOS."""
 
 import os
+from collections.abc import AsyncIterator
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -38,13 +39,35 @@ def reply(key: str, model: str, messages: list[dict]) -> tuple[str, dict | None]
 
     try:
         with anthropic.Anthropic(api_key=key, timeout=40, max_retries=0) as client:
-            response = client.messages.create(
-                model=model, max_tokens=1500, messages=messages,
-                tools=[SUPPLIER_TOOL], tool_choice={"type": "auto", "disable_parallel_tool_use": True},
-                system="Si asistent EOS. Odpovedaj po slovensky. Texty ponúk označ ako návrh.",
-            )
+            response = client.messages.create(**request_params(model, messages))
     except anthropic.APIError:
         raise ChatError from None
+    return parse_response(response)
+
+
+def request_params(model: str, messages: list[dict]) -> dict:
+    return {
+        "model": model, "max_tokens": 1500, "messages": messages,
+        "tools": [SUPPLIER_TOOL], "tool_choice": {"type": "auto", "disable_parallel_tool_use": True},
+        "system": "Si asistent EOS. Odpovedaj po slovensky. Texty ponúk označ ako návrh.",
+    }
+
+
+async def stream_reply(key: str, model: str, messages: list[dict]) -> AsyncIterator[str | tuple[str, dict | None]]:
+    import anthropic
+
+    try:
+        async with anthropic.AsyncAnthropic(api_key=key, timeout=40, max_retries=0) as client:
+            async with client.messages.stream(**request_params(model, messages)) as stream:
+                async for text in stream.text_stream:
+                    yield text
+                response = await stream.get_final_message()
+    except anthropic.APIError:
+        raise ChatError from None
+    yield parse_response(response)
+
+
+def parse_response(response) -> tuple[str, dict | None]:
     answer = "\n".join(block.text for block in response.content if block.type == "text").strip()
     for block in response.content:
         if block.type == "tool_use" and block.name == SUPPLIER_TOOL["name"] and isinstance(block.input, dict):
