@@ -13,6 +13,7 @@ import sys
 import stat
 import tempfile
 import unittest
+from contextlib import asynccontextmanager
 from email.message import EmailMessage
 from pathlib import Path
 from types import SimpleNamespace
@@ -268,6 +269,50 @@ class PrevadzkaUiTests(unittest.TestCase):
             self.assertEqual(client.post("/chat", data={"session": session, "prompt": "Skráť ho"}).status_code, 303)
         self.assertEqual([m["role"] for m in messages.create.call_args.kwargs["messages"]],
                          ["user", "assistant", "user"])
+
+    def test_claude_stream_limits_context_and_preserves_full_private_transcript(self):
+        client = self.serve_client("owner@example.org")
+        sent = []
+
+        async def text_deltas():
+            yield "<b>"
+            yield "Odpoveď</b>"
+
+        async def final_message():
+            return SimpleNamespace(content=[SimpleNamespace(type="text", text="<b>Odpoveď</b>")])
+
+        @asynccontextmanager
+        async def stream(**kwargs):
+            sent.append(kwargs["messages"])
+            yield SimpleNamespace(text_stream=text_deltas(), get_final_message=final_message)
+
+        @asynccontextmanager
+        async def api_client(**_kwargs):
+            yield SimpleNamespace(messages=SimpleNamespace(stream=stream))
+
+        sdk = SimpleNamespace(AsyncAnthropic=api_client, APIError=RuntimeError)
+        with patch.dict(sys.modules, {"anthropic": sdk}):
+            session = ""
+            for index in range(7):
+                response = client.post("/chat/stream", data={"session": session, "prompt": f"Otázka {index}"})
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.headers["cache-control"], "no-store")
+                events = [json.loads(line) for line in response.iter_lines()]
+                self.assertEqual(events[:2], [{"type": "delta", "text": "<b>"},
+                                              {"type": "delta", "text": "Odpoveď</b>"}])
+                self.assertEqual(events[2]["type"], "done")
+                location = events[2]["text"]
+                session = location.split("=")[-1]
+            other = {"tailscale-user-login": "brother@example.org"}
+            denied = client.post("/chat/stream", headers=other, data={"session": session, "prompt": "Cudzí chat"})
+            self.assertEqual(json.loads(denied.text)["type"], "error")
+
+        self.assertEqual(len(sent), 7)
+        self.assertEqual([m["content"] for m in sent[-1] if m["role"] == "user"],
+                         [f"Otázka {index}" for index in range(1, 7)])
+        transcript = client.get(location).text
+        self.assertIn("Otázka 0", transcript)
+        self.assertIn("&lt;b&gt;Odpoveď&lt;/b&gt;", transcript)
 
     def test_gmail_order_prefills_job_and_keeps_reviewed_source_once(self):
         G.save_config("firma@example.com", PASSWORD, self.cfg)

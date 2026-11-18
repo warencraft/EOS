@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Výber kontextu a streamovanie v paneli Claude - 2026-11-18
+
+Panel Claude zobrazuje text priebežne a umožňuje prerušiť odpoveď. Do API posiela novú správu a najviac päť posledných výmen podľa rozpočtu. Celý uložený rozhovor ostáva dostupný v EOS. Pribudli štyri regresné testy.
+
 ## Odoslanie ponúk a Claude rozhovory v EOS (ADR-0026 Draft) - 2026-11-18
 
 Potvrdené SMTP odoslanie so zobrazením adresáta, predmetu a tela správy. Panel Claude s rozhovormi oddelenými podľa Tailscale identity, firemným API a prenosom návrhu do upraviteľného textu e-mailu. Nasadenie popisuje [návod na server](docs/manual/SERVER.md). Panel si pri navigácii v aplikácii zachová stav, dá sa zbaliť a znova otvoriť šípkou a prijíma návrhy na nástenku pre Robina. Osobné schránky sa zapínajú podľa identity. Claude môže pripraviť predvyplnený formulár nového dodávateľa. Nová zákazka sa dá založiť z vybranej objednávky Gmailu s predvyplnením údajov a uložením zdrojového textu. Pribudlo šesť testov v `tests/test_prevadzka.py` s náhradou IMAP, SMTP a Claude API.
