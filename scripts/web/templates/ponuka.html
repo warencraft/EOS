@@ -12,9 +12,10 @@
 </div>
 {% if ok == "ulozene" %}<div class="ok-msg" role="status">Uložené.</div>{% endif %}
 {% if ok == "koncept" %}<div class="ok-msg" role="status">Koncept je v Gmaile v Konceptoch. Skontroluj ho a odošli z Gmailu.</div>{% endif %}
+{% if ok == "odoslane" %}<div class="ok-msg" role="status">Gmail prijal ponuku na odoslanie.</div>{% endif %}
 {% if chyba %}<div class="err" role="alert">{{ chyba }}</div>{% endif %}
 <div class="grid2">
-<form class="form" method="post" action="/ponuka/{{ q.id }}" style="gap:16px">
+<form id="quote-form" class="form" method="post" action="/ponuka/{{ q.id }}" style="gap:16px">
   <section class="panel fields">
     <label><span class="lbl">Číslo</span><input type="text" name="number" value="{{ q.number or '' }}"></label>
     <label><span class="lbl">Zákazník</span><input type="text" name="customer" value="{{ q.customer or '' }}"></label>
@@ -33,6 +34,7 @@
     <div><button class="danger" type="submit" name="akcia" value="zmazat" formnovalidate>Zmazať</button></div>
     <div>
       {% if gmail %}<button type="submit" name="akcia" value="koncept">Uložiť a vytvoriť koncept v Gmaile</button>{% endif %}
+      {% if gmail and can_send and q.status in ("draft", "gmail_draft") %}<button type="submit" name="akcia" value="nahlad-odoslania">Odoslať ponuku…</button>{% endif %}
       {% if q.status == "accepted" and not q.orderId %}<button type="submit" name="akcia" value="objednavka">Vytvoriť objednávku</button>{% endif %}
       <button class="primary" type="submit" name="akcia" value="ulozit">Uložiť</button>
     </div>
@@ -43,6 +45,11 @@
   <section class="panel">
     <h3>Text konceptu</h3>
     <div class="preview">{{ telo }}</div>
+    <label class="form" for="quote-email-body">
+      Vlastný text e-mailu
+      <textarea id="quote-email-body" name="emailBody" form="quote-form" rows="4" maxlength="100000"
+                placeholder="Ak pole necháš prázdne, EOS použije text v náhľade.">{{ q.emailBody or '' }}</textarea>
+    </label>
   </section>
   {% if q.gmail and q.gmail.threadId %}
   <section class="panel thread">

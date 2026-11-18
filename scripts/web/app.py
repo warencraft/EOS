@@ -3,13 +3,17 @@
 Beží na 127.0.0.1. Na serveri ju sprístupní Tailscale (ADR-0025) iba pre vašu súkromnú sieť.
 Číta zákazky z intake/, pracovné kalkulácie z intake/_eos/kalkulacie/ a prevádzkové záznamy
 (ponuky, objednávky, sklad, dodávatelia, knowledge base) z intake/_eos/prevadzka/. Von posiela
-iba to, čo pošle Gmail (IMAP), a iba na pokyn používateľa.
+správy cez Gmail a ručne zadaný chat cez Claude API, iba na pokyn používateľa.
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
+import re
+from email.utils import parseaddr
+from threading import Lock
 from pathlib import Path
 from urllib.parse import urlencode, urlsplit
 
@@ -25,8 +29,9 @@ from scripts import prevadzka as P
 from scripts.status import spravy as S
 from scripts.export_viewer import AREAS, TRANSLATIONS, load_schemas, load_translations
 
-from . import prevadzka_ui
+from . import claude_chat, prevadzka_ui
 from .sklad import KATEGORIE, Sklad
+from .tailnet_identity import authorized_user
 
 # Polia, ktoré sa dajú v UI prepísať číslom (časť → kľúče).
 CISELNE_POLIA = {
@@ -100,6 +105,9 @@ def create_app(root: Path = ROOT, intake: Path | None = None, status: Path | Non
     sklad = Sklad(intake or root / "intake")
     povolene = LOCAL_HOSTS | {h.strip().lower() for h in (allowed_hosts or set()) if h.strip()}
     povolene |= {h.strip().lower() for h in os.environ.get("EOS_ALLOWED_HOSTS", "").split(",") if h.strip()}
+    serve_host = urlsplit(os.getenv("EOS_SERVE_ORIGIN", "")).hostname
+    if serve_host:
+        povolene.add(serve_host)
     nastenka = S.Nastenka(status or root / "status" / "spravy", intake=sklad.intake)
     app = FastAPI(title="EOS", docs_url=None, redoc_url=None, openapi_url=None)
     app.mount("/static", StaticFiles(directory=TU / "static"), name="static")
@@ -128,14 +136,30 @@ def create_app(root: Path = ROOT, intake: Path | None = None, status: Path | Non
 
     # --- ponuky, objednávky, sklad, dodávatelia, knowledge base, Gmail (ADR-0025) -------
     app.state.imap_factory = imap_factory
-    def gmail_provider():
-        return G.Gmail.from_config(gmail_config, imap_factory)
-    def gmail_saver(address, password):
+    def mailbox_path(request):
+        if "EOS_GMAIL_USERS" not in os.environ:
+            return gmail_config
+        user = authorized_user(request, "EOS_GMAIL_USERS")
+        if not user:
+            raise HTTPException(403, "Nemáš povolenie pripojiť Gmail.")
+        base = gmail_config or G.config_path()
+        return base.parent / "accounts" / (hashlib.sha256(user.encode()).hexdigest() + ".json")
+
+    def gmail_provider(request):
+        try:
+            path = mailbox_path(request)
+        except HTTPException:
+            return None
+        return G.Gmail.from_config(path, imap_factory)
+
+    def gmail_saver(request, address, password):
+        path = mailbox_path(request)
         if address and password:
-            G.save_config(address, password, gmail_config)
+            G.save_config(address, password, path)
         else:
-            G.delete_config(gmail_config)
-    prevadzka_ui.register(app, sablony, P.Prevadzka(sklad.intake), gmail_provider, gmail_saver)
+            G.delete_config(path)
+    supplier_proposal = claude_chat.register(app, sablony, sklad.intake / "_eos" / "chat", nastenka)
+    prevadzka_ui.register(app, sablony, P.Prevadzka(sklad.intake), gmail_provider, gmail_saver, supplier_proposal)
 
     def zakazka_alebo_404(job_ref: str) -> dict:
         try:
@@ -183,8 +207,20 @@ def create_app(root: Path = ROOT, intake: Path | None = None, status: Path | Non
     def zakazka(request: Request, job_ref: str, preskocene: str = ""):
         z = zakazka_alebo_404(job_ref)
         k = sklad.nacitaj_kalkulaciu(job_ref)
-        return sablony.TemplateResponse(request, "zakazka.html", {"z": z, "preskocene": preskocene,
-                                                                  **kontext_kalkulacie(job_ref, k)})
+        order_summary = ""
+        for file in z["subory"]:
+            if re.fullmatch(r"objednavka/objednavka-[a-f0-9]{32}\.txt", file["path"]):
+                try:
+                    source = sklad.cesta_suboru(job_ref, file["path"])
+                    with source.open(encoding="utf-8") as stream:
+                        order_summary = stream.read(4096).partition("\n\nPôvodný e-mail\n")[0].strip()
+                except (KeyError, OSError, UnicodeError):
+                    pass
+                break
+        return sablony.TemplateResponse(request, "zakazka.html", {
+            "z": z, "preskocene": preskocene, "order_summary": order_summary,
+            **kontext_kalkulacie(job_ref, k),
+        })
 
     @app.post("/zakazka/{job_ref}/import")
     def importuj(request: Request, job_ref: str, subor: str = Form(...)):
@@ -249,21 +285,92 @@ def create_app(root: Path = ROOT, intake: Path | None = None, status: Path | Non
         return vykresli_kalkulaciu(request, job_ref, nova)
 
     # --- nová zákazka a podklady -------------------------------------------------
+    order_query = 'in:inbox newer_than:90d (objednávka OR Bestellung OR "purchase order")'
+    intake_lock = Lock()
+    order_fields = (
+        ("customer", "Zákazník", r"zákazník|objednávateľ|customer"),
+        ("email", "Kontaktný e-mail", None),
+        ("number", "Číslo objednávky", r"číslo objednávky|po number|bestellnummer"),
+        ("quantity", "Množstvo", r"množstvo|počet kusov|quantity|menge"),
+        ("due", "Požadovaný termín", r"termín dodania|požadovaný termín|delivery date|liefertermin"),
+    )
+
+    def order_message(gmail, thread):
+        if not gmail:
+            raise ValueError("Najprv pripoj Gmail.")
+        messages = gmail.thread(thread)
+        if not messages:
+            raise ValueError("Vlákno objednávky sa nenašlo.")
+        return messages[0]
+
+    def order_defaults(message):
+        name, email = parseaddr(message.get("from", ""))
+        fields = {"customer": name or email, "email": email}
+        for key, _, labels in order_fields:
+            if labels:
+                match = re.search(rf"^(?:{labels})[ \t]*:[ \t]*(\S[^\r\n]*)",
+                                  message.get("text", ""), flags=re.IGNORECASE | re.MULTILINE)
+                if match:
+                    fields[key] = match.group(1).strip()[:300]
+        return fields
+
+    def job_form(**values):
+        return {"active": "zakazky", "dalsie": sklad.dalsie_cislo(), "fields": order_fields,
+                "query": order_query, **values}
+
     @app.get("/nova", response_class=HTMLResponse)
-    def nova_formular(request: Request):
-        return sablony.TemplateResponse(request, "nova.html", {"active": "zakazky", "dalsie": sklad.dalsie_cislo()})
+    def nova_formular(request: Request, vlakno: str = "", hladat: bool = False, q: str = ""):
+        gmail = gmail_provider(request)
+        values = job_form(gmail=gmail, query=q or order_query)
+        try:
+            if vlakno:
+                message = order_message(gmail, vlakno)
+                values.update(source=message, thread=vlakno, nazov=message.get("subject", "")[:300],
+                              order=order_defaults(message))
+            elif hladat and gmail:
+                values["results"] = gmail.search(q or order_query)
+        except (G.GmailError, ValueError) as error:
+            values["chyba"] = str(error)
+        return sablony.TemplateResponse(request, "nova.html", values)
 
     @app.post("/nova")
     async def nova_zakazka(request: Request, nazov: str = Form(""), kto: str = Form(""),
-                           priecinok: str = Form("vykresy"), subory: list[UploadFile] = File(default=[])):
+                           priecinok: str = Form("vykresy"), subory: list[UploadFile] = File(default=[]),
+                           vlakno: str = Form("")):
         if priecinok not in KATEGORIE:
             priecinok = "ine"
+        if not vlakno:
+            try:
+                with intake_lock:
+                    job_ref = sklad.nova_zakazka(nazov, kto)
+            except ValueError as error:
+                return sablony.TemplateResponse(request, "nova.html", job_form(
+                    chyba=str(error), nazov=nazov, kto=kto, gmail=gmail_provider(request)), status_code=422)
+            return await uloz_podklady(job_ref, priecinok, subory)
+
+        gmail = gmail_provider(request)
+        form = await request.form()
+        order = {key: str(form.get(key, "")).strip()[:300] for key, _, _ in order_fields}
+        message = None
         try:
-            job_ref = sklad.nova_zakazka(nazov, kto)
-        except ValueError as e:
-            return sablony.TemplateResponse(request, "nova.html", {"active": "zakazky", "chyba": str(e),
-                                            "dalsie": sklad.dalsie_cislo(), "nazov": nazov, "kto": kto},
-                                            status_code=422)
+            message = order_message(gmail, vlakno)
+            key = hashlib.sha256(f"{gmail.address.casefold()}:{vlakno}".encode()).hexdigest()[:32]
+            filename = f"objednavka-{key}.txt"
+            summary = [f"{label}: {order[field]}" for field, label, _ in order_fields if order[field]]
+            original = [f"Od: {message.get('from', '')}", f"Dátum: {message.get('date', '')}",
+                        f"Predmet: {message.get('subject', '')}", f"Message-ID: {message.get('messageId', '')}",
+                        f"Prílohy: {', '.join(message.get('attachments', []))}", "", message.get("text", "")]
+            with intake_lock:
+                existing = next(sklad.intake.glob(f"JOB-*/objednavka/{filename}"), None)
+                if existing:
+                    return RedirectResponse(f"/zakazka/{existing.parents[1].name}", status_code=303)
+                job_ref = sklad.nova_zakazka(nazov, kto)
+                sklad.uloz_podklad(job_ref, "objednavka", filename,
+                                   ("\n".join(summary) + "\n\nPôvodný e-mail\n" + "\n".join(original)).encode("utf-8"))
+        except (G.GmailError, ValueError) as error:
+            return sablony.TemplateResponse(request, "nova.html", job_form(
+                chyba=str(error), nazov=nazov, kto=kto, gmail=gmail, source=message,
+                order=order, thread=vlakno), status_code=422)
         return await uloz_podklady(job_ref, priecinok, subory)
 
     async def uloz_podklady(job_ref: str, priecinok: str, subory: list[UploadFile]):

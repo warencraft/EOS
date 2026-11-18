@@ -6,7 +6,9 @@ heslo aplikácie). Žiadne AI: obsah e-mailov sa nikam neposiela.
 
 from __future__ import annotations
 
+import hashlib
 import json
+import os
 import re
 import unicodedata
 from email.utils import parseaddr
@@ -17,6 +19,8 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 
 from scripts import gmail as G
 from scripts import prevadzka as P
+
+from .tailnet_identity import authorized_user
 
 QUOTE_LINES = {"items": [("name", "Položka", "text"), ("qty", "Množstvo", "num"), ("unit", "Jedn.", "short"),
                          ("unitPrice", "Cena/jedn. €", "num"), ("note", "Poznámka", "text")]}
@@ -118,6 +122,8 @@ def _skip(akcia: str, key: str) -> int | None:
 
 
 def quote_body(q: dict) -> str:
+    if q.get("emailBody"):
+        return q["emailBody"]
     lines = []
     for n, i in enumerate(q.get("items", []), 1):
         qty = "" if i.get("qty") is None else f"{i['qty']:g}".replace(".", ",")
@@ -133,8 +139,8 @@ def quote_body(q: dict) -> str:
     return "\n".join(parts)
 
 
-def register(app: FastAPI, sablony, store: P.Prevadzka, gmail_provider, gmail_saver) -> None:
-    """gmail_provider() vráti Gmail alebo None; gmail_saver(email, heslo | None) uloží alebo zmaže údaje."""
+def register(app: FastAPI, sablony, store: P.Prevadzka, gmail_provider, gmail_saver, supplier_proposal) -> None:
+    """gmail_provider(request) vráti Gmail alebo None; gmail_saver(email, heslo | None) uloží alebo zmaže údaje."""
     sablony.env.filters["eur2"] = eur
     sablony.env.globals.update(QUOTE_STATUS=P.QUOTE_STATUS, ORDER_STATUS=P.ORDER_STATUS, MATERIAL_STATUS=P.MATERIAL_STATUS,
                                SUPPLIER_STATUS=P.SUPPLIER_STATUS, KB_CATEGORIES=P.KB_CATEGORIES, COL_LABELS=COL_LABELS)
@@ -151,14 +157,16 @@ def register(app: FastAPI, sablony, store: P.Prevadzka, gmail_provider, gmail_sa
     # --- Gmail -------------------------------------------------------------------------
     @app.get("/gmail", response_class=HTMLResponse)
     def gmail_page(request: Request, ok: str = ""):
-        g = gmail_provider()
+        g = gmail_provider(request)
         return sablony.TemplateResponse(request, "gmail.html", {"active": "ponuky", "pripojeny": g.address if g else None,
                                                                 "ok": ok, "chyba": None})
 
     @app.post("/gmail")
     def gmail_connect(request: Request, email: str = Form(""), heslo: str = Form(""), akcia: str = Form("pripojit")):
+        if "EOS_GMAIL_USERS" in os.environ and not authorized_user(request, "EOS_GMAIL_USERS"):
+            raise HTTPException(403, "Nemáš povolenie pripojiť Gmail.")
         if akcia == "odpojit":
-            gmail_saver(None, None)
+            gmail_saver(request, None, None)
             return RedirectResponse("/gmail?ok=odpojeny", status_code=303)
         addr = parseaddr(email)[1].strip()
         chyba = None
@@ -172,13 +180,13 @@ def register(app: FastAPI, sablony, store: P.Prevadzka, gmail_provider, gmail_sa
         if chyba:
             return sablony.TemplateResponse(request, "gmail.html", {"active": "ponuky", "pripojeny": None, "ok": "",
                                                                     "chyba": chyba, "email": addr}, status_code=422)
-        gmail_saver(addr, G.clean_password(heslo))
+        gmail_saver(request, addr, G.clean_password(heslo))
         return RedirectResponse("/gmail?ok=pripojeny", status_code=303)
 
     # --- Ponuky ------------------------------------------------------------------------
     @app.get("/ponuky", response_class=HTMLResponse)
     def ponuky(request: Request, q: str = "", hladat: int = 0):
-        g = gmail_provider()
+        g = gmail_provider(request)
         vlakna, chyba = None, None
         if g and hladat:
             try:
@@ -186,10 +194,17 @@ def register(app: FastAPI, sablony, store: P.Prevadzka, gmail_provider, gmail_sa
             except G.GmailError as e:
                 chyba = str(e)
         zoznam = sorted(store.list("ponuky"), key=lambda x: x.get("updatedAt", ""), reverse=True)
-        podla_vlakna = {x.get("gmail", {}).get("threadId"): x["id"] for x in zoznam if x.get("gmail", {}).get("threadId")}
+        podla_vlakna = {x["gmail"]["threadId"]: x["id"] for x in zoznam
+                        if g and x.get("gmail", {}).get("threadId") and mailbox_matches(g, x)}
         return sablony.TemplateResponse(request, "ponuky.html", {
             "active": "ponuky", "ponuky": zoznam, "spolu": {x["id"]: quote_total(x) for x in zoznam}, "gmail": g.address if g else None,
             "q": q or G.DEFAULT_QUERY, "vlakna": vlakna, "chyba": chyba, "podla_vlakna": podla_vlakna})
+
+    def mailbox_matches(gmail, quote):
+        metadata = quote.get("gmail", {})
+        if not metadata.get("threadId") or "EOS_GMAIL_USERS" not in os.environ:
+            return True
+        return metadata.get("mailbox", "").casefold() == gmail.address.casefold()
 
     def next_number() -> str:
         ns = [int(m.group(0)) for x in store.list("ponuky") if (m := re.search(r"\d+", x.get("number", "")))]
@@ -202,10 +217,11 @@ def register(app: FastAPI, sablony, store: P.Prevadzka, gmail_provider, gmail_sa
 
     @app.post("/ponuky/z-gmailu")
     def ponuka_z_gmailu(request: Request, vlakno: str = Form(...)):
-        g = gmail_provider()
+        g = gmail_provider(request)
         if not g:
             return RedirectResponse("/gmail", status_code=303)
-        existing = next((x for x in store.list("ponuky") if x.get("gmail", {}).get("threadId") == vlakno), None)
+        existing = next((x for x in store.list("ponuky") if x.get("gmail", {}).get("threadId") == vlakno
+                         and mailbox_matches(g, x)), None)
         if existing:
             return RedirectResponse(f"/ponuka/{existing['id']}", status_code=303)
         try:
@@ -219,22 +235,97 @@ def register(app: FastAPI, sablony, store: P.Prevadzka, gmail_provider, gmail_sa
         q = store.save("ponuky", {
             "id": P.new_id("cp"), "number": next_number(), "customer": name or addr, "email": addr,
             "subject": first["subject"][:300], "status": "draft", "items": [],
-            "gmail": {"threadId": vlakno, "messageId": last["messageId"][:300], "from": first["from"][:300],
+            "gmail": {"threadId": vlakno, "mailbox": g.address, "messageId": last["messageId"][:300], "from": first["from"][:300],
                       "subject": last["subject"][:300]}})
         return RedirectResponse(f"/ponuka/{q['id']}", status_code=303)
 
+    def email_subject(quote):
+        original = quote.get("gmail", {}).get("subject")
+        subject = original or quote.get("subject") or f"Cenová ponuka {quote.get('number', '')}".strip()
+        if quote.get("gmail", {}).get("messageId") and not subject.lower().startswith("re:"):
+            return "Re: " + subject
+        return subject
+
+    def send_allowed(request):
+        return authorized_user(request, "EOS_MAIL_SENDERS")
+
+    def send_snapshot(request, id_):
+        sender = send_allowed(request)
+        if not sender:
+            raise HTTPException(403, "Nemáš povolenie odosielať ponuky.")
+        quote = get_or_404("ponuky", id_)
+        attempts = store.root / "mail-attempts"
+        marker = attempts / f"{id_}.json"
+        if marker.exists() or quote["status"] not in {"draft", "gmail_draft"}:
+            raise HTTPException(409, "Ponuku nemožno odoslať. Pri predošlom pokuse skontroluj Odoslané v Gmaile.")
+        gmail = gmail_provider(request)
+        if not gmail:
+            raise HTTPException(422, "Gmail nie je pripojený.")
+        if not mailbox_matches(gmail, quote):
+            raise HTTPException(403, "Pôvodný dopyt patrí do inej schránky.")
+        try:
+            message = gmail.build_draft(quote.get("email", ""), email_subject(quote), quote_body(quote),
+                                        in_reply_to=quote.get("gmail", {}).get("messageId", ""))
+        except (G.GmailError, ValueError):
+            raise HTTPException(422, "Skontroluj adresu príjemcu a predmet.") from None
+        snapshot = json.dumps([sender, quote, str(message["From"]), str(message["To"]),
+                               str(message["Subject"]), message.get_content()], sort_keys=True)
+        return gmail, message, marker, hashlib.sha256(snapshot.encode()).hexdigest()
+
+    @app.get("/ponuka/{id_}/odoslat", response_class=HTMLResponse)
+    def preview_send(request: Request, id_: str):
+        _, message, _, fingerprint = send_snapshot(request, id_)
+        return sablony.TemplateResponse(request, "odoslat_ponuku.html", {
+            "id": id_, "message": message, "fingerprint": fingerprint,
+        }, headers={"Cache-Control": "no-store"})
+
+    @app.post("/ponuka/{id_}/odoslat")
+    def send_quote(request: Request, id_: str, fingerprint: str = Form(...)):
+        gmail, message, marker, current = send_snapshot(request, id_)
+        if fingerprint != current:
+            raise HTTPException(409, "Ponuka alebo schránka sa zmenila. Otvor nový náhľad.")
+
+        def record_attempt():
+            # Po prihlásení do SMTP ešte raz over zhodu s potvrdeným náhľadom.
+            _, _, _, latest = send_snapshot(request, id_)
+            if fingerprint != latest:
+                raise HTTPException(409, "Ponuka sa zmenila. Otvor nový náhľad.")
+            marker.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+            try:
+                with marker.open("x", encoding="utf-8") as file:
+                    json.dump({"messageId": str(message["Message-ID"]), "at": P.now(),
+                               "sender": send_allowed(request)}, file)
+            except FileExistsError:
+                raise HTTPException(409, "Odoslanie tejto ponuky už bolo spustené.") from None
+
+        try:
+            gmail.send_quote(message, record_attempt)
+        except G.GmailRejected:
+            marker.unlink(missing_ok=True)
+            raise HTTPException(502, "Gmail správu odmietol. Ponuka nebola odoslaná.") from None
+        except G.GmailError as error:
+            raise HTTPException(502, str(error)) from None
+
+        quote = get_or_404("ponuky", id_)
+        if quote["status"] in {"draft", "gmail_draft"}:
+            store.save("ponuky", {**quote, "status": "sent"})
+        return RedirectResponse(f"/ponuka/{id_}?ok=odoslane", status_code=303)
+
     def render_quote(request: Request, q: dict, chyba: str | None = None, ok: str = "", status_code: int = 200):
-        g = gmail_provider()
+        g = gmail_provider(request)
         vlakno, gm_chyba = None, None
         thr = q.get("gmail", {}).get("threadId")
-        if thr and g:
+        if thr and g and not mailbox_matches(g, q):
+            gm_chyba = "Pôvodný dopyt nie je priradený k tvojej schránke."
+        elif thr and g:
             try:
                 vlakno = g.thread(thr)
             except G.GmailError as e:
                 gm_chyba = str(e)
         return sablony.TemplateResponse(request, "ponuka.html", {
             "active": "ponuky", "q": q, "lines": QUOTE_LINES, "titles": LINE_TITLES, "spolu": quote_total(q), "vlakno": vlakno,
-            "gm_chyba": gm_chyba, "gmail": g.address if g else None, "chyba": chyba, "ok": ok, "telo": quote_body(q)},
+            "gm_chyba": gm_chyba, "gmail": g.address if g else None,
+            "can_send": bool(send_allowed(request)), "chyba": chyba, "ok": ok, "telo": quote_body(q)},
             status_code=status_code)
 
     @app.get("/ponuka/{id_}", response_class=HTMLResponse)
@@ -253,6 +344,10 @@ def register(app: FastAPI, sablony, store: P.Prevadzka, gmail_provider, gmail_sa
         try:
             for k in ("number", "customer", "email", "subject", "dueDate", "notes"):
                 new[k] = str(form.get(k, q.get(k, "")) or "").strip()
+            if "emailBody" in form:
+                new["emailBody"] = str(form["emailBody"]).strip()
+                if len(new["emailBody"]) > 100000:
+                    raise ValueError("Text e-mailu je príliš dlhý.")
             if new["dueDate"] and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", new["dueDate"]):
                 raise ValueError("Termín zadaj ako dátum.")
             if form.get("status") in P.QUOTE_STATUS:
@@ -260,15 +355,17 @@ def register(app: FastAPI, sablony, store: P.Prevadzka, gmail_provider, gmail_sa
             new["items"] = read_lines(form, "items", QUOTE_LINES["items"], skip=_skip(akcia, "items"))
         except (ValueError, IndexError) as e:
             return render_quote(request, {**q, **{k: v for k, v in new.items() if k != "items"}}, chyba=str(e), status_code=422)
+        if akcia == "nahlad-odoslania" and not send_allowed(request):
+            raise HTTPException(403, "Nemáš povolenie odosielať ponuky.")
         if akcia == "koncept":
-            g = gmail_provider()
+            g = gmail_provider(request)
             if not g:
                 return render_quote(request, new, chyba="Gmail nie je pripojený.", status_code=422)
+            if not mailbox_matches(g, new):
+                return render_quote(request, new, chyba="Pôvodný dopyt patrí do inej schránky.", status_code=403)
             try:
                 gm = new.get("gmail", {})
-                subj = gm.get("subject") or new.get("subject") or f"Cenová ponuka {new.get('number', '')}".strip()
-                if gm.get("messageId") and not subj.lower().startswith("re:"):
-                    subj = "Re: " + subj
+                subj = email_subject(new)
                 g.create_draft(new.get("email", ""), subj, quote_body(new), in_reply_to=gm.get("messageId", ""))
             except G.GmailError as e:
                 return render_quote(request, new, chyba=str(e), status_code=422)
@@ -278,6 +375,8 @@ def register(app: FastAPI, sablony, store: P.Prevadzka, gmail_provider, gmail_sa
             saved = store.save("ponuky", new)
         except P.RecordError as e:
             return render_quote(request, new, chyba=f"Ponuka sa neuložila: {e}", status_code=422)
+        if akcia == "nahlad-odoslania":
+            return RedirectResponse(f"/ponuka/{id_}/odoslat", status_code=303)
         if akcia == "pridat-items":
             return render_quote(request, {**saved, "items": saved["items"] + [{"name": "", "qty": None, "unit": "ks", "unitPrice": None, "note": ""}]})
         if akcia == "objednavka":
@@ -395,7 +494,13 @@ def register(app: FastAPI, sablony, store: P.Prevadzka, gmail_provider, gmail_sa
     def edit_page(kind):
         def page(request: Request, id_: str):
             rec = {} if id_ == "novy" else get_or_404(kind, id_)
-            return sablony.TemplateResponse(request, "zaznam.html", {"active": kind, "kind": kind, "d": RECORDS[kind], "r": rec, "chyba": None})
+            session = request.query_params.get("chat", "")
+            draft = kind == "dodavatelia" and id_ == "novy" and bool(session)
+            if draft:
+                rec = supplier_proposal(request, session, request.query_params.get("turn", ""))
+            return sablony.TemplateResponse(request, "zaznam.html", {
+                "active": kind, "kind": kind, "d": RECORDS[kind], "r": rec, "chyba": None, "chat_draft": draft,
+            })
         return page
 
     def save_page(kind):

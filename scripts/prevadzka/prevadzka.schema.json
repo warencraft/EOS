@@ -30,8 +30,9 @@
         "status": {"enum": ["draft", "gmail_draft", "sent", "accepted", "rejected"]},
         "items": {"type": "array", "items": {"$ref": "#/$defs/quoteItem"}},
         "notes": {"$ref": "#/$defs/longText"},
+        "emailBody": {"$ref": "#/$defs/longText"},
         "gmail": {"type": "object", "additionalProperties": false,
-                  "properties": {"threadId": {"$ref": "#/$defs/text"}, "messageId": {"$ref": "#/$defs/text"}, "from": {"$ref": "#/$defs/text"},
+                  "properties": {"mailbox": {"$ref": "#/$defs/text"}, "threadId": {"$ref": "#/$defs/text"}, "messageId": {"$ref": "#/$defs/text"}, "from": {"$ref": "#/$defs/text"},
                                  "subject": {"$ref": "#/$defs/text"}, "draftSavedAt": {"$ref": "#/$defs/stamp"}}},
         "orderId": {"$ref": "#/$defs/id"}
       }

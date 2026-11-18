@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% set active = "ponuky" %}
+{% block title %}Odoslať ponuku{% endblock %}
+{% block content %}
+<h1>Odoslať ponuku</h1>
+<section class="panel">
+  <dl>
+    <dt>Od</dt><dd>{{ message["From"] }}</dd>
+    <dt>Komu</dt><dd>{{ message["To"] }}</dd>
+    <dt>Predmet</dt><dd>{{ message["Subject"] }}</dd>
+  </dl>
+  <div class="preview">{{ message.get_content() }}</div>
+  <form method="post" action="/ponuka/{{ id }}/odoslat" class="actions">
+    <input type="hidden" name="fingerprint" value="{{ fingerprint }}">
+    <a href="/ponuka/{{ id }}">Späť na ponuku</a>
+    <button type="submit" class="primary">Potvrdiť a odoslať</button>
+  </form>
+</section>
+{% endblock %}

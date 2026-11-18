@@ -18,7 +18,7 @@ def main() -> None:
 
     app = create_app(ROOT, args.intake, allowed_hosts=set(args.allow_host))
     print(f"EOS beží na http://127.0.0.1:{args.port}  (Ctrl+C ukončí)")
-    uvicorn.run(app, host="127.0.0.1", port=args.port, log_level="warning")
+    uvicorn.run(app, host="127.0.0.1", port=args.port, log_level="warning", proxy_headers=False)
 
 
 if __name__ == "__main__":

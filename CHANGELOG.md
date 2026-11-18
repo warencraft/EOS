@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Odoslanie ponúk a Claude rozhovory v EOS (ADR-0026 Draft) - 2026-11-18
+
+Potvrdené SMTP odoslanie so zobrazením adresáta, predmetu a tela správy. Panel Claude s rozhovormi oddelenými podľa Tailscale identity, firemným API a prenosom návrhu do upraviteľného textu e-mailu. Nasadenie popisuje [návod na server](docs/manual/SERVER.md). Panel si pri navigácii v aplikácii zachová stav, dá sa zbaliť a znova otvoriť šípkou a prijíma návrhy na nástenku pre Robina. Osobné schránky sa zapínajú podľa identity. Claude môže pripraviť predvyplnený formulár nového dodávateľa. Nová zákazka sa dá založiť z vybranej objednávky Gmailu s predvyplnením údajov a uložením zdrojového textu. Pribudlo šesť testov v `tests/test_prevadzka.py` s náhradou IMAP, SMTP a Claude API.
+
 ## Ponuky, objednávky a Gmail v EOS UI (ADR-0025 Accepted) - 2026-11-18
 
 EOS UI má stránky **Ponuky** (dopyty z Gmailu, ponuka, koncept odpovede v Gmaile, prevod na objednávku), **Objednávky** (výrobky, materiál so stavom a dodávateľom, operácie, kontrola skladu, vstup pre hľadanie cien), **Sklad**, **Dodávatelia**, **Knowledge** a **Gmail**. Záznamy `scripts/prevadzka/` ako JSON v `intake/_eos/prevadzka/` mimo gitu, nástrojová schéma `prevadzka.schema.json`, import z prototypu `python -m scripts.prevadzka import`. Gmail `scripts/gmail/` cez IMAP a heslo aplikácie (štandardná knižnica): hľadanie vlákien, čítanie, koncept s `In-Reply-To`, bez odosielania a bez AI; heslo v `~/.config/eos/gmail.json` (0600). Formuláre prijímajú aj hostiteľov z `--allow-host` / `EOS_ALLOWED_HOSTS` (Tailscale). Návod na server `docs/manual/SERVER.md` (Tailscale, systemd, záloha). ADR-0023 nahradené. Bez novej závislosti. Nové `tests/test_prevadzka.py` (11 metód), 5 skúšok citlivosti.

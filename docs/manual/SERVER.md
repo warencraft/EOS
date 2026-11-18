@@ -108,3 +108,70 @@ Záloha je na tom istom serveri. Kópiu mimo servera rob pravidelne (napr. `scp`
 | „Požiadavka z inej stránky bola odmietnutá“ | `EOS_ALLOWED_HOSTS` v službe nesedí s adresou v prehliadači. Oprav a `systemctl restart eos-ui`. |
 | Stránka sa neotvorí | `systemctl status eos-ui`, `journalctl -u eos-ui -n 50`, `tailscale serve status`. |
 | Gmail: prihlásenie zlyhalo | Heslo aplikácie (nie heslo účtu), zapnuté dvojstupňové overenie a IMAP v nastaveniach Gmailu. |
+
+## Odoslanie ponúk a Claude rozhovory
+
+Funkcie podľa ADR-0026 sa zapínajú až nastavením služieb a zoznamov e-mailov. Použi
+prihlasovacie adresy, ktoré Tailscale Serve posiela v `Tailscale-User-Login`.
+Z backendu nechaj prístup iba cez `127.0.0.1`, pred EOS musí byť priamo
+súkromný Tailscale Serve. Pri štarte cez `python -m scripts.web` je spracovanie
+forwarded hlavičiek v Uvicorne vypnuté. Pri vlastnom štartovacom príkaze nastav
+`--no-proxy-headers`.
+
+Do existujúceho environment súboru služby alebo systemd drop-in doplň:
+
+```ini
+EOS_SERVE_ORIGIN=https://vps.example-tailnet.ts.net
+EOS_MAIL_SENDERS=majitel@example.org,brat@example.org
+EOS_CHAT_USERS=majitel@example.org,brat@example.org
+EOS_CLAUDE_MODEL=MODEL_Z_CLAUDE_CONSOLE
+```
+
+V drop-in použi formát `Environment="NÁZOV=hodnota"` v sekcii `[Service]`.
+Nahraď príkladové adresy skutočnými loginmi. Do `EOS_MAIL_SENDERS` zahrň iba osoby,
+ktoré majú odosielať zo spoločnej Gmail schránky. Prázdny zoznam funkciu vypína.
+
+Pre chat nainštaluj existujúce voliteľné závislosti `.[ui,ai]` a nastav
+`LoadCredential=anthropic_key:/cesta/k/suboru-s-api-klucom` v sekcii `[Service]`.
+Súbor kľúča ulož mimo gitu, s prístupom pre správcu servera. Alternatívou je
+`ANTHROPIC_API_KEY` v chránenom environment súbore. Vyber model dostupný vo svojom API
+workspace a nastav v ňom rozpočet. EOS číta model z `EOS_CLAUDE_MODEL`.
+Po zmene systemd konfigurácie použi `sudo systemctl daemon-reload` a
+`sudo systemctl restart eos-ui`.
+
+Z účtu povoleného v Tailscale otvor skúšobnú ponuku so svojou testovacou adresou,
+v náhľade skontroluj konkrétnu správu a potvrď odoslanie. Na VPS musí byť dostupný
+odchádzajúci TCP port 465 na `smtp.gmail.com`. Over aj otvorenie vlastného rozhovoru
+na oboch povolených účtoch. História sa ukladá do `intake/_eos/chat/`.
+Ak služba počas odoslania spadne, v `intake/_eos/prevadzka/mail-attempts/` ostane
+záznam pokusu. Pred opakovaním over v Gmaile, či prijal správu s daným Message-ID.
+
+Ak bol proces násilne ukončený počas odpovede, po zastavení služby môže správca
+odstrániť prázdny adresár `.request` v priečinku príslušného používateľa chatu.
+
+### Pracovný chat a osobný Gmail
+
+Claude je vpravo v celom EOS. Na mobile otvára panel tlačidlo **Claude**.
+Použi rovnaký Tailscale účet na mobile aj na počítači, aby mal EOS prístup k tým
+istým uloženým rozhovorom. Návrh z panelu ide do **Stav → Pre Robina** až po
+odoslaní formulára. Text rozhovoru sa na nástenku automaticky neprikladá.
+
+Na osobné schránky nastav `EOS_GMAIL_USERS` na povolené Tailscale účty. Každý si
+potom v **Ponuky → Gmail** pripojí svoju schránku. Zdieľaná konfigurácia sa v tomto
+režime nepoužíva. Pripojenia sa ukladajú vedľa nej do podpriečinka `accounts/`.
+Pre režim iba s konceptmi nastav `EOS_MAIL_SENDERS=`. Existujúce ponuky z Gmailu
+bez záznamu o zdrojovej schránke ostanú prístupné, ale ich pôvodné vlákno sa
+v osobnom režime nepripojí automaticky. Nové importy si príslušnosť pamätajú.
+
+Claude v EOS dokáže pripraviť aj návrh dodávateľa. Skús napríklad
+„Pridaj dodávateľa Ukážkové náradie, kategória Nástroje, dodáva meradlá“.
+V chate otvor **Skontrolovať dodávateľa** a vo formulári potvrď **Uložiť**.
+Návrh je viditeľný iba v tvojom rozhovore. Uložený dodávateľ je v spoločnom zozname EOS.
+
+V **Zákazky → Nová zákazka** môže inžinier načítať objednávky zo svojej
+pripojenej schránky. Vyberie vlákno, skontroluje predvyplnené údaje a založí
+zákazku. EOS preberá predmet a odosielateľa a vyplní ďalšie hodnoty, ak ich
+správa uvádza na označených riadkoch. Potvrdené údaje aj pôvodný text uloží
+do súboru v podkladoch zákazky. Prílohy z e-mailu ukáže podľa názvu, výkresy
+sa nahrávajú ručne. Rovnaká schránka a vlákno smerujú na už založenú zákazku.
+Načítanie prebieha na výslovný pokyn v rozhraní.

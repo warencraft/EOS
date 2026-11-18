@@ -7,11 +7,16 @@ import email
 import email.policy
 import imaplib
 import json
+import os
+import re
+import sys
 import stat
 import tempfile
 import unittest
 from email.message import EmailMessage
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
 
 from jsonschema import Draft202012Validator
 
@@ -208,6 +213,128 @@ class PrevadzkaUiTests(unittest.TestCase):
 
     def tearDown(self):
         self._tmp.cleanup()
+
+    def serve_client(self, login):
+        origin = "https://eos.fiktivna-siet.ts.net"
+        self.enterContext(patch.dict(os.environ, {
+            "EOS_SERVE_ORIGIN": origin, "EOS_MAIL_SENDERS": "owner@example.org",
+            "EOS_CHAT_USERS": "owner@example.org,brother@example.org",
+            "ANTHROPIC_API_KEY": "fake-key", "EOS_CLAUDE_MODEL": "fake-model",
+        }))
+        return TestClient(self.client.app, base_url=origin, headers={
+            "origin": origin, "tailscale-user-login": login,
+        }, follow_redirects=False, client=("127.0.0.1", 50000))
+
+    def test_send_requires_matching_preview_and_rejects_repeated_confirmation(self):
+        client = self.serve_client("owner@example.org")
+        G.save_config("firma@example.com", PASSWORD, self.cfg)
+        self.store.save("ponuky", {"id": "cp-test", "status": "draft", "items": [],
+                                  "email": "recipient@example.org", "subject": "Test",
+                                  "gmail": {"messageId": "<original@example.org>"}})
+        url = "/ponuka/cp-test/odoslat"
+        self.assertEqual(client.get(url, headers={"tailscale-user-login": "brother@example.org"}).status_code, 403)
+        preview = client.get(url)
+        self.assertEqual(preview.status_code, 200)
+        fingerprint = re.search(r'name="fingerprint" value="([a-f0-9]+)"', preview.text)[1]
+        with patch.object(G.smtplib, "SMTP_SSL") as smtp:
+            self.assertEqual(client.post(url, data={"fingerprint": "old"}).status_code, 409)
+            smtp.assert_not_called()
+            form = {"fingerprint": fingerprint}
+            self.assertEqual(client.post(url, data=form).status_code, 303)
+            self.assertEqual(client.post(url, data=form).status_code, 409)
+            smtp.return_value.send_message.assert_called_once()
+            message = smtp.return_value.send_message.call_args.args[0]
+            self.assertEqual(str(message["To"]), "recipient@example.org")
+            self.assertEqual(str(message["Subject"]), "Re: Test")
+            self.assertEqual(str(message["In-Reply-To"]), "<original@example.org>")
+        self.assertEqual(self.store.get("ponuky", "cp-test")["status"], "sent")
+
+    def test_claude_chat_continues_and_is_private_per_tailscale_identity(self):
+        client = self.serve_client("owner@example.org")
+        sdk = SimpleNamespace(Anthropic=MagicMock(), APIError=RuntimeError)
+        messages = sdk.Anthropic.return_value.__enter__.return_value.messages
+        messages.create.return_value = SimpleNamespace(content=[
+            SimpleNamespace(type="text", text="<b>Fiktívny návrh</b>"),
+        ])
+        with patch.dict(sys.modules, {"anthropic": sdk}):
+            first = client.post("/chat", data={"prompt": "Napíš pozdrav"})
+            self.assertEqual(first.status_code, 303)
+            url = first.headers["location"]
+            session = url.split("=")[-1]
+            self.assertIn("&lt;b&gt;Fiktívny návrh&lt;/b&gt;", client.get(url).text)
+            other = {"tailscale-user-login": "brother@example.org"}
+            self.assertEqual(client.get(url, headers=other).status_code, 404)
+            self.assertEqual(client.post("/chat", headers=other, data={"session": session, "prompt": "Ahoj"}).status_code, 404)
+            self.assertEqual(client.post("/chat", data={"session": session, "prompt": "Skráť ho"}).status_code, 303)
+        self.assertEqual([m["role"] for m in messages.create.call_args.kwargs["messages"]],
+                         ["user", "assistant", "user"])
+
+    def test_gmail_order_prefills_job_and_keeps_reviewed_source_once(self):
+        G.save_config("firma@example.com", PASSWORD, self.cfg)
+        self.imap.messages = [mail(
+            "22", "502", "Objednávka fiktívnych držiakov", "Demo <demo@example.org>",
+            "Mon, 05 Jan 2026 08:00:00 +0100",
+            "Číslo objednávky: DEMO-2\nMnožstvo: 2 ks\nTermín dodania: podľa dohody",
+        )]
+        self.assertIn("Objednávka fiktívnych držiakov", self.client.get("/nova?hladat=1").text)
+        preview = self.client.get("/nova?vlakno=502")
+        self.assertIn('name="number" maxlength="300" value="DEMO-2"', preview.text)
+        self.assertIn('name="quantity" maxlength="300" value="2 ks"', preview.text)
+        form = {"vlakno": "502", "nazov": "Overená ukážka", "kto": "Marco", "number": "DEMO-2",
+                "customer": "Upravený zákazník", "quantity": "2 ks"}
+        first = self.client.post("/nova", data=form, files={"subory": ("vykres.txt", b"demo")},
+                                 follow_redirects=False)
+        self.assertEqual(first.status_code, 303)
+        url = first.headers["location"]
+        self.assertEqual(self.client.post("/nova", data=form, follow_redirects=False).headers["location"], url)
+        self.assertIn("Upravený zákazník", self.client.get(url).text)
+        files = list(self.intake.glob("JOB-*/objednavka/objednavka-*.txt"))
+        self.assertEqual(len(files), 1)
+        self.assertIn("Pôvodný e-mail", files[0].read_text())
+        self.assertTrue(files[0].parents[1].joinpath("vykresy/vykres.txt").exists())
+
+    def test_ai_supplier_uses_private_proposal_and_existing_save_form(self):
+        client = self.serve_client("owner@example.org")
+        sdk = SimpleNamespace(Anthropic=MagicMock(), APIError=RuntimeError)
+        messages = sdk.Anthropic.return_value.__enter__.return_value.messages
+        messages.create.return_value = SimpleNamespace(content=[SimpleNamespace(
+            type="tool_use", name="propose_supplier",
+            input={"name": "Ukážkový dodávateľ", "category": "Náradie",
+                   "web": "javascript:alert(1)", "status": "used"},
+        )])
+        with patch.dict(sys.modules, {"anthropic": sdk}):
+            url = client.post("/chat", data={"prompt": "Pridaj dodávateľa"}).headers["location"]
+        self.assertEqual(self.store.list("dodavatelia"), [])
+        self.assertIn("Skontrolovať dodávateľa", client.get(url).text)
+        draft = "/dodavatelia/novy?chat=" + url.split("=")[-1] + "&turn=1"
+        self.assertEqual(client.get(draft, headers={"tailscale-user-login": "brother@example.org"}).status_code, 404)
+        form = client.get(draft)
+        self.assertIn("Ukážkový dodávateľ", form.text)
+        self.assertNotIn("javascript:alert(1)", form.text)
+        self.assertEqual(client.post("/dodavatelia/novy", data={
+            "name": "Ukážkový dodávateľ", "category": "Náradie", "status": "verify",
+        }).status_code, 303)
+        self.assertEqual(self.store.list("dodavatelia")[0]["status"], "verify")
+
+    def test_chat_feedback_is_saved_for_robino(self):
+        client = self.serve_client("brother@example.org")
+        response = client.post("/chat/navrh", data={"topic": "Fiktívne zlepšenie", "text": "Pridať filter."})
+        self.assertEqual(response.headers["location"], "/chat?submitted=1")
+        self.assertIn("Fiktívne zlepšenie", client.get("/stav").text)
+
+    def test_personal_gmail_connect_and_disconnect_leave_other_identity_unchanged(self):
+        client = self.serve_client("owner@example.org")
+        self.enterContext(patch.dict(os.environ, {"EOS_GMAIL_USERS": "owner@example.org,brother@example.org"}))
+        other = {"tailscale-user-login": "brother@example.org"}
+        login = {"email": "owner-mail@example.org", "heslo": PASSWORD}
+        self.assertEqual(client.post("/gmail", data=login).status_code, 303)
+        self.assertNotIn(login["email"], client.get("/gmail", headers=other).text)
+        brother_login = {**login, "email": "brother-mail@example.org"}
+        self.assertEqual(client.post("/gmail", headers=other, data=brother_login).status_code, 303)
+        self.assertIn(brother_login["email"], client.get("/gmail", headers=other).text)
+        self.assertEqual(client.post("/gmail", headers=other, data={"akcia": "odpojit"}).status_code, 303)
+        self.assertIn(login["email"], client.get("/gmail").text)
+        self.assertFalse(self.cfg.exists())
 
     def test_gmail_connects_only_with_valid_app_password(self):
         r = self.client.post("/gmail", data={"email": "firma@example.com", "heslo": "zle"})

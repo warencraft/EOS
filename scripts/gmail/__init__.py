@@ -1,7 +1,7 @@
 """Gmail cez IMAP s heslom aplikácie (ADR-0025). Iba štandardná knižnica.
 
 Vie: overiť prihlásenie, nájsť vlákna podľa Gmail vyhľadávania, prečítať vlákno a uložiť
-koncept odpovede do Konceptov. E-maily neodosiela.
+koncept odpovede do Konceptov a odoslať potvrdenú ponuku cez SMTP.
 
 Prihlasovacie údaje sú v ~/.config/eos/gmail.json (práva 0600) alebo v súbore z premennej
 EOS_GMAIL_CONFIG, nikdy v repozitári ani v intake/.
@@ -17,6 +17,8 @@ import json
 import os
 import re
 import socket
+import smtplib
+import ssl
 import time
 from email.message import EmailMessage
 from email.utils import formatdate, make_msgid, parseaddr, parsedate_to_datetime
@@ -32,6 +34,10 @@ _LIST_RE = re.compile(rb'^\((?P<flags>[^)]*)\) (?:"[^"]*"|NIL) (?P<name>"(?:[^"\
 
 class GmailError(RuntimeError):
     """Zrozumiteľná chyba pre používateľa (bez hesla v texte)."""
+
+
+class GmailRejected(GmailError):
+    """SMTP potvrdilo odmietnutie správy."""
 
 
 def config_path() -> Path:
@@ -244,3 +250,24 @@ class Gmail:
             if typ != "OK":
                 raise GmailError("Gmail koncept neuložil.")
         self._call(run)
+
+    def send_quote(self, message: EmailMessage, before_submit) -> None:
+        """Označí pokus až po prihlásení a pred odovzdaním správy."""
+        smtp = None
+        try:
+            smtp = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=TIMEOUT_S,
+                                    context=ssl.create_default_context())
+            smtp.login(self.address, self.app_password)
+        except OSError:
+            if smtp is not None:
+                smtp.close()
+            raise GmailError("Pripojenie alebo prihlásenie do Gmail SMTP zlyhalo.") from None
+        try:
+            before_submit()
+            smtp.send_message(message)
+        except (smtplib.SMTPRecipientsRefused, smtplib.SMTPSenderRefused, smtplib.SMTPDataError):
+            raise GmailRejected("Gmail odmietol odoslanie správy.") from None
+        except OSError:
+            raise GmailError("Výsledok odoslania je nejasný. Skontroluj Odoslané v Gmaile.") from None
+        finally:
+            smtp.close()
