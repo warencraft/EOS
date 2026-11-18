@@ -13,16 +13,21 @@
   <div class="wrap">
     <a class="brand" href="/">EOS</a>
     <nav aria-label="Hlavná navigácia">
+      <a href="/ponuky" {% if active == "ponuky" %}aria-current="page"{% endif %}>Ponuky</a>
       <a href="/" {% if active == "zakazky" %}aria-current="page"{% endif %}>Zákazky</a>
+      <a href="/objednavky" {% if active == "objednavky" %}aria-current="page"{% endif %}>Objednávky</a>
+      <a href="/sklad" {% if active == "sklad" %}aria-current="page"{% endif %}>Sklad</a>
+      <a href="/dodavatelia" {% if active == "dodavatelia" %}aria-current="page"{% endif %}>Dodávatelia</a>
+      <a href="/kb" {% if active == "kb" %}aria-current="page"{% endif %}>Knowledge</a>
       <a href="/stav" {% if active == "stav" %}aria-current="page"{% endif %}>Stav{% set n = otvorene_spravy() %}{% if n %} <span class="badge">{{ n }}</span>{% endif %}</a>
       <a href="/model" {% if active == "model" %}aria-current="page"{% endif %}>Model</a>
     </nav>
-    <span class="note">Lokálne na tomto počítači · údaje zákaziek sú dôverné a mimo gitu</span>
+    <span class="note">Údaje zákaziek sú dôverné a mimo gitu</span>
   </div>
 </header>
 <main class="wrap">
 {% block content %}{% endblock %}
-<footer>EOS UI v0 (ADR-0021, ADR-0022). Kalkulácia je pracovný nástroj, nie kontrakt EOS: nahradí ju entita Job po jej návrhu.</footer>
+<footer>EOS UI v0 (ADR-0021, ADR-0022, ADR-0025). Kalkulácia je pracovný nástroj, nie kontrakt EOS: nahradí ju entita Job po jej návrhu.</footer>
 </main>
 </body>
 </html>

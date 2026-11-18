@@ -1,12 +1,15 @@
 """EOS UI v0 – lokálna webová aplikácia (ADR-0021, etapa D podľa ADR-0018).
 
-Beží iba na tomto počítači (127.0.0.1). Číta zákazky z intake/ a pracovné kalkulácie
-z intake/_eos/kalkulacie/. Nič neposiela von.
+Beží na 127.0.0.1. Na serveri ju sprístupní Tailscale (ADR-0025) iba pre vašu súkromnú sieť.
+Číta zákazky z intake/, pracovné kalkulácie z intake/_eos/kalkulacie/ a prevádzkové záznamy
+(ponuky, objednávky, sklad, dodávatelia, knowledge base) z intake/_eos/prevadzka/. Von posiela
+iba to, čo pošle Gmail (IMAP), a iba na pokyn používateľa.
 """
 
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from urllib.parse import urlencode, urlsplit
 
@@ -17,9 +20,12 @@ from fastapi.templating import Jinja2Templates
 
 from scripts.calc import import_sablona as I
 from scripts.calc import kalkulacia as K
+from scripts import gmail as G
+from scripts import prevadzka as P
 from scripts.status import spravy as S
 from scripts.export_viewer import AREAS, TRANSLATIONS, load_schemas, load_translations
 
+from . import prevadzka_ui
 from .sklad import KATEGORIE, Sklad
 
 # Polia, ktoré sa dajú v UI prepísať číslom (časť → kľúče).
@@ -86,8 +92,14 @@ def zmena(v) -> str:
     return str(v)
 
 
-def create_app(root: Path = ROOT, intake: Path | None = None, status: Path | None = None) -> FastAPI:
+LOCAL_HOSTS = {"127.0.0.1", "localhost", "::1", "testserver"}
+
+
+def create_app(root: Path = ROOT, intake: Path | None = None, status: Path | None = None,
+               allowed_hosts: set[str] | None = None, gmail_config: Path | None = None, imap_factory=None) -> FastAPI:
     sklad = Sklad(intake or root / "intake")
+    povolene = LOCAL_HOSTS | {h.strip().lower() for h in (allowed_hosts or set()) if h.strip()}
+    povolene |= {h.strip().lower() for h in os.environ.get("EOS_ALLOWED_HOSTS", "").split(",") if h.strip()}
     nastenka = S.Nastenka(status or root / "status" / "spravy", intake=sklad.intake)
     app = FastAPI(title="EOS", docs_url=None, redoc_url=None, openapi_url=None)
     app.mount("/static", StaticFiles(directory=TU / "static"), name="static")
@@ -98,7 +110,7 @@ def create_app(root: Path = ROOT, intake: Path | None = None, status: Path | Non
         # poslať formulár na 127.0.0.1 (ochrana proti CSRF bez tokenov).
         if request.method == "POST":
             origin = request.headers.get("origin")
-            if origin and urlsplit(origin).hostname not in {"127.0.0.1", "localhost", "::1", "testserver"}:
+            if origin and urlsplit(origin).hostname not in povolene:
                 return HTMLResponse("Požiadavka z inej stránky bola odmietnutá.", status_code=403)
             if request.headers.get("sec-fetch-site") == "cross-site":
                 return HTMLResponse("Požiadavka z inej stránky bola odmietnutá.", status_code=403)
@@ -113,6 +125,17 @@ def create_app(root: Path = ROOT, intake: Path | None = None, status: Path | Non
     sablony.env.globals["otvorene_spravy"] = lambda: sum(1 for x in nastenka.vsetky()
                                                          if x["stav"] == "otvorene" and not x.get("odpovedNa"))
     TRANSLATIONS.update(load_translations(root / "scripts" / "viewer_sk.json"))
+
+    # --- ponuky, objednávky, sklad, dodávatelia, knowledge base, Gmail (ADR-0025) -------
+    app.state.imap_factory = imap_factory
+    def gmail_provider():
+        return G.Gmail.from_config(gmail_config, imap_factory)
+    def gmail_saver(address, password):
+        if address and password:
+            G.save_config(address, password, gmail_config)
+        else:
+            G.delete_config(gmail_config)
+    prevadzka_ui.register(app, sablony, P.Prevadzka(sklad.intake), gmail_provider, gmail_saver)
 
     def zakazka_alebo_404(job_ref: str) -> dict:
         try:

@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/tools/ai/cenovy-navrh.schema.json",
+  "title": "Návrh cien od dodávateľov (ADR-0024)",
+  "description": "Nástrojový formát, nie kontrakt EOS. Každá cena je návrh; do ponuky ju preberá iba Marco a znalosťou EOS sa stane až cez schválený kontrakt.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["formatVersion", "status", "createdAt", "model", "apiCalls", "items"],
+  "properties": {
+    "formatVersion": {"const": "0.1.0"},
+    "status": {"const": "navrh"},
+    "createdAt": {"type": "string", "format": "date-time"},
+    "model": {"type": "string", "minLength": 1},
+    "apiCalls": {"type": "integer", "minimum": 1},
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["itemId", "text", "offers"],
+        "properties": {
+          "itemId": {"type": "string"},
+          "text": {"type": "string"},
+          "quantity": {"type": ["number", "null"]},
+          "unit": {"type": ["string", "null"]},
+          "offers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["supplierId", "supplierName", "priceStatus", "url", "productName", "price", "currency", "priceUnit", "vatIncluded", "availability", "quote", "retrievedAt", "notes"],
+              "properties": {
+                "supplierId": {"type": "string"},
+                "supplierName": {"type": "string"},
+                "priceStatus": {"enum": ["verejna", "na_dopyt", "nenajdene"]},
+                "url": {"type": ["string", "null"], "format": "uri"},
+                "productName": {"type": ["string", "null"]},
+                "price": {"type": ["number", "null"], "minimum": 0},
+                "currency": {"type": ["string", "null"], "pattern": "^[A-Z]{3}$"},
+                "priceUnit": {"type": ["string", "null"]},
+                "vatIncluded": {"type": ["boolean", "null"]},
+                "availability": {"type": ["string", "null"]},
+                "quote": {"type": ["string", "null"], "maxLength": 500},
+                "retrievedAt": {"type": "string", "format": "date-time"},
+                "notes": {"type": "array", "items": {"type": "string"}}
+              },
+              "allOf": [
+                {"if": {"properties": {"priceStatus": {"const": "verejna"}}}, "then": {"properties": {"price": {"type": "number"}, "currency": {"type": "string"}, "url": {"type": "string"}}}}
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

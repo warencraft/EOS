@@ -1,0 +1,28 @@
+{# Tabuľka riadkov formulára: názvy polí <key>-<i>-<pole> (prevadzka_ui.read_lines). #}
+{% macro riadky(key, cols, rows, title, dodavatelia=[]) %}
+<section class="panel tbl">
+  <h3>{{ title }}</h3>
+  <table class="lines">
+    <thead><tr>{% for name, label, kind in cols %}<th class="{{ 'num' if kind == 'num' else '' }}">{{ label }}</th>{% endfor %}<th></th></tr></thead>
+    <tbody>
+    {% for r in rows %}{% set i = loop.index0 %}
+      <tr>
+      {% for name, label, kind in cols %}{% set v = r.get(name) %}
+        <td>
+        {% if kind == "num" %}<input class="num" type="text" inputmode="decimal" name="{{ key }}-{{ i }}-{{ name }}" value="{{ '' if v is none else ('%g' % v)|replace('.', ',') }}" aria-label="{{ label }} {{ i + 1 }}">
+        {% elif kind == "check" %}<input type="checkbox" name="{{ key }}-{{ i }}-{{ name }}" {% if v %}checked{% endif %} aria-label="{{ label }} {{ i + 1 }}">
+        {% elif kind == "material_status" %}<select name="{{ key }}-{{ i }}-{{ name }}" aria-label="{{ label }} {{ i + 1 }}">{% for k, t in MATERIAL_STATUS.items() %}<option value="{{ k }}" {% if v == k %}selected{% endif %}>{{ t }}</option>{% endfor %}</select>
+        {% elif kind == "supplier" %}<select name="{{ key }}-{{ i }}-{{ name }}" aria-label="{{ label }} {{ i + 1 }}"><option value="">–</option>{% for s in dodavatelia %}{% if s.status != "not_used" or s.id == v %}<option value="{{ s.id }}" {% if v == s.id %}selected{% endif %}>{{ s.name }}</option>{% endif %}{% endfor %}</select>
+        {% else %}<input class="{{ 'short' if kind == 'short' else '' }}" type="text" name="{{ key }}-{{ i }}-{{ name }}" value="{{ v or '' }}" aria-label="{{ label }} {{ i + 1 }}">{% endif %}
+        </td>
+      {% endfor %}
+        <td><button class="x" type="submit" name="akcia" value="odobrat-{{ key }}-{{ i }}" aria-label="Odobrať riadok {{ i + 1 }}" formnovalidate>×</button></td>
+      </tr>
+    {% else %}
+      <tr><td colspan="{{ cols|length + 1 }}" class="muted">Zatiaľ žiadne riadky.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <div class="pridaj"><button type="submit" name="akcia" value="pridat-{{ key }}">+ Pridať riadok</button></div>
+</section>
+{% endmacro %}

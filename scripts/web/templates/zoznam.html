@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ d.title }}{% endblock %}
+{% block content %}
+<div class="head">
+  <div>
+    <span class="eyebrow">ADR-0025 · mimo gitu</span>
+    <h1>{{ d.title }}</h1>
+    <p class="muted">{{ d.intro }}</p>
+  </div>
+  <a class="btn primary" href="/{{ kind }}/novy">+ Pridať</a>
+</div>
+<form class="riadok" method="get" action="/{{ kind }}">
+  <label class="sr-only" for="f">Filter</label>
+  <input id="f" type="text" name="f" value="{{ f }}" placeholder="filter" style="flex:0 1 320px">
+  <button type="submit">Filtrovať</button>{% if f %} <a href="/{{ kind }}">zrušiť</a>{% endif %}
+</form>
+{% if rows %}
+<div class="panel tbl">
+<table>
+  <thead><tr>{% for c in d.cols %}<th class="{{ 'num' if c in ['qty', 'minQty'] else '' }}">{{ COL_LABELS[c] }}</th>{% endfor %}</tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr>
+    {% for c in d.cols %}{% set v = r.get(c) %}
+      {% if loop.first %}<td><a href="/{{ kind }}/{{ r.id }}">{{ v or "(bez názvu)" }}</a>{% if kind == "dodavatelia" and r.web %} <a href="{{ r.web }}" target="_blank" rel="noopener" aria-label="Web {{ r.name }}">↗</a>{% endif %}</td>
+      {% elif c in ["qty", "minQty"] %}<td class="num">{% if c == "qty" and r.minQty is not none and (v or 0) < r.minQty %}<span class="chip bad">{{ '%g' % (v or 0) }}</span>{% else %}{{ '' if v is none else '%g' % v }}{% endif %}</td>
+      {% elif c == "status" %}<td><span class="chip {{ {'used': 'ok', 'not_used': 'bad'}.get(v, 'warn') }}">{{ SUPPLIER_STATUS.get(v, v) }}</span></td>
+      {% elif c == "category" %}<td>{% if v %}<span class="chip blue">{{ v }}</span>{% endif %}</td>
+      {% elif c == "content" %}<td><span class="clip small">{{ v }}</span></td>
+      {% else %}<td>{{ v or "" }}</td>{% endif %}
+    {% endfor %}
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}<div class="empty">{% if f %}Filtru nič nezodpovedá.{% else %}Zatiaľ prázdne.{% endif %}</div>{% endif %}
+{% endblock %}

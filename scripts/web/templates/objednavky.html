@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% set active = "objednavky" %}
+{% block title %}Objednávky{% endblock %}
+{% block content %}
+<div class="head">
+  <div>
+    <span class="eyebrow">Z prijatej ponuky · ADR-0025</span>
+    <h1>Objednávky</h1>
+    <p class="muted">Materiál, sklad, nákup, operácie a termín.</p>
+  </div>
+  <form method="post" action="/objednavky/nova"><button class="primary" type="submit">+ Nová objednávka</button></form>
+</div>
+{% if objednavky %}
+<div class="panel tbl">
+<table>
+  <thead><tr><th>Číslo</th><th>Zákazník</th><th>Termín</th><th>Stav</th><th class="num">Materiál chýba</th><th class="num">Operácie hotové</th></tr></thead>
+  <tbody>
+  {% for o in objednavky %}{% set chyba = o.materials|selectattr("status", "in", ["verify", "to_order"])|list|length %}{% set ops = o.operations %}
+    <tr>
+      <td><a class="mono" href="/objednavka/{{ o.id }}">{{ o.number or "bez čísla" }}</a></td>
+      <td>{{ o.customer or "–" }}</td>
+      <td>{{ o.dueDate or "–" }}</td>
+      <td><span class="chip {{ {'waiting_material': 'warn', 'done': 'ok', 'shipped': 'ok'}.get(o.status, 'blue') }}">{{ ORDER_STATUS[o.status] }}</span></td>
+      <td class="num">{% if chyba %}<span class="chip bad">{{ chyba }}</span>{% else %}0{% endif %}</td>
+      <td class="num">{{ ops|selectattr("done")|list|length }} / {{ ops|length }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}<div class="empty">Zatiaľ žiadne objednávky. Vznikajú z ponuky so stavom Prijatá.</div>{% endif %}
+{% endblock %}

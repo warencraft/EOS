@@ -133,3 +133,25 @@ button.x:hover { color: var(--bad); }
 .sprava details summary { cursor: pointer; color: var(--blue); }
 .sprava details form { margin-top: 6px; }
 @media (max-width: 900px) { .grid-nahlad { grid-template-columns: minmax(0, 1fr); } .nahlad iframe { height: 60vh; } }
+/* ADR-0025: ponuky, objednávky, sklad, dodávatelia, knowledge base, Gmail */
+.top nav { flex-wrap: wrap; }
+.ok-msg { border: 1px solid var(--ok); background: var(--ok-soft); color: var(--ok); padding: 8px 12px; }
+.lines input[type="text"] { width: 100%; min-width: 7em; }
+.lines input.num { width: 6.5em; }
+.lines input.short { width: 4.5em; min-width: 0; }
+.lines td { padding: 3px 4px; }
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px 14px; }
+.fields label { display: grid; gap: 3px; }
+.fields input[type="text"], .fields input[type="date"], .fields input[type="email"], .fields input[type="password"], .fields select { width: 100%; font: inherit; color: var(--ink); background: var(--sheet); border: 1px solid var(--line); padding: 4px 6px; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 10px; }
+.actions > div { display: flex; flex-wrap: wrap; gap: 8px; }
+button.danger { color: var(--bad); border-color: var(--bad); }
+.total { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; margin-top: 6px; }
+.mails { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.mails li { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line-2); }
+.mails li .who { color: var(--ink-2); font-size: .85rem; flex-basis: 100%; }
+.thread { display: grid; gap: 12px; }
+.thread article { border-left: 3px solid var(--line); padding-left: 10px; }
+.thread .text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .9rem; max-height: 420px; overflow: auto; }
+.preview { white-space: pre-wrap; font-family: var(--mono); font-size: .8rem; background: var(--paper); border: 1px solid var(--line); padding: 10px; max-height: 360px; overflow: auto; }
+.clip { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; max-width: 60ch; }

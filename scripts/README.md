@@ -1,5 +1,9 @@
 # scripts
 
+## Vyhľadanie cien (ADR-0024)
+
+`scripts/ai/hladanie_cien.py` hľadá ceny položiek u dodávateľov cez Claude API. Nástroje na hľadanie a čítanie webu sú obmedzené na domény dodávateľov zo vstupu. Vstup `scripts/ai/cenovy_dopyt.schema.json` (iba položky a dodávatelia, bez zákazníka a zákazky), výstup `scripts/ai/cenovy_navrh.schema.json` (stav `navrh`, odkaz, citát, čas zistenia). Oba formáty sú nástrojové, nie kontrakty EOS. Návod: [docs/manual/HLADANIE_CIEN.md](../docs/manual/HLADANIE_CIEN.md).
+
 ## Validácia Machine
 
 Registrácia fyzickej jednotky používa existujúcu kontrolu root sourceLinks a priechod cez vnorené tvrdenia a klasifikácie. Nevzniká Machine resolver ani pravidlo pre schopnosť vykonať operáciu. Podrobnosti: [CDR-0023](../docs/contracts/CDR-0023_Machine_Entity_Integration_Closure_Review.md). Nižšie sú historické záznamy.
