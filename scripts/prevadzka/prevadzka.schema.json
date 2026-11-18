@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eos.local/tools/prevadzka.schema.json",
+  "title": "Prevádzkové záznamy UI (ADR-0025)",
+  "description": "Nástrojový formát, nie kontrakt EOS. Ponuky, objednávky, sklad, dodávatelia a knowledge base v intake/_eos/prevadzka/ mimo gitu. Nahradia ich entity EOS (Job a ďalšie) po ich návrhu.",
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,79}$"},
+    "text": {"type": "string", "maxLength": 2000},
+    "longText": {"type": "string", "maxLength": 100000},
+    "number": {"type": ["number", "null"], "minimum": 0},
+    "date": {"type": "string", "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+    "stamp": {"type": "string", "format": "date-time"},
+    "common": {
+      "type": "object",
+      "required": ["id", "createdAt", "updatedAt"],
+      "properties": {"id": {"$ref": "#/$defs/id"}, "createdAt": {"$ref": "#/$defs/stamp"}, "updatedAt": {"$ref": "#/$defs/stamp"}}
+    },
+    "quoteItem": {
+      "type": "object", "additionalProperties": false, "required": ["name"],
+      "properties": {"name": {"$ref": "#/$defs/text"}, "qty": {"$ref": "#/$defs/number"}, "unit": {"$ref": "#/$defs/text"},
+                     "unitPrice": {"$ref": "#/$defs/number"}, "note": {"$ref": "#/$defs/text"}}
+    },
+    "quote": {
+      "allOf": [{"$ref": "#/$defs/common"}],
+      "type": "object", "unevaluatedProperties": false,
+      "required": ["status", "items"],
+      "properties": {
+        "number": {"$ref": "#/$defs/text"}, "customer": {"$ref": "#/$defs/text"}, "email": {"$ref": "#/$defs/text"},
+        "subject": {"$ref": "#/$defs/text"}, "dueDate": {"$ref": "#/$defs/date"},
+        "status": {"enum": ["draft", "gmail_draft", "sent", "accepted", "rejected"]},
+        "items": {"type": "array", "items": {"$ref": "#/$defs/quoteItem"}},
+        "notes": {"$ref": "#/$defs/longText"},
+        "emailBody": {"$ref": "#/$defs/longText"},
+        "gmail": {"type": "object", "additionalProperties": false,
+                  "properties": {"mailbox": {"$ref": "#/$defs/text"}, "threadId": {"$ref": "#/$defs/text"}, "messageId": {"$ref": "#/$defs/text"}, "from": {"$ref": "#/$defs/text"},
+                                 "subject": {"$ref": "#/$defs/text"}, "draftSavedAt": {"$ref": "#/$defs/stamp"}}},
+        "orderId": {"$ref": "#/$defs/id"}
+      }
+    },
+    "order": {
+      "allOf": [{"$ref": "#/$defs/common"}],
+      "type": "object", "unevaluatedProperties": false,
+      "required": ["status", "items", "materials", "operations"],
+      "properties": {
+        "number": {"$ref": "#/$defs/text"}, "quoteId": {"$ref": "#/$defs/id"}, "customer": {"$ref": "#/$defs/text"},
+        "dueDate": {"$ref": "#/$defs/date"},
+        "status": {"enum": ["accepted", "waiting_material", "in_production", "done", "shipped"]},
+        "items": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["name"],
+                  "properties": {"name": {"$ref": "#/$defs/text"}, "qty": {"$ref": "#/$defs/number"}, "unit": {"$ref": "#/$defs/text"}}}},
+        "materials": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["name", "status"],
+                      "properties": {"name": {"$ref": "#/$defs/text"}, "qty": {"$ref": "#/$defs/number"}, "unit": {"$ref": "#/$defs/text"},
+                                     "status": {"enum": ["verify", "in_stock", "to_order", "ordered", "received"]},
+                                     "supplierId": {"type": "string", "maxLength": 80}, "note": {"$ref": "#/$defs/text"}}}},
+        "operations": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+                       "properties": {"part": {"$ref": "#/$defs/text"}, "process": {"$ref": "#/$defs/text"}, "machine": {"$ref": "#/$defs/text"},
+                                      "minPerPiece": {"$ref": "#/$defs/number"}, "pieces": {"$ref": "#/$defs/number"}, "done": {"type": "boolean"}}}},
+        "notes": {"$ref": "#/$defs/longText"}
+      }
+    },
+    "stock": {
+      "allOf": [{"$ref": "#/$defs/common"}],
+      "type": "object", "unevaluatedProperties": false, "required": ["name"],
+      "properties": {"name": {"$ref": "#/$defs/text"}, "category": {"$ref": "#/$defs/text"}, "qty": {"$ref": "#/$defs/number"},
+                     "unit": {"$ref": "#/$defs/text"}, "location": {"$ref": "#/$defs/text"}, "minQty": {"$ref": "#/$defs/number"},
+                     "note": {"$ref": "#/$defs/text"}}
+    },
+    "supplier": {
+      "allOf": [{"$ref": "#/$defs/common"}],
+      "type": "object", "unevaluatedProperties": false, "required": ["name", "category", "status"],
+      "properties": {"name": {"$ref": "#/$defs/text"}, "category": {"$ref": "#/$defs/text"}, "supplies": {"$ref": "#/$defs/text"},
+                     "location": {"$ref": "#/$defs/text"}, "web": {"$ref": "#/$defs/text"}, "searchUrl": {"$ref": "#/$defs/text"},
+                     "email": {"$ref": "#/$defs/text"}, "status": {"enum": ["verify", "used", "not_used"]}, "note": {"$ref": "#/$defs/text"}}
+    },
+    "kb": {
+      "allOf": [{"$ref": "#/$defs/common"}],
+      "type": "object", "unevaluatedProperties": false, "required": ["title", "category", "content"],
+      "properties": {"title": {"$ref": "#/$defs/text"}, "category": {"$ref": "#/$defs/text"},
+                     "source": {"enum": ["N", "L", "P", "V", null]}, "content": {"$ref": "#/$defs/longText"}}
+    }
+  }
+}

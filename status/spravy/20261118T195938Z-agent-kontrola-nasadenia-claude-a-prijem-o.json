@@ -1,0 +1,20 @@
+{
+  "formatVersion": "0.1.0",
+  "id": "20261118T195938Z-agent-kontrola-nasadenia-claude-a-prijem-o",
+  "cas": "2026-11-18T19:59:38Z",
+  "autor": "agent",
+  "pre": "robino",
+  "typ": "kontrola",
+  "stav": "otvorene",
+  "tema": "Kontrola nasadenia: Claude a príjem objednávok",
+  "text": "Pred nasadením over súkromný Tailscale Serve, zoznam povolených účtov a prístup k osobnej Gmail schránke. Pre režim konceptov nechaj EOS_MAIL_SENDERS prázdne. Claude API a Gmail over na fiktívnej ponuke a objednávke. ADR-0026 eviduje architektúru pracovnej vetvy. Lokálne prešlo 347 testov, integrácie v testoch používajú náhrady.",
+  "zavaznost": "dolezite",
+  "vetva": "feature/eos-send-and-chat",
+  "commit": null,
+  "subory": [
+    "docs/manual/SERVER.md"
+  ],
+  "odpovedNa": null,
+  "vyriesil": null,
+  "vyriesene": null
+}

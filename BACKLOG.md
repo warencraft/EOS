@@ -30,6 +30,7 @@ Material a Supplier sú COMPLETE; SEC-0001/0002/0003 zostávajú CLOSED. Manufac
 
 ## Ďalšie otvorené položky
 
+- [ADR-0025](adr/ADR-0025_Quotes_orders_and_Gmail_in_EOS_UI_on_server.md): ponuky, objednávky, sklad, dodávatelia, knowledge base a Gmail sú v EOS UI; ostáva nasadenie na server podľa `docs/manual/SERVER.md`, prenos údajov z prototypu a Marcova odpoveď na otázku 8 (či niektoré údaje zákazníkov nesmú byť ani na serveri). [ADR-0024](adr/ADR-0024_Supplier_price_search_with_Claude_API.md): nástroj `scripts/ai/hladanie_cien.py` je hotový; ostáva overenie proti skutočnému API a Marcovo rozhodnutie, ako zaradiť cenu z webu medzi N/L/P/V.
 - Pre Supplier odložiť site/location a address model, contacts/persons a ich governance, scheme-aware external/legal identifiers, qualification, certifications a scoped capability model.
 - Pre Supplier odložiť Material/StockMaterial supply a service/process capability relationships, commercial offer/procurement, ceny, lead times a payment terms, assessment/performance a corporate relationships/succession.
 - Pred reálnym Supplier onboardingom uzavrieť identity/source verification a duplicate policy; širší Organization model zostáva research/design otázkou s MEDIUM rizikom. Zachovať stabilné SUP a historické referencie; generic entity resolver až podľa budúcich schválených väzieb.

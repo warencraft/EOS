@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="sk">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude · EOS</title>
+<link rel="stylesheet" href="/static/eos.css">
+<body class="chat-body" data-chat-session="{{ session }}">
+  <header class="chat-header">
+    <div class="chat-identity"><span class="chat-mark" aria-hidden="true">✦</span>
+      <div><strong>Claude</strong><span class="chat-subtitle">Asistent v EOS</span></div>
+    </div>
+    <a class="chat-new" href="/chat?new=1">＋ Nový rozhovor</a>
+  </header>
+  {% if sessions %}
+  <details class="chat-history">
+  <summary>Rozhovory <span>{{ sessions|length }}</span></summary>
+  <nav class="chat-sessions" aria-label="Rozhovory">
+    {% for id, title in sessions %}
+      <a href="/chat?session={{ id }}" {% if id == session %}aria-current="page"{% endif %}>{{ title }}</a>
+    {% endfor %}
+  </nav>
+  </details>
+  {% endif %}
+  <section class="chat-messages" aria-label="Správy" tabindex="0">
+    {% if current %}
+    <h1 class="chat-title">{{ current.title }}</h1>
+    {% for message in current.messages %}
+      <article class="chat-message chat-message--{{ message.role }}">
+        {% if message.role == "assistant" %}<strong class="chat-byline"><span aria-hidden="true">✦</span> Claude</strong>{% endif %}
+        <div class="chat-text">{{ message.content }}</div>
+        {% set proposal = (current.suppliers or {}).get(loop.index0|string) %}
+        {% if proposal %}
+        <a class="btn" target="_top" href="/dodavatelia/novy?chat={{ session }}&amp;turn={{ loop.index0 }}">Skontrolovať dodávateľa · {{ proposal.name }}</a>
+        {% elif message.role == "assistant" and loop.last %}
+        <button class="use-chat-draft" type="button" hidden>Použiť ako text e-mailu</button>
+        {% endif %}
+      </article>
+    {% endfor %}
+    {% else %}
+    <div class="chat-empty">
+      <span class="chat-mark" aria-hidden="true">✦</span>
+      <h1>Čo dnes riešiš?</h1>
+      <p>Polož otázku k zákazke alebo si priprav návrh e-mailu.</p>
+    </div>
+    {% endif %}
+    {% if error %}<p class="err" role="alert">Claude nevrátil odpoveď. Správu môžeš skúsiť znova.</p>{% endif %}
+  </section>
+  <div class="chat-dock">
+  {% if ready %}
+  <form method="post" action="/chat" class="form chat-composer">
+    <input type="hidden" name="session" value="{{ session }}">
+    <label class="sr-only" for="prompt">Správa pre Clauda</label>
+    <textarea id="prompt" name="prompt" rows="2" maxlength="8000" placeholder="Napíš správu…" required></textarea>
+    <div class="chat-send-row">
+      <span>Návrhy skontroluj pred použitím.</span>
+      <button class="chat-send" type="submit" aria-label="Poslať správu" title="Poslať správu">↑</button>
+    </div>
+  </form>
+  {% else %}<p class="muted">Claude API ešte nie je nastavené.</p>{% endif %}
+{% if submitted %}<p class="ok-msg" role="status">Návrh je na nástenke Stav → Pre Robina.</p>{% endif %}
+  <details class="chat-feedback">
+    <summary>Navrhnúť zlepšenie EOS</summary>
+    <form method="post" action="/chat/navrh" class="form chat-composer">
+      <input type="hidden" name="session" value="{{ session }}">
+      <label for="topic">Názov návrhu</label>
+      <input id="topic" name="topic" maxlength="120" required>
+      <label for="feedback">Čo by sa malo zlepšiť?</label>
+      <textarea id="feedback" name="text" rows="4" maxlength="4000" required></textarea>
+      <button type="submit">Pridať do Stavu pre Robina</button>
+    </form>
+  </details>
+</div>
+<script src="/static/quote-chat.js" defer></script>
+</body>
+</html>

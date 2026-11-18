@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Gmail{% endblock %}
+{% block content %}
+<div class="head">
+  <div>
+    <span class="eyebrow"><a href="/ponuky">Ponuky</a> / Gmail · ADR-0025</span>
+    <h1>Pripojenie Gmailu</h1>
+    <p class="muted">EOS číta dopyty a ukladá koncepty odpovedí do Konceptov. Nič neodosiela; odosielaš ty v Gmaile.</p>
+  </div>
+</div>
+{% if ok == "pripojeny" %}<div class="ok-msg" role="status">Gmail je pripojený.</div>{% endif %}
+{% if ok == "odpojeny" %}<div class="ok-msg" role="status">Gmail je odpojený a heslo aplikácie zo servera zmazané.</div>{% endif %}
+{% if chyba %}<div class="err" role="alert">{{ chyba }}</div>{% endif %}
+{% if pripojeny %}
+<form class="panel form" method="post" action="/gmail">
+  <p>Pripojený účet: <b>{{ pripojeny }}</b></p>
+  <div><button class="danger" type="submit" name="akcia" value="odpojit">Odpojiť a zmazať heslo zo servera</button></div>
+</form>
+{% else %}
+<div class="grid2">
+<form class="panel form" method="post" action="/gmail" autocomplete="off">
+  <h2>Pripojiť</h2>
+  <label class="lbl" for="email">E-mail</label>
+  <input id="email" type="text" name="email" value="{{ email or '' }}" required placeholder="meno@gmail.com">
+  <label class="lbl" for="heslo">Heslo aplikácie (16 znakov)</label>
+  <input id="heslo" type="password" name="heslo" required autocomplete="new-password">
+  <div><button class="primary" type="submit" name="akcia" value="pripojit">Overiť a pripojiť</button></div>
+  <p class="small muted">Heslo sa uloží iba na tomto serveri v <code>~/.config/eos/gmail.json</code> s prístupom len pre používateľa EOS. Nie je to heslo k účtu Google.</p>
+</form>
+<section class="panel">
+  <h2>Ako získať heslo aplikácie</h2>
+  <ol>
+    <li>V Google účte zapni <b>Dvojstupňové overenie</b> (myaccount.google.com → Zabezpečenie).</li>
+    <li>Otvor <b>myaccount.google.com/apppasswords</b>, zadaj názov „EOS“ a klikni Vytvoriť.</li>
+    <li>Skopíruj 16-miestne heslo sem. Google ho už znova neukáže.</li>
+    <li>V Gmaile over, že je zapnutý IMAP: Nastavenia → Zobraziť všetky nastavenia → Presmerovanie a POP/IMAP.</li>
+  </ol>
+  <p class="small muted">Heslo aplikácie zrušíš kedykoľvek na tej istej stránke Google; EOS sa potom odpojí.</p>
+</section>
+</div>
+{% endif %}
+{% endblock %}

@@ -4,25 +4,40 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}EOS{% endblock %} · EOS</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="/static/eos.css">
 <script src="/static/htmx-1.9.12.min.js" defer></script>
+<script src="/static/quote-chat.js" defer></script>
 </head>
-<body>
+{% set chat_available = eos_chat_available(request) %}
+<body{% if chat_available %} class="eos-with-chat"{% endif %}>
+<div id="eos-page"{% if chat_available %} hx-history-elt hx-history="false"{% endif %}>
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="/">EOS</a>
-    <nav aria-label="Hlavná navigácia">
+    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">E</span> EOS</a>
+    <nav aria-label="Hlavná navigácia"{% if chat_available %} hx-boost="true" hx-target="#eos-page" hx-select="#eos-page" hx-swap="outerHTML show:window:top"{% endif %}>
+      <a href="/ponuky" {% if active == "ponuky" %}aria-current="page"{% endif %}>Ponuky</a>
       <a href="/" {% if active == "zakazky" %}aria-current="page"{% endif %}>Zákazky</a>
+      <a href="/objednavky" {% if active == "objednavky" %}aria-current="page"{% endif %}>Objednávky</a>
+      <a href="/sklad" {% if active == "sklad" %}aria-current="page"{% endif %}>Sklad</a>
+      <a href="/dodavatelia" {% if active == "dodavatelia" %}aria-current="page"{% endif %}>Dodávatelia</a>
+      <a href="/kb" {% if active == "kb" %}aria-current="page"{% endif %}>Knowledge</a>
       <a href="/stav" {% if active == "stav" %}aria-current="page"{% endif %}>Stav{% set n = otvorene_spravy() %}{% if n %} <span class="badge">{{ n }}</span>{% endif %}</a>
       <a href="/model" {% if active == "model" %}aria-current="page"{% endif %}>Model</a>
     </nav>
-    <span class="note">Lokálne na tomto počítači · údaje zákaziek sú dôverné a mimo gitu</span>
+    <span class="note">Údaje zákaziek sú dôverné a mimo gitu</span>
   </div>
 </header>
 <main class="wrap">
 {% block content %}{% endblock %}
-<footer>EOS UI v0 (ADR-0021, ADR-0022). Kalkulácia je pracovný nástroj, nie kontrakt EOS: nahradí ju entita Job po jej návrhu.</footer>
+<footer>EOS UI v0 (ADR-0021, ADR-0022, ADR-0025). Kalkulácia je pracovný nástroj, nie kontrakt EOS: nahradí ju entita Job po jej návrhu.</footer>
 </main>
+</div>
+{% if chat_available %}
+<button id="eos-chat-toggle" class="primary" type="button" aria-controls="eos-chat" aria-expanded="false" aria-label="Otvoriť chat Claude" title="Otvoriť chat Claude">←</button>
+<aside id="eos-chat" class="eos-chat" aria-label="Claude rozhovory">
+  <iframe title="Claude rozhovory" src="/chat"></iframe>
+</aside>
+{% endif %}
 </body>
 </html>

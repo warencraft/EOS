@@ -10,6 +10,26 @@
   </div>
 </div>
 {% if chyba %}<div class="err" role="alert">{{ chyba }}</div>{% endif %}
+{% if gmail %}
+<section class="panel">
+  <h2>Z objednávky v Gmaile</h2>
+  <form method="get" action="/nova" class="form">
+    <input type="hidden" name="hladat" value="1">
+    <label class="lbl" for="order-query">Hľadať objednávky</label>
+    <input id="order-query" name="q" type="text" value="{{ query }}">
+    <div><button type="submit">Načítať objednávky</button></div>
+  </form>
+  {% if results is defined %}
+  <ul class="mails">
+    {% for mail in results %}
+    <li><a href="/nova?vlakno={{ mail.threadId|urlencode }}">{{ mail.subject }}</a><span class="who">{{ mail.sender }}</span></li>
+    {% else %}<li>Žiadne správy nezodpovedajú vyhľadávaniu.</li>{% endfor %}
+  </ul>
+  {% endif %}
+</section>
+{% else %}
+<p class="muted">Na načítanie objednávky <a href="/gmail">pripoj Gmail</a>.</p>
+{% endif %}
 <form class="panel form" method="post" action="/nova" enctype="multipart/form-data">
   <label class="lbl" for="nazov">Názov zákazky</label>
   <input id="nazov" type="text" name="nazov" value="{{ nazov or '' }}" required placeholder="napr. Hydraulický valec 4 ks – V950">
@@ -18,6 +38,20 @@
     <option value="Marco" {% if kto == "Marco" %}selected{% endif %}>Marco</option>
     <option value="Robino" {% if kto == "Robino" %}selected{% endif %}>Robino</option>
   </select>
+  {% if thread %}
+  <input type="hidden" name="vlakno" value="{{ thread }}">
+  <section class="fields">
+    {% for field, label, _ in fields %}
+    <label><span class="lbl">{{ label }}</span><input type="text" name="{{ field }}" maxlength="300" value="{{ order.get(field, '') }}"></label>
+    {% endfor %}
+  </section>
+  {% if source %}<details>
+    <summary>Pôvodný e-mail</summary>
+    <p>{{ source.from }} · {{ source.date }}</p>
+    <div class="preview">{{ source.text }}</div>
+    {% if source.attachments %}<p class="muted">Prílohy v Gmaile: {{ source.attachments|join(", ") }}. Nahraj ich nižšie.</p>{% endif %}
+  </details>{% endif %}
+  {% endif %}
   <label class="lbl" for="subory">Podklady (výkresy PDF, dopyt, excelová kalkulácia…)</label>
   <input id="subory" type="file" name="subory" multiple>
   <label class="lbl" for="priecinok">Ulož ich ako</label>

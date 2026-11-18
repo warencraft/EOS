@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ d.one }}{% endblock %}
+{% block content %}
+<div class="head">
+  <div>
+    <span class="eyebrow"><a href="/{{ kind }}">{{ d.title }}</a> / {{ r.get("name") or r.get("title") or "nový" }}</span>
+    <h1>{{ d.one }}</h1>
+  </div>
+</div>
+{% if chat_draft %}<p class="muted">Návrh od Clauda. Skontroluj údaje a potvrď tlačidlom Uložiť.</p>{% endif %}
+{% if chyba %}<div class="err" role="alert">{{ chyba }}</div>{% endif %}
+<form class="form" method="post" action="/{{ kind }}/{{ r.id or 'novy' }}" style="gap:16px">
+  <section class="panel fields">
+  {% for name, label, typ, req in d.fields %}{% set v = r.get(name) %}
+    {% if typ == "area" %}
+    <label style="grid-column: 1 / -1"><span class="lbl">{{ label }}</span><textarea name="{{ name }}" rows="{{ 14 if kind == 'kb' else 3 }}" {% if req %}required{% endif %}>{{ v or '' }}</textarea></label>
+    {% elif typ == "supplier_status" %}
+    <label><span class="lbl">{{ label }}</span><select name="{{ name }}">{% for k, t in SUPPLIER_STATUS.items() %}<option value="{{ k }}" {% if v == k %}selected{% endif %}>{{ t }}</option>{% endfor %}</select></label>
+    {% elif typ == "kb_category" %}
+    <label><span class="lbl">{{ label }}</span><select name="{{ name }}">{% for k in KB_CATEGORIES %}<option {% if v == k %}selected{% endif %}>{{ k }}</option>{% endfor %}{% if v and v not in KB_CATEGORIES %}<option selected>{{ v }}</option>{% endif %}</select></label>
+    {% elif typ == "source" %}
+    <label><span class="lbl">{{ label }}</span><select name="{{ name }}"><option value="">–</option>{% for k in ["N", "L", "P", "V"] %}<option {% if v == k %}selected{% endif %}>{{ k }}</option>{% endfor %}</select></label>
+    {% elif typ == "num" %}
+    <label><span class="lbl">{{ label }}</span><input type="text" inputmode="decimal" name="{{ name }}" value="{{ '' if v is none else ('%g' % v)|replace('.', ',') }}"></label>
+    {% else %}
+    <label><span class="lbl">{{ label }}</span><input type="text" name="{{ name }}" value="{{ v or '' }}" {% if req %}required{% endif %}></label>
+    {% endif %}
+  {% endfor %}
+  </section>
+  <div class="actions">
+    <div>{% if r.id %}<button class="danger" type="submit" name="akcia" value="zmazat" formnovalidate>Zmazať</button>{% endif %}</div>
+    <div><a href="/{{ kind }}">Zrušiť</a> <button class="primary" type="submit" name="akcia" value="ulozit">Uložiť</button></div>
+  </div>
+</form>
+{% endblock %}

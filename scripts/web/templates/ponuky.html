@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% set active = "ponuky" %}
+{% block title %}Ponuky{% endblock %}
+{% block content %}
+<div class="head">
+  <div>
+    <span class="eyebrow">Dopyt → ponuka → koncept v Gmaile · ADR-0025</span>
+    <h1>Ponuky</h1>
+    <p class="muted">{{ ponuky|length }} ponúk. Odpovede sa ukladajú ako koncepty v Gmaile, odosiela sa ručne.</p>
+  </div>
+  <form method="post" action="/ponuky/nova"><button class="primary" type="submit">+ Nová ponuka</button></form>
+</div>
+<section class="panel">
+  {% if gmail %}
+  <form class="riadok" method="get" action="/ponuky">
+    <input type="hidden" name="hladat" value="1">
+    <label class="sr-only" for="q">Hľadať v Gmaile</label>
+    <input id="q" type="text" name="q" value="{{ q }}" style="flex:1 1 420px">
+    <button type="submit">Načítať dopyty z Gmailu</button>
+    <a class="small" href="/gmail">{{ gmail }}</a>
+  </form>
+  {% if chyba %}<div class="err" role="alert">{{ chyba }}</div>{% endif %}
+  {% if vlakna is not none %}
+    {% if vlakna %}
+    <ul class="mails">
+    {% for t in vlakna %}
+      <li>
+        <b>{{ t.subject }}</b>
+        <span class="small muted">{{ (t.date or '')[:16]|replace('T', ' ') }} · {{ t.count }} spr.</span>
+        <span class="who">{{ t.sender }}</span>
+        {% if t.threadId in podla_vlakna %}<a href="/ponuka/{{ podla_vlakna[t.threadId] }}">Otvoriť ponuku</a>
+        {% else %}<form method="post" action="/ponuky/z-gmailu"><input type="hidden" name="vlakno" value="{{ t.threadId }}"><button type="submit">Vytvoriť ponuku</button></form>{% endif %}
+      </li>
+    {% endfor %}
+    </ul>
+    {% else %}<p class="muted">Hľadaniu nič nezodpovedá. Uprav dotaz (rovnaký zápis ako vo vyhľadávaní Gmailu).</p>{% endif %}
+  {% endif %}
+  {% else %}
+  <p>Gmail nie je pripojený. <a href="/gmail">Pripojiť Gmail</a></p>
+  {% endif %}
+</section>
+{% if ponuky %}
+<div class="panel tbl">
+<table>
+  <thead><tr><th>Číslo</th><th>Zákazník</th><th>Predmet</th><th class="num">Položky</th><th class="num">Spolu bez DPH</th><th>Stav</th><th>Upravené</th></tr></thead>
+  <tbody>
+  {% for p in ponuky %}
+    <tr>
+      <td><a class="mono" href="/ponuka/{{ p.id }}">{{ p.number or "bez čísla" }}</a></td>
+      <td>{{ p.customer or "–" }}</td>
+      <td>{{ p.subject or "–" }}</td>
+      <td class="num">{{ p["items"]|length }}</td>
+      <td class="num">{{ spolu[p.id]|eur2 }}</td>
+      <td><span class="chip {{ {'gmail_draft': 'blue', 'sent': 'warn', 'accepted': 'ok', 'rejected': 'bad'}.get(p.status, '') }}">{{ QUOTE_STATUS[p.status] }}</span></td>
+      <td class="small muted">{{ (p.updatedAt or '')[:16]|replace('T', ' ') }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}<div class="empty">Zatiaľ žiadne ponuky. Načítaj dopyty z Gmailu alebo vytvor ponuku ručne.</div>{% endif %}
+{% endblock %}

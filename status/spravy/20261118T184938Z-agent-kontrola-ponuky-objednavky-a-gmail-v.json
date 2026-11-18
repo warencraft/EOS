@@ -1,0 +1,24 @@
+{
+  "formatVersion": "0.1.0",
+  "id": "20261118T184938Z-agent-kontrola-ponuky-objednavky-a-gmail-v",
+  "cas": "2026-11-18T18:49:38Z",
+  "autor": "agent",
+  "pre": "robino",
+  "typ": "kontrola",
+  "stav": "otvorene",
+  "tema": "Kontrola: ponuky, objednávky a Gmail v UI, hľadanie cien",
+  "text": "Čo sa mení: ADR-0024 (hľadanie cien cez Claude API, voliteľné .[ai]) a ADR-0025 (ponuky, objednávky, sklad, dodávatelia, knowledge base a Gmail cez IMAP v UI; server cez Tailscale). Návod docs/manual/SERVER.md.\nNa čo sa pozrieť:\n1. Heslo aplikácie Gmailu sa ukladá na server do ~/.config/eos/gmail.json (0600). UI nemá vlastné prihlásenie; chráni ho iba Tailnet.\n2. Formuláre teraz prijímajú aj hostiteľov z EOS_ALLOWED_HOSTS / --allow-host. Na serveri tam musí byť presný názov z Tailscale.\n3. Gmail IMAP je overený iba s falošným serverom; prvé ostré pripojenie a koncept treba vyskúšať ručne. Rovnako hladanie_cien proti skutočnému API.\n4. Súbežné úpravy toho istého záznamu: vyhrá posledný uložený (JSON súbory, bez zamykania).\n5. Nová voliteľná závislosť anthropic (.[ai]); zapísaná v pyproject.toml aj TECH_STACK.md.\nTesty: 341 passed, 0 failed, 0 skipped (s .[ui,import,ai]); 17 nových metód, 10 skúšok citlivosti.",
+  "zavaznost": "dolezite",
+  "vetva": "feature/ui-ponuky-objednavky-gmail",
+  "commit": null,
+  "subory": [
+    "scripts/web/prevadzka_ui.py",
+    "scripts/gmail/__init__.py",
+    "scripts/prevadzka/__init__.py",
+    "scripts/ai/hladanie_cien.py",
+    "pyproject.toml"
+  ],
+  "odpovedNa": null,
+  "vyriesil": null,
+  "vyriesene": null
+}

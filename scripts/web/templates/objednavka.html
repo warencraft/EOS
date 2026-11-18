@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% from "_riadky.html" import riadky %}
+{% set active = "objednavky" %}
+{% block title %}Objednávka {{ o.number }}{% endblock %}
+{% block content %}
+<div class="head">
+  <div>
+    <span class="eyebrow"><a href="/objednavky">Objednávky</a> / {{ o.number or o.id }}</span>
+    <h1>Objednávka {{ o.number }}</h1>
+    <p class="muted">{{ ORDER_STATUS[o.status] }}{% if o.quoteId %} · <a href="/ponuka/{{ o.quoteId }}">ponuka</a>{% endif %}{% if hodiny %} · spolu {{ ('%.1f' % hodiny)|replace('.', ',') }} h práce{% endif %}</p>
+  </div>
+</div>
+{% if ok == "ulozene" %}<div class="ok-msg" role="status">Uložené.</div>{% endif %}
+{% if ok.startswith("sklad-") %}<div class="ok-msg" role="status">Na sklade: {{ ok[6:] }} položiek. Zhoda je podľa názvu, over ju.</div>{% endif %}
+{% if chyba %}<div class="err" role="alert">{{ chyba }}</div>{% endif %}
+<form class="form" method="post" action="/objednavka/{{ o.id }}" style="gap:16px">
+  <section class="panel fields">
+    <label><span class="lbl">Číslo</span><input type="text" name="number" value="{{ o.number or '' }}"></label>
+    <label><span class="lbl">Zákazník</span><input type="text" name="customer" value="{{ o.customer or '' }}"></label>
+    <label><span class="lbl">Termín dodania</span><input type="date" name="dueDate" value="{{ o.dueDate or '' }}"></label>
+    <label><span class="lbl">Stav</span><select name="status">{% for k, t in ORDER_STATUS.items() %}<option value="{{ k }}" {% if o.status == k %}selected{% endif %}>{{ t }}</option>{% endfor %}</select></label>
+  </section>
+  {% for key in ["items", "materials", "operations"] %}{{ riadky(key, lines[key], o[key], titles[key], dodavatelia) }}{% endfor %}
+  <section class="panel form">
+    <label class="lbl" for="notes">Poznámky</label>
+    <textarea id="notes" name="notes" rows="3">{{ o.notes or '' }}</textarea>
+  </section>
+  <div class="actions">
+    <div><button class="danger" type="submit" name="akcia" value="zmazat" formnovalidate>Zmazať</button></div>
+    <div>
+      <button type="submit" name="akcia" value="sklad">Skontrolovať sklad</button>
+      <button type="submit" name="akcia" value="ceny" title="JSON pre python -m scripts.ai.hladanie_cien (ADR-0024)">Vstup pre hľadanie cien</button>
+      <button class="primary" type="submit" name="akcia" value="ulozit">Uložiť</button>
+    </div>
+  </div>
+  <p class="small muted">„Vstup pre hľadanie cien“ stiahne JSON s materiálom so stavom Objednať a dodávateľmi s webom. Spusti ho na serveri: <code>.venv/bin/python -m scripts.ai.hladanie_cien ceny.json -o navrh.json</code>.</p>
+</form>
+{% endblock %}

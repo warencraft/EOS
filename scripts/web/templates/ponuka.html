@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% from "_riadky.html" import riadky %}
+{% set active = "ponuky" %}
+{% block title %}Ponuka {{ q.number }}{% endblock %}
+{% block content %}
+<div class="head">
+  <div>
+    <span class="eyebrow"><a href="/ponuky">Ponuky</a> / {{ q.number or q.id }}</span>
+    <h1>Ponuka {{ q.number }}</h1>
+    <p class="muted">{{ QUOTE_STATUS[q.status] }}{% if q.gmail and q.gmail.draftSavedAt %} · koncept uložený {{ q.gmail.draftSavedAt[:16]|replace('T', ' ') }}{% endif %}{% if q.orderId %} · <a href="/objednavka/{{ q.orderId }}">objednávka</a>{% endif %}</p>
+  </div>
+</div>
+{% if ok == "ulozene" %}<div class="ok-msg" role="status">Uložené.</div>{% endif %}
+{% if ok == "koncept" %}<div class="ok-msg" role="status">Koncept je v Gmaile v Konceptoch. Skontroluj ho a odošli z Gmailu.</div>{% endif %}
+{% if ok == "odoslane" %}<div class="ok-msg" role="status">Gmail prijal ponuku na odoslanie.</div>{% endif %}
+{% if chyba %}<div class="err" role="alert">{{ chyba }}</div>{% endif %}
+<div class="grid2">
+<form id="quote-form" class="form" method="post" action="/ponuka/{{ q.id }}" style="gap:16px">
+  <section class="panel fields">
+    <label><span class="lbl">Číslo</span><input type="text" name="number" value="{{ q.number or '' }}"></label>
+    <label><span class="lbl">Zákazník</span><input type="text" name="customer" value="{{ q.customer or '' }}"></label>
+    <label><span class="lbl">E-mail</span><input type="text" name="email" value="{{ q.email or '' }}"></label>
+    <label><span class="lbl">Termín dodania</span><input type="date" name="dueDate" value="{{ q.dueDate or '' }}"></label>
+    <label><span class="lbl">Stav</span><select name="status">{% for k, t in QUOTE_STATUS.items() %}<option value="{{ k }}" {% if q.status == k %}selected{% endif %}>{{ t }}</option>{% endfor %}</select></label>
+    <label style="grid-column: 1 / -1"><span class="lbl">Predmet</span><input type="text" name="subject" value="{{ q.subject or '' }}"></label>
+  </section>
+  {{ riadky("items", lines["items"], q["items"], titles["items"]) }}
+  <div class="total">Spolu bez DPH: {{ spolu|eur2 }}</div>
+  <section class="panel form">
+    <label class="lbl" for="notes">Poznámka do ponuky (dodacie podmienky, platnosť…)</label>
+    <textarea id="notes" name="notes" rows="4">{{ q.notes or '' }}</textarea>
+  </section>
+  <div class="actions">
+    <div><button class="danger" type="submit" name="akcia" value="zmazat" formnovalidate>Zmazať</button></div>
+    <div>
+      {% if gmail %}<button type="submit" name="akcia" value="koncept">Uložiť a vytvoriť koncept v Gmaile</button>{% endif %}
+      {% if gmail and can_send and q.status in ("draft", "gmail_draft") %}<button type="submit" name="akcia" value="nahlad-odoslania">Odoslať ponuku…</button>{% endif %}
+      {% if q.status == "accepted" and not q.orderId %}<button type="submit" name="akcia" value="objednavka">Vytvoriť objednávku</button>{% endif %}
+      <button class="primary" type="submit" name="akcia" value="ulozit">Uložiť</button>
+    </div>
+  </div>
+  <p class="small muted">Ceny zadávaš ty, napr. z kalkulácie zákazky. Nič sa neposiela do AI.</p>
+</form>
+<div style="display:grid; gap:16px; min-width:0">
+  <section class="panel">
+    <h3>Text konceptu</h3>
+    <div class="preview">{{ telo }}</div>
+    <label class="form" for="quote-email-body">
+      Vlastný text e-mailu
+      <textarea id="quote-email-body" name="emailBody" form="quote-form" rows="4" maxlength="100000"
+                placeholder="Ak pole necháš prázdne, EOS použije text v náhľade.">{{ q.emailBody or '' }}</textarea>
+    </label>
+  </section>
+  {% if q.gmail and q.gmail.threadId %}
+  <section class="panel thread">
+    <h3>E-mail od zákazníka</h3>
+    {% if gm_chyba %}<div class="err" role="alert">{{ gm_chyba }}</div>
+    {% elif vlakno %}{% for m in vlakno %}
+      <article>
+        <div class="small muted">{{ m.from }} · {{ (m.date or '')[:16]|replace('T', ' ') }}</div>
+        <b>{{ m.subject }}</b>
+        {% if m.attachments %}<div class="chips">{% for a in m.attachments %}<span class="chip">{{ a }}</span>{% endfor %}</div>{% endif %}
+        <div class="text">{{ m.text }}</div>
+      </article>
+    {% endfor %}{% elif not gmail %}<p class="muted">Gmail nie je pripojený.</p>{% endif %}
+  </section>
+  {% endif %}
+</div>
+</div>
+{% endblock %}

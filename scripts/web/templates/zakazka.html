@@ -13,6 +13,7 @@
   </div>
 </div>
 
+{% if order_summary %}<section class="panel"><h2>Údaje z objednávky</h2><div class="chat-text">{{ order_summary }}</div></section>{% endif %}
 {% if preskocene %}<div class="err" role="alert">Tieto súbory sa neuložili (nepovolený názov): {{ preskocene }}</div>{% endif %}
 <div class="grid-nahlad">
   <section class="panel" aria-labelledby="h-podklady">

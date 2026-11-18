@@ -3,9 +3,9 @@
 **Project:** EOS - Engineering Operating System  
 **Document ID:** (pridelí sa po schválení, napr. `EOS-011`)  
 **Version:** 0.2  
-**Revision:** 0  
+**Revision:** 1  
 **Status:** Approved  
-**Last update:** 2026-11-04  
+**Last update:** 2026-11-18  
 **Document basis:** platné ADR + ADR-0018  
 
 ---
@@ -19,6 +19,9 @@ Jedno miesto, kde človek aj AI agent zistí, **na čom sa EOS programuje, čo j
 > **Etapa A – Kontrakty.** Povolené sú iba technológie z riadku A v časti 3.
 >
 > **Výnimka – UI v0 (ADR-0021):** lokálna aplikácia `scripts/web/` (fastapi, uvicorn, jinja2, HTMX) a import excelovej šablóny `scripts/calc/` (openpyxl, xlrd), všetko ako voliteľné závislosti `.[ui,import]`. Iné technológie etapy D, B ani C výnimka nepovoľuje.
+>
+> **Výnimka – vyhľadanie cien (ADR-0024):** nástroj `scripts/ai/hladanie_cien.py` s voliteľnou závislosťou `.[ai]` (`anthropic`). Iné AI funkcie etapy E výnimka nepovoľuje.
+> **Pracovná vetva ADR-0026:** rovnaká závislosť v `scripts/ai/chat_client.py` pre ručný chat s návrhom dodávateľa bez priameho zápisu a Gmail SMTP cez štandardnú knižnicu. Pred nasadením platí rozhodnutie ADR.
 
 Etapu mení Software Architect (IT strana) po dohode s Chief Engineering Knowledge Architect. Agent nesmie použiť technológiu z neskoršej etapy ani „na skúšku“.
 
@@ -117,3 +120,4 @@ py -m venv .venv
 | --- | --- | --- | --- | --- |
 | 2026-11-04 | 0.1 | 0 | Návrh (Claude) | Zhrnutie platných ADR + návrhy P1–P5 |
 | 2026-11-04 | 0.2 | 0 | Software Architect + Claude | Cieľová architektúra po etapách A–E podľa ADR-0018 (Accepted) |
+| 2026-11-18 | 0.2 | 1 | Software Architect + Claude | Výnimka ADR-0024: voliteľná závislosť `.[ai]` (anthropic) iba pre vyhľadanie cien |

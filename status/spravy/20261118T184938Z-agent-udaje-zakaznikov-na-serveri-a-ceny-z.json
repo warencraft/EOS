@@ -1,0 +1,21 @@
+{
+  "formatVersion": "0.1.0",
+  "id": "20261118T184938Z-agent-udaje-zakaznikov-na-serveri-a-ceny-z",
+  "cas": "2026-11-18T18:49:38Z",
+  "autor": "agent",
+  "pre": "marco",
+  "typ": "rozhodnutie",
+  "stav": "otvorene",
+  "tema": "Údaje zákazníkov na serveri a ceny z webu",
+  "text": "Dve rozhodnutia pre teba:\n1. Ponuky a objednávky (zákazník, položky, ceny) budú na vašom serveri, mimo gitu a bez AI. Je to v poriadku, alebo niečo z toho nesmie byť ani na serveri? (otázka 8 z 2026-11-04)\n   A: áno, v poriadku. B: áno, ale bez cien (ceny ostávajú v kalkulácii). C: niečo iné, napíš čo.\n2. Cena nájdená na webe dodávateľa (nástroj hľadanie cien): ako ju zaradiť? A: P (skúsenosť) s dátumom. B: nová trieda „W“ (web, orientačná). C: nezaraďovať, iba ako pomôcka pri dopyte.\nPripojenie Gmailu robíš ty sám v EOS → Ponuky → Pripojiť Gmail (heslo aplikácie z Google účtu).",
+  "zavaznost": "dolezite",
+  "vetva": "feature/ui-ponuky-objednavky-gmail",
+  "commit": null,
+  "subory": [
+    "adr/ADR-0025_Quotes_orders_and_Gmail_in_EOS_UI_on_server.md",
+    "adr/ADR-0024_Supplier_price_search_with_Claude_API.md"
+  ],
+  "odpovedNa": null,
+  "vyriesil": null,
+  "vyriesene": null
+}

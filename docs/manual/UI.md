@@ -88,6 +88,13 @@ Stránka **Stav** má dva stĺpce: **Pre Marca** (doména: entity, hodnoty, zdro
 - Novú správu napíšeš dole vo formulári. Pri správe môžeš odpovedať alebo ju označiť ako vyriešenú.
 - Správy sa ukladajú do `status/spravy/` a idú s commitom do gitu. Druhý ich uvidí, keď si stiahne zmeny. **Nepíš do nich mená zákazníkov ani ceny**; aplikácia správu s názvom zákazky alebo zákazníka odmietne.
 
+### Ponuky, objednávky, sklad, dodávatelia, knowledge base (ADR-0025)
+
+- **Ponuky:** Pripoj Gmail (heslo aplikácie), klikni **Načítať dopyty z Gmailu** a pri dopyte **Vytvoriť ponuku**. Doplň položky a ceny, potom **Uložiť a vytvoriť koncept v Gmaile**: koncept je v Gmaile ako odpoveď vo vlákne, odošleš ho tam. Prijatú ponuku zmeníš na objednávku.
+- **Objednávky:** výrobky, materiál so stavom a dodávateľom, operácie so strojom. **Skontrolovať sklad** porovná materiál so skladom podľa názvu. **Vstup pre hľadanie cien** stiahne JSON pre `scripts/ai/hladanie_cien.py`.
+- **Sklad, Dodávatelia, Knowledge:** zoznamy s filtrom a úpravou. Hodnoty v knowledge base zapisuj so zdrojom N/L/P/V.
+- Všetko sa ukladá do `intake/_eos/prevadzka/` mimo gitu. Spustenie na serveri: [SERVER.md](SERVER.md).
+
 ## Čo zatiaľ nevie
 
 - Vypočítať časy operácií z výkresu. Kalkulácia podľa podobnej zákazky je odhad, ktorý treba overiť.
