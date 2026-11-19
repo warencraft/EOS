@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Oprava chatu: autor návrhu a zaseknutý zámok - 2026-11-19
+
+Návrh z panelu Claude sa na nástenku zapíše s autorom podľa Tailscale identity. Priradenie je v `EOS_NASTENKA_AUTORI` (`login:marco`, `login:robino`). Účet bez priradenia dostane 403. Predtým sa návrh vždy zapísal ako od Marca. Zámok `.request`, ktorý ostane po spadnutom procese, EOS po 5 minútach nahradí, takže používateľ už nie je zablokovaný. `scripts/web/claude_chat.py`, tri nové testy v `tests/test_prevadzka.py` (zlyhajú so starým kódom). Vetva vychádza z `feature/eos-send-and-chat`, preto prináša do `main` aj streamovanie a výber kontextu z PR #18. Bez novej závislosti.
+
 ## Spevnenie servera v návode (docs) - 2026-11-19
 
 `docs/manual/SERVER.md`: upozornenie, že väčšina stránok nemá vlastné prihlásenie, a z toho vyplývajúce pravidlá. Každý má vlastný Tailscale účet namiesto jedného spoločného, inak chat a odosielanie nerozlíšia osoby. Nový krok 1a: 2FA u poskytovateľa, automatické aktualizácie, SSH iba kľúčom, `ufw` bez verejných portov a SSH iba cez `tailscale0`, skúška `nmap`. Služba `eos-ui` beží v sandboxe systemd so zápisom iba do `intake/`, `status/` a `~/.config/eos`. Pravidlá prístupu v Tailnete (brat iba `tcp:443`, `tag:eos`), Device approval a zákaz Funnel. Claude API kľúč je zašifrovaný cez `systemd-creds` (`LoadCredentialEncrypted`) a má samostatný workspace s mesačným limitom. Záloha je šifrovaná cez `restic` mimo poskytovateľa a nahrádza nešifrovaný `tar` na tom istom serveri. K tomu skúšobná obnova a upozornenie na heslo aplikácie Gmailu. Plán a bezpečnostný dokument v `docs/handoff/` nesú poznámku, čo nahradilo ADR-0026. Iba dokumentácia, kód a závislosti bez zmien.

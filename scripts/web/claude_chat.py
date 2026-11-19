@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import tempfile
+import time
 from contextlib import aclosing, contextmanager
 from pathlib import Path
 from uuid import UUID, uuid4
@@ -19,6 +20,42 @@ from .tailnet_identity import authorized_user
 MAX_TURNS = 60
 # Allow an 8 000-character prompt even if each Unicode character takes four bytes.
 MAX_CONTEXT_BYTES = 32_000
+# A request lock older than this is left over from a crashed worker. The Claude client
+# gives up after 40 s, so a live request never holds the lock this long.
+STALE_LOCK_SECONDS = 300
+
+
+def board_author(identity: str) -> str | None:
+    """Map a Tailscale login to a board author from EOS_NASTENKA_AUTORI (login:marco,...)."""
+    for pair in os.getenv("EOS_NASTENKA_AUTORI", "").split(","):
+        login, _, author = pair.partition(":")
+        if login.strip().casefold() == identity and author.strip() in {"marco", "robino"}:
+            return author.strip()
+    return None
+
+
+def acquire(lock: Path) -> None:
+    """Take the per-user request lock, replacing one left over from a crashed worker."""
+    try:
+        lock.mkdir(mode=0o700)
+        return
+    except FileExistsError:
+        pass
+    try:
+        stale = time.time() - lock.stat().st_mtime > STALE_LOCK_SECONDS
+    except FileNotFoundError:
+        stale = True
+    if stale:
+        try:
+            lock.rmdir()
+        except FileNotFoundError:
+            pass
+        try:
+            lock.mkdir(mode=0o700)
+            return
+        except FileExistsError:
+            pass
+    raise HTTPException(409, "Predošlá správa sa ešte spracúva.")
 
 
 def save(path: Path, record: dict):
@@ -68,8 +105,11 @@ def register(app, templates, root: Path, board):
         folder = user_folder(request)
         if session:
             load(folder, session)
+        author = board_author(authorized_user(request, "EOS_CHAT_USERS"))
+        if author is None:
+            raise HTTPException(403, "Tvoj účet nie je priradený k autorovi nástenky (EOS_NASTENKA_AUTORI).")
         try:
-            board.pridaj(autor="marco", pre="robino", typ="feedback",
+            board.pridaj(autor=author, pre="robino", typ="feedback",
                          tema=topic.strip(), text=text.strip())
         except ValueError as exc:
             raise HTTPException(422, str(exc)) from None
@@ -93,10 +133,7 @@ def register(app, templates, root: Path, board):
             folder / f"{uuid4().hex}.json", {"title": prompt[:65], "messages": []}
         )
         lock = folder / ".request"
-        try:
-            lock.mkdir(mode=0o700)
-        except FileExistsError:
-            raise HTTPException(409, "Predošlá správa sa ešte spracúva.") from None
+        acquire(lock)
         try:
             if session:
                 path, record = load(folder, session)

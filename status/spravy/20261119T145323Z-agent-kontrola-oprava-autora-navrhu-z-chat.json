@@ -1,0 +1,21 @@
+{
+  "formatVersion": "0.1.0",
+  "id": "20261119T145323Z-agent-kontrola-oprava-autora-navrhu-z-chat",
+  "cas": "2026-11-19T14:53:23Z",
+  "autor": "agent",
+  "pre": "robino",
+  "typ": "kontrola",
+  "stav": "otvorene",
+  "tema": "Kontrola: oprava autora návrhu z chatu a zámku",
+  "text": "Čo sa mení: návrh z panelu Claude má autora podľa Tailscale loginu (EOS_NASTENKA_AUTORI), opustený zámok .request sa po 5 minútach nahradí.\nNa čo sa pozrieť:\n1. Pred nasadením doplň do služby EOS_NASTENKA_AUTORI=tvoj-login:robino,brat-login:marco. Bez toho tlačidlo návrhu vráti 403.\n2. Vetva vychádza z feature/eos-send-and-chat, preto PR do main prinesie aj streamovanie a výber kontextu z PR #18.\n3. Limit 5 minút je technická hodnota (klient Claude končí po 40 s), nie strojárska.\nTesty: 354 passed, 0 failed, 0 skipped; 3 nové testy zlyhajú so starým kódom.",
+  "zavaznost": "dolezite",
+  "vetva": "fix/chat-autor-a-zamok",
+  "commit": null,
+  "subory": [
+    "scripts/web/claude_chat.py",
+    "docs/manual/SERVER.md"
+  ],
+  "odpovedNa": null,
+  "vyriesil": null,
+  "vyriesene": null
+}

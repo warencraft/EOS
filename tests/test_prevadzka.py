@@ -4,6 +4,7 @@ Všetko na fiktívnych dátach v dočasnom priečinku. Gmail nahrádza falošný
 nikam nepripája. Testy UI potrebujú `.[ui]`, inak sa preskočia.
 """
 import email
+import hashlib
 import email.policy
 import imaplib
 import json
@@ -12,6 +13,7 @@ import re
 import sys
 import stat
 import tempfile
+import time
 import unittest
 from contextlib import asynccontextmanager
 from email.message import EmailMessage
@@ -220,6 +222,7 @@ class PrevadzkaUiTests(unittest.TestCase):
         self.enterContext(patch.dict(os.environ, {
             "EOS_SERVE_ORIGIN": origin, "EOS_MAIL_SENDERS": "owner@example.org",
             "EOS_CHAT_USERS": "owner@example.org,brother@example.org",
+            "EOS_NASTENKA_AUTORI": "owner@example.org:robino,brother@example.org:marco",
             "ANTHROPIC_API_KEY": "fake-key", "EOS_CLAUDE_MODEL": "fake-model",
         }))
         return TestClient(self.client.app, base_url=origin, headers={
@@ -366,6 +369,37 @@ class PrevadzkaUiTests(unittest.TestCase):
         response = client.post("/chat/navrh", data={"topic": "Fiktívne zlepšenie", "text": "Pridať filter."})
         self.assertEqual(response.headers["location"], "/chat?submitted=1")
         self.assertIn("Fiktívne zlepšenie", client.get("/stav").text)
+
+    def test_chat_feedback_author_follows_tailscale_identity(self):
+        spravy = Path(self._tmp.name) / "spravy"
+        for login, author in (("brother@example.org", "marco"), ("owner@example.org", "robino")):
+            client = self.serve_client(login)
+            topic = f"Fiktívny podnet {author}"
+            self.assertEqual(client.post("/chat/navrh", data={"topic": topic, "text": "Text."}).status_code, 303)
+            saved = [json.loads(p.read_text(encoding="utf-8")) for p in spravy.glob("*.json")]
+            self.assertEqual([m["autor"] for m in saved if m["tema"] == topic], [author])
+
+    def test_chat_feedback_rejects_identity_without_board_author(self):
+        client = self.serve_client("brother@example.org")
+        self.enterContext(patch.dict(os.environ, {"EOS_NASTENKA_AUTORI": "owner@example.org:robino"}))
+        response = client.post("/chat/navrh", data={"topic": "Fiktívny podnet", "text": "Text."})
+        self.assertEqual(response.status_code, 403)
+        self.assertNotIn("Fiktívny podnet", client.get("/stav").text)
+
+    def test_chat_replaces_lock_left_by_crashed_worker(self):
+        client = self.serve_client("owner@example.org")
+        sdk = SimpleNamespace(Anthropic=MagicMock(), APIError=RuntimeError)
+        messages = sdk.Anthropic.return_value.__enter__.return_value.messages
+        messages.create.return_value = SimpleNamespace(content=[SimpleNamespace(type="text", text="Fiktívna odpoveď")])
+        folder = self.intake / "_eos" / "chat" / hashlib.sha256(b"owner@example.org").hexdigest()
+        lock = folder / ".request"
+        lock.mkdir(parents=True)
+        with patch.dict(sys.modules, {"anthropic": sdk}):
+            self.assertEqual(client.post("/chat", data={"prompt": "Ahoj"}).status_code, 409)
+            old = time.time() - 3600
+            os.utime(lock, (old, old))
+            self.assertEqual(client.post("/chat", data={"prompt": "Ahoj"}).status_code, 303)
+        self.assertFalse(lock.exists())
 
     def test_personal_gmail_connect_and_disconnect_leave_other_identity_unchanged(self):
         client = self.serve_client("owner@example.org")

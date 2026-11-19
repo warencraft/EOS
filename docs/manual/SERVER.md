@@ -243,6 +243,7 @@ Do existujúceho environment súboru služby alebo systemd drop-in doplň:
 EOS_SERVE_ORIGIN=https://vps.example-tailnet.ts.net
 EOS_MAIL_SENDERS=majitel@example.org,brat@example.org
 EOS_CHAT_USERS=majitel@example.org,brat@example.org
+EOS_NASTENKA_AUTORI=majitel@example.org:robino,brat@example.org:marco
 EOS_CLAUDE_MODEL=MODEL_Z_CLAUDE_CONSOLE
 ```
 
@@ -283,8 +284,9 @@ na oboch povolených účtoch. História sa ukladá do `intake/_eos/chat/`.
 Ak služba počas odoslania spadne, v `intake/_eos/prevadzka/mail-attempts/` ostane
 záznam pokusu. Pred opakovaním over v Gmaile, či prijal správu s daným Message-ID.
 
-Ak bol proces násilne ukončený počas odpovede, po zastavení služby môže správca
-odstrániť prázdny adresár `.request` v priečinku príslušného používateľa chatu.
+Ak bol proces násilne ukončený počas odpovede, ostane v priečinku používateľa chatu
+zámok `.request`. EOS ho po 5 minútach považuje za opustený a pri ďalšej správe ho nahradí.
+Ručne ho mazať netreba.
 
 ### Pracovný chat a osobný Gmail
 
@@ -292,6 +294,8 @@ Claude je vpravo v celom EOS. Na mobile otvára panel tlačidlo **Claude**.
 Použi rovnaký Tailscale účet na mobile aj na počítači, aby mal EOS prístup k tým
 istým uloženým rozhovorom. Návrh z panelu ide do **Stav → Pre Robina** až po
 odoslaní formulára. Text rozhovoru sa na nástenku automaticky neprikladá.
+Autor návrhu sa určí podľa `EOS_NASTENKA_AUTORI` (Tailscale login → `marco` alebo `robino`).
+Účet, ktorý v zozname nie je, návrh neodošle a dostane chybu 403.
 
 Na osobné schránky nastav `EOS_GMAIL_USERS` na povolené Tailscale účty. Každý si
 potom v **Ponuky → Gmail** pripojí svoju schránku. Zdieľaná konfigurácia sa v tomto
