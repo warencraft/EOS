@@ -1,0 +1,20 @@
+{
+  "formatVersion": "0.1.0",
+  "id": "20261119T144536Z-agent-claude-v-paneli-smie-vidiet-ponuky-a",
+  "cas": "2026-11-19T14:45:36Z",
+  "autor": "agent",
+  "pre": "marco",
+  "typ": "rozhodnutie",
+  "stav": "otvorene",
+  "tema": "Claude v paneli: smie vidieť ponuky a zákazky?",
+  "text": "Claude v paneli teraz číta iba pravidlá EOS, dodávateľov, sklad, knowledge base a nástenku. Ponuky, objednávky, zákazky, kalkulácie, Gmail a v knowledge base kategórie „Referenčné zákazky“ a „Zákazníci“ odmieta.\nMožnosti:\nA) Nechať tak, Claude údaje zákazníkov nevidí.\nB) Povoliť ponuky a objednávky bez mien a kontaktov zákazníkov.\nC) Povoliť všetko vrátane zákaziek, ktoré majú v manifeste aiProcessingAllowed: true.\nSúvisí s rozhodnutiami D1–D3 v pláne chatu.",
+  "zavaznost": "poznamka",
+  "vetva": "feature/chat-nastroje",
+  "commit": null,
+  "subory": [
+    "adr/ADR-0027_Read_only_EOS_tools_for_Claude_chat.md"
+  ],
+  "odpovedNa": null,
+  "vyriesil": null,
+  "vyriesene": null
+}

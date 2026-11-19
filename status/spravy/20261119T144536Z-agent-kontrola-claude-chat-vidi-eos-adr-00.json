@@ -1,0 +1,23 @@
+{
+  "formatVersion": "0.1.0",
+  "id": "20261119T144536Z-agent-kontrola-claude-chat-vidi-eos-adr-00",
+  "cas": "2026-11-19T14:45:36Z",
+  "autor": "agent",
+  "pre": "robino",
+  "typ": "kontrola",
+  "stav": "otvorene",
+  "tema": "Kontrola: Claude chat vidí EOS (ADR-0027)",
+  "text": "Čo sa mení: panel Claude dostal tri nástroje iba na čítanie (hľadanie a čítanie v repozitári, záznamy dodávateľov, skladu, KB a nástenky) cez bránu scripts/ai/brana.py. Najviac 8 krokov s nástrojmi, potom odpoveď bez nástrojov.\nNa čo sa pozrieť:\n1. Zoznam povolených priečinkov a súborov v bráne (napr. či data/ a calculators/ smú ísť do API).\n2. Vetva stojí na neprijatej feature/eos-chat-context; merge v poradí.\n3. Overiť na serveri so skutočným API (cena krokov, správanie nástrojov).\nTesty: 360 passed, 0 failed, 0 skipped. 7 skúšok citlivosti brány a cyklu.",
+  "zavaznost": "dolezite",
+  "vetva": "feature/chat-nastroje",
+  "commit": null,
+  "subory": [
+    "scripts/ai/brana.py",
+    "scripts/ai/nastroje.py",
+    "scripts/ai/chat_client.py",
+    "adr/ADR-0027_Read_only_EOS_tools_for_Claude_chat.md"
+  ],
+  "odpovedNa": null,
+  "vyriesil": null,
+  "vyriesene": null
+}

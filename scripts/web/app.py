@@ -26,6 +26,7 @@ from scripts.calc import import_sablona as I
 from scripts.calc import kalkulacia as K
 from scripts import gmail as G
 from scripts import prevadzka as P
+from scripts.ai.nastroje import Nastroje
 from scripts.status import spravy as S
 from scripts.export_viewer import AREAS, TRANSLATIONS, load_schemas, load_translations
 
@@ -158,7 +159,8 @@ def create_app(root: Path = ROOT, intake: Path | None = None, status: Path | Non
             G.save_config(address, password, path)
         else:
             G.delete_config(path)
-    supplier_proposal = claude_chat.register(app, sablony, sklad.intake / "_eos" / "chat", nastenka)
+    eos_nastroje = Nastroje(root, P.Prevadzka(sklad.intake), nastenka)
+    supplier_proposal = claude_chat.register(app, sablony, sklad.intake / "_eos" / "chat", nastenka, eos_nastroje)
     prevadzka_ui.register(app, sablony, P.Prevadzka(sklad.intake), gmail_provider, gmail_saver, supplier_proposal)
 
     def zakazka_alebo_404(job_ref: str) -> dict:
