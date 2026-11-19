@@ -28,6 +28,8 @@
       <article class="chat-message chat-message--{{ message.role }}">
         {% if message.role == "assistant" %}<strong class="chat-byline"><span aria-hidden="true">✦</span> Claude</strong>{% endif %}
         <div class="chat-text">{{ message.content }}</div>
+        {% set used = (current.sources or {}).get(loop.index0|string) %}
+        {% if used %}<p class="chat-sources small muted">Claude čítal: {{ used|join(", ") }}</p>{% endif %}
         {% set proposal = (current.suppliers or {}).get(loop.index0|string) %}
         {% if proposal %}
         <a class="btn" target="_top" href="/dodavatelia/novy?chat={{ session }}&amp;turn={{ loop.index0 }}">Skontrolovať dodávateľa · {{ proposal.name }}</a>

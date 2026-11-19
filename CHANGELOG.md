@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Claude chat vidí EOS (ADR-0027 Accepted) - 2026-11-19
+
+Panel Claude má tri nástroje iba na čítanie: hľadanie a čítanie v repozitári EOS (ADR, schémy, dokumenty, kód) a čítanie dodávateľov, skladu, knowledge base a nástenky. Všetko ide cez bránu `scripts/ai/brana.py`; `intake/`, skryté súbory, ponuky, objednávky, zákazky, kalkulácie, Gmail a kategórie KB s údajmi zákaziek sú odmietnuté do rozhodnutí Marca D1–D3. Nový systémový prompt `scripts/ai/system_prompt.md`, najviac 8 krokov s nástrojmi na odpoveď, pod odpoveďou zoznam prečítaných zdrojov. Bez novej závislosti. Nové `tests/test_chat_nastroje.py` (9 metód), 7 skúšok citlivosti. 351 → 360 úspešných metód.
+
 ## Výber kontextu a streamovanie v paneli Claude - 2026-11-18
 
 Panel Claude zobrazuje text priebežne a umožňuje prerušiť odpoveď. Do API posiela novú správu a najviac päť posledných výmen podľa rozpočtu. Celý uložený rozhovor ostáva dostupný v EOS. Pribudli štyri regresné testy.

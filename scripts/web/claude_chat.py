@@ -31,7 +31,8 @@ def save(path: Path, record: dict):
             Path(file.name).unlink(missing_ok=True)
 
 
-def register(app, templates, root: Path, board):
+def register(app, templates, root: Path, board, tools=None):
+    """`tools`: scripts.ai.nastroje.Nastroje (čítanie EOS cez bránu, ADR-0027) alebo None."""
     templates.env.globals["eos_chat_available"] = lambda request: bool(
         authorized_user(request, "EOS_CHAT_USERS")
     )
@@ -112,13 +113,15 @@ def register(app, templates, root: Path, board):
             )
             model_messages = [{"role": message.role, "content": message.content}
                               for message in context.messages]
-            def finish(answer, supplier):
+            def finish(answer, supplier, sources=()):
                 record["messages"] = history + [
                     {"role": "user", "content": prompt},
                     {"role": "assistant", "content": answer},
                 ]
                 if supplier:
                     record.setdefault("suppliers", {})[str(len(history) + 1)] = supplier
+                if sources:
+                    record.setdefault("sources", {})[str(len(history) + 1)] = list(sources)[:20]
                 save(path, record)
                 return f"/chat?session={path.stem}"
 
@@ -130,12 +133,12 @@ def register(app, templates, root: Path, board):
     def chat_send(request: Request, session: str = Form(""), prompt: str = Form(...)):
         with prepare(request, session, prompt) as (key, model, messages, finish):
             try:
-                answer, supplier = chat_client.reply(key, model, messages)
+                answer, supplier, sources = chat_client.reply(key, model, messages, tools)
             except ImportError:
                 raise HTTPException(503, "Chýba voliteľná závislosť EOS pre Claude API.") from None
             except chat_client.ChatError:
                 return RedirectResponse("/chat?error=api" + (f"&session={UUID(session).hex}" if session else ""), 303)
-            return RedirectResponse(finish(answer, supplier), 303)
+            return RedirectResponse(finish(answer, supplier, sources), 303)
 
     @app.post("/chat/stream")
     async def chat_stream(request: Request, session: str = Form(""), prompt: str = Form(...)):
@@ -147,7 +150,7 @@ def register(app, templates, root: Path, board):
         async def generate():
             try:
                 with prepare(request, session, prompt) as (key, model, messages, finish):
-                    async with aclosing(chat_client.stream_reply(key, model, messages)) as stream:
+                    async with aclosing(chat_client.stream_reply(key, model, messages, tools)) as stream:
                         async for update in stream:
                             if isinstance(update, str):
                                 yield event("delta", update)
