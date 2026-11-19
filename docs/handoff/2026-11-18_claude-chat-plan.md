@@ -6,6 +6,8 @@
 **Súvisí:** ADR-0018 (etapa E), ADR-0019 (intake a AI), ADR-0021/0022 (UI v0), EOS-001 §8 (výstupy AI sú návrh)  
 **Súbežná práca:** iná session robí vyhľadávanie (`scripts/search/`). Tento plán ho iba volá cez dohodnuté rozhranie (§6) a jeho súbory nemení.
 
+> **Stav 2026-11-19:** časť plánu je nahradená. Chat s firemným kľúčom je v `main` podľa [ADR-0026](../../adr/ADR-0026_Confirm_quote_email_and_keep_Claude_sessions_in_EOS.md) (Draft): identitu nedáva Google prihlásenie (§4), ale prihlásenie do Tailscale (hlavička `Tailscale-User-Login` od Tailscale Serve, zoznam `EOS_CHAT_USERS`). Claude zatiaľ nečíta zákazky ani podklady, takže brána AI (§5.1) a nástroje (§5.2) ešte nie sú potrebné. Platí ďalej: §5.1–§5.6 a §6 pre chvíľu, keď má Claude dostať prístup k dátam EOS, a otázky D1–D4. Nasadenie: `docs/manual/SERVER.md`.
+
 > **Pre AI agenta:** tento súbor je úplné zadanie. Pred implementáciou si prečítaj `CLAUDE.md`, `TECH_STACK.md`, `adr/ADR-0019*`, `adr/ADR-0021*` a `scripts/web/app.py`.
 
 ---
