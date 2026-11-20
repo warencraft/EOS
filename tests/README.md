@@ -5,6 +5,7 @@
 | Súbor | Overenie |
 | --- | --- |
 | test_kalkulacia.py | Pracovná kalkulácia (ADR-0021): výpočet, sadzby, porovnanie s ponukou, história zmien, formát; kalkulácia bez Excelu (prázdna, pridanie a odobratie riadkov, množstvo, kópia podľa vzoru); import fiktívnej šablóny .xlsx a jej upozornenia. Import sa bez `openpyxl` preskočí. |
+| test_claude_skills.py | Kópia `.claude/skills/` sa zhoduje s `.agents/skills/` (aj pri koncoch riadkov z Windows), názov skillu sa zhoduje s priečinkom, synchronizácia odstráni neplatné súbory. |
 | test_chat_context.py | Výber starších správ, súhrnov a poznatkov podľa rozpočtu, revízie a oprávnení. Stream a izoláciu uložených konverzácií overuje `test_prevadzka.py`. |
 | test_web_ui.py | Lokálne UI nad fiktívnou zákazkou v dočasnom intake/: zoznam, detail, úprava, neplatná hodnota, sadzba, import mimo manifestu, model; nová zákazka s nahratím a náhľadom (vrátane ciest mimo manifestu), kalkulácia podľa vzoru a úpravy riadkov, odmietnutie POST z cudzej stránky, nástenka Stav (rozdelenie, odpoveď, vyriešenie, odmietnutie citlivého textu). Bez `.[ui]` sa preskočí. |
 | test_status.py | Stavová nástenka (ADR-0022) v dočasnom priečinku: formát a id správy, neplatné hodnoty, blokovanie názvov zákazníkov z intake/, kontrola upravených súborov, odpovede, vyriešenie, stĺpce, príkazový riadok; platnosť správ v repozitári. |
