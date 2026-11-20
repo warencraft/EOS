@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Skilly na rozhovor a odovzdanie (agenti) - 2026-11-20
+
+Štyri nové skilly v `.agents/skills/`, aby s agentmi vedel pracovať aj nevývojár. `eos-vypytaj-sa` vedie rozhovor v kolách s návrhom odpovede, kým nie je jasné, čo sa má urobiť. Doménu nechá Marcovi a techniku Robinovi a pred potvrdením nič neimplementuje. `eos-dotaznik` urobí z otvoreného rozhodnutia dotazník v `docs/handoff/*_otazky.md` a dá o ňom vedieť na nástenke. `eos-vysvetli-inak` povie nepochopenú odpoveď kratšie a bez žargónu. `eos-odovzdanie` zapíše rozbehnutú prácu do `docs/handoff/` bez citlivých údajov. Sú upravené zo skillov `grilling`, `to-questionnaire`, `wait-what` a `handoff` z mattpocock/skills (MIT, `.agents/skills/THIRD_PARTY_NOTICES.md`). Ostatné skilly z toho repozitára sa nepreberajú. Zápis v `CLAUDE.md` a `AGENTS.md`. Kód a závislosti bez zmien.
+
 ## Oprava chatu: autor návrhu a zaseknutý zámok - 2026-11-19
 
 Návrh z panelu Claude sa na nástenku zapíše s autorom podľa Tailscale identity. Priradenie je v `EOS_NASTENKA_AUTORI` (`login:marco`, `login:robino`). Účet bez priradenia dostane 403. Predtým sa návrh vždy zapísal ako od Marca. Zámok `.request`, ktorý ostane po spadnutom procese, EOS po 5 minútach nahradí, takže používateľ už nie je zablokovaný. `scripts/web/claude_chat.py`, tri nové testy v `tests/test_prevadzka.py` (zlyhajú so starým kódom). Vetva vychádza z `feature/eos-send-and-chat`, preto prináša do `main` aj streamovanie a výber kontextu z PR #18. Bez novej závislosti.

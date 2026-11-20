@@ -41,5 +41,5 @@ Pred dokončením práce over:
 ## Technologický rámec a postupy
 
 - Drž sa `TECH_STACK.md` a ADR-0018. Technológiu mimo aktuálnej etapy nepoužívaj. Doménové rozhodnutia nerob sám.
-- Postupy sú v `.agents/skills/*/SKILL.md`: pred zmenou schémy `eos-schema-change`, pred písaním testov `eos-write-tests`, po zmene `eos-run-tests`, pred ukončením `eos-governance-check`, na spustenie alebo aktualizáciu UI `eos-spustit-ui`, pred každým commitom `eos-pre-commit-review` (nálezy zapíše na nástenku `status/spravy/` pre Marca a Robina), na uloženie a pull request `eos-git-publish`.
+- Postupy sú v `.agents/skills/*/SKILL.md`: pred zmenou schémy `eos-schema-change`, pred písaním testov `eos-write-tests`, po zmene `eos-run-tests`, pred ukončením `eos-governance-check`, na spustenie alebo aktualizáciu UI `eos-spustit-ui`, pred každým commitom `eos-pre-commit-review` (nálezy zapíše na nástenku `status/spravy/` pre Marca a Robina), na uloženie a pull request `eos-git-publish`. Pri nejasnom zadaní sa vypytuj (`eos-vypytaj-sa`), otázky pre iného človeka daj do dotazníka (`eos-dotaznik`), nepochopené vysvetlenie povedz jednoduchšie (`eos-vysvetli-inak`) a nedokončenú prácu odovzdaj (`eos-odovzdanie`).
 - Kontext zmien z 2026-11-04: `docs/handoff/2026-11-04_ai-guardrails.md`.
