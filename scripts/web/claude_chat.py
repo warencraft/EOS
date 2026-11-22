@@ -4,17 +4,58 @@ import hashlib
 import json
 import os
 import tempfile
+import time
+from contextlib import aclosing, contextmanager
 from pathlib import Path
 from uuid import UUID, uuid4
 
 from fastapi import Form, HTTPException, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, StreamingResponse
 
 from scripts.ai import chat_client
+from scripts.ai.context import Turn, prepare_context
 
 from .tailnet_identity import authorized_user
 
 MAX_TURNS = 60
+# Allow an 8 000-character prompt even if each Unicode character takes four bytes.
+MAX_CONTEXT_BYTES = 32_000
+# A request lock older than this is left over from a crashed worker. The Claude client
+# gives up after 40 s, so a live request never holds the lock this long.
+STALE_LOCK_SECONDS = 300
+
+
+def board_author(identity: str) -> str | None:
+    """Map a Tailscale login to a board author from EOS_NASTENKA_AUTORI (login:marco,...)."""
+    for pair in os.getenv("EOS_NASTENKA_AUTORI", "").split(","):
+        login, _, author = pair.partition(":")
+        if login.strip().casefold() == identity and author.strip() in {"marco", "robino"}:
+            return author.strip()
+    return None
+
+
+def acquire(lock: Path) -> None:
+    """Take the per-user request lock, replacing one left over from a crashed worker."""
+    try:
+        lock.mkdir(mode=0o700)
+        return
+    except FileExistsError:
+        pass
+    try:
+        stale = time.time() - lock.stat().st_mtime > STALE_LOCK_SECONDS
+    except FileNotFoundError:
+        stale = True
+    if stale:
+        try:
+            lock.rmdir()
+        except FileNotFoundError:
+            pass
+        try:
+            lock.mkdir(mode=0o700)
+            return
+        except FileExistsError:
+            pass
+    raise HTTPException(409, "Predošlá správa sa ešte spracúva.")
 
 
 def save(path: Path, record: dict):
@@ -64,15 +105,18 @@ def register(app, templates, root: Path, board):
         folder = user_folder(request)
         if session:
             load(folder, session)
+        author = board_author(authorized_user(request, "EOS_CHAT_USERS"))
+        if author is None:
+            raise HTTPException(403, "Tvoj účet nie je priradený k autorovi nástenky (EOS_NASTENKA_AUTORI).")
         try:
-            board.pridaj(autor="marco", pre="robino", typ="feedback",
+            board.pridaj(autor=author, pre="robino", typ="feedback",
                          tema=topic.strip(), text=text.strip())
         except ValueError as exc:
             raise HTTPException(422, str(exc)) from None
         return RedirectResponse("/chat?" + (f"session={UUID(session).hex}&" if session else "") + "submitted=1", 303)
 
-    @app.post("/chat")
-    def chat_send(request: Request, session: str = Form(""), prompt: str = Form(...)):
+    @contextmanager
+    def prepare(request, session, prompt):
         folder = user_folder(request)
         key, model = chat_client.settings()
         if not key or not model:
@@ -80,34 +124,80 @@ def register(app, templates, root: Path, board):
         prompt = prompt.strip()
         if not 1 <= len(prompt) <= 8000:
             raise HTTPException(422, "Napíš správu s najviac 8 000 znakmi.")
+        try:
+            prompt.encode("utf-8")
+        except UnicodeEncodeError:
+            raise HTTPException(422, "Správa obsahuje neplatný text.") from None
         folder.mkdir(parents=True, mode=0o700, exist_ok=True)
         path, record = load(folder, session) if session else (
             folder / f"{uuid4().hex}.json", {"title": prompt[:65], "messages": []}
         )
         lock = folder / ".request"
-        try:
-            lock.mkdir(mode=0o700)
-        except FileExistsError:
-            raise HTTPException(409, "Predošlá správa sa ešte spracúva.") from None
+        acquire(lock)
         try:
             if session:
                 path, record = load(folder, session)
             if len(record["messages"]) >= MAX_TURNS:
                 raise HTTPException(422, "Tento rozhovor dosiahol limit. Začni nový.")
-            messages = record["messages"] + [{"role": "user", "content": prompt}]
+            history = record["messages"]
+            turns = [
+                Turn(index // 2 + 1, history[index]["content"], history[index + 1]["content"])
+                for index in range(0, len(history), 2)
+            ]
+            context = prepare_context(
+                prompt, turns, can_use_source=lambda _source: False, max_bytes=MAX_CONTEXT_BYTES,
+            )
+            model_messages = [{"role": message.role, "content": message.content}
+                              for message in context.messages]
+            def finish(answer, supplier):
+                record["messages"] = history + [
+                    {"role": "user", "content": prompt},
+                    {"role": "assistant", "content": answer},
+                ]
+                if supplier:
+                    record.setdefault("suppliers", {})[str(len(history) + 1)] = supplier
+                save(path, record)
+                return f"/chat?session={path.stem}"
+
+            yield key, model, model_messages, finish
+        finally:
+            lock.rmdir()
+
+    @app.post("/chat")
+    def chat_send(request: Request, session: str = Form(""), prompt: str = Form(...)):
+        with prepare(request, session, prompt) as (key, model, messages, finish):
             try:
                 answer, supplier = chat_client.reply(key, model, messages)
             except ImportError:
                 raise HTTPException(503, "Chýba voliteľná závislosť EOS pre Claude API.") from None
             except chat_client.ChatError:
-                return RedirectResponse("/chat?error=api" + (f"&session={path.stem}" if session else ""), 303)
-            record["messages"] = messages + [{"role": "assistant", "content": answer}]
-            if supplier:
-                record.setdefault("suppliers", {})[str(len(messages))] = supplier
-            save(path, record)
-        finally:
-            lock.rmdir()
-        return RedirectResponse(f"/chat?session={path.stem}", 303)
+                return RedirectResponse("/chat?error=api" + (f"&session={UUID(session).hex}" if session else ""), 303)
+            return RedirectResponse(finish(answer, supplier), 303)
+
+    @app.post("/chat/stream")
+    async def chat_stream(request: Request, session: str = Form(""), prompt: str = Form(...)):
+        user_folder(request)
+
+        def event(kind, text):
+            return json.dumps({"type": kind, "text": text}, ensure_ascii=False) + "\n"
+
+        async def generate():
+            try:
+                with prepare(request, session, prompt) as (key, model, messages, finish):
+                    async with aclosing(chat_client.stream_reply(key, model, messages)) as stream:
+                        async for update in stream:
+                            if isinstance(update, str):
+                                yield event("delta", update)
+                            else:
+                                location = finish(*update)
+                    yield event("done", location)
+            except HTTPException as exc:
+                yield event("error", exc.detail)
+            except (ImportError, OSError, chat_client.ChatError):
+                yield event("error", "Claude nevrátil odpoveď. Správu môžeš skúsiť znova.")
+
+        return StreamingResponse(generate(), media_type="application/x-ndjson",
+                                 headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})
 
     def supplier_proposal(request: Request, session: str, turn: str) -> dict:
         _, record = load(user_folder(request), session)

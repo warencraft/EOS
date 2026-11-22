@@ -54,6 +54,12 @@ Skilly sú v `.agents/skills/<názov>/SKILL.md` (spoločný priečinok pre Codex
 | `eos-spustit-ui` | „spusti EOS“, „otvor UI“, „aktualizuj aplikáciu“; stiahne verziu, pripraví prostredie a spustí UI |
 | `eos-pre-commit-review` | pred každým commitom a pushom; nálezy zapíše na nástenku pre Marca (doména) a Robina (technika) |
 | `eos-git-publish` | „ulož to“, „pushni“, „sprav PR“; všetko urob a vysvetli za používateľa |
+| `eos-vypytaj-sa` | nový nápad, funkcia, pravidlo z praxe alebo plán, ktorý ešte nie je jasný; „vypytuj sa ma“; pred implementáciou |
+| `eos-dotaznik` | rozhodnutie musí urobiť niekto iný (doména → Marco, technika → Robino); „sprav otázky pre Marca“ |
+| `eos-vysvetli-inak` | „nerozumiem“, „povedz to jednoduchšie“, alebo je vidieť, že vysvetlenie nedošlo |
+| `eos-odovzdanie` | koniec dlhšej session alebo nedokončená práca; „odovzdaj to“, „pokračujeme zajtra“ |
+
+Štyri posledné skilly sú upravené z [mattpocock/skills](https://github.com/mattpocock/skills) (MIT, `.agents/skills/THIRD_PARTY_NOTICES.md`). Ostatné skilly z toho repozitára sa v EOS nepoužívajú, lebo by sa zrazili s pravidlami a skillmi EOS (testy, review, PR, ADR).
 
 ## Príkazy
 

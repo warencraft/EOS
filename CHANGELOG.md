@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## Skilly na rozhovor a odovzdanie (agenti) - 2026-11-20
+
+Štyri nové skilly v `.agents/skills/`, aby s agentmi vedel pracovať aj nevývojár. `eos-vypytaj-sa` vedie rozhovor v kolách s návrhom odpovede, kým nie je jasné, čo sa má urobiť. Doménu nechá Marcovi a techniku Robinovi a pred potvrdením nič neimplementuje. `eos-dotaznik` urobí z otvoreného rozhodnutia dotazník v `docs/handoff/*_otazky.md` a dá o ňom vedieť na nástenke. `eos-vysvetli-inak` povie nepochopenú odpoveď kratšie a bez žargónu. `eos-odovzdanie` zapíše rozbehnutú prácu do `docs/handoff/` bez citlivých údajov. Sú upravené zo skillov `grilling`, `to-questionnaire`, `wait-what` a `handoff` z mattpocock/skills (MIT, `.agents/skills/THIRD_PARTY_NOTICES.md`). Ostatné skilly z toho repozitára sa nepreberajú. Zápis v `CLAUDE.md` a `AGENTS.md`. Kód a závislosti bez zmien.
+
+## Oprava chatu: autor návrhu a zaseknutý zámok - 2026-11-19
+
+Návrh z panelu Claude sa na nástenku zapíše s autorom podľa Tailscale identity. Priradenie je v `EOS_NASTENKA_AUTORI` (`login:marco`, `login:robino`). Účet bez priradenia dostane 403. Predtým sa návrh vždy zapísal ako od Marca. Zámok `.request`, ktorý ostane po spadnutom procese, EOS po 5 minútach nahradí, takže používateľ už nie je zablokovaný. `scripts/web/claude_chat.py`, tri nové testy v `tests/test_prevadzka.py` (zlyhajú so starým kódom). Vetva vychádza z `feature/eos-send-and-chat`, preto prináša do `main` aj streamovanie a výber kontextu z PR #18. Bez novej závislosti.
+
+## Spevnenie servera v návode (docs) - 2026-11-19
+
+`docs/manual/SERVER.md`: upozornenie, že väčšina stránok nemá vlastné prihlásenie, a z toho vyplývajúce pravidlá. Každý má vlastný Tailscale účet namiesto jedného spoločného, inak chat a odosielanie nerozlíšia osoby. Nový krok 1a: 2FA u poskytovateľa, automatické aktualizácie, SSH iba kľúčom, `ufw` bez verejných portov a SSH iba cez `tailscale0`, skúška `nmap`. Služba `eos-ui` beží v sandboxe systemd so zápisom iba do `intake/`, `status/` a `~/.config/eos`. Pravidlá prístupu v Tailnete (brat iba `tcp:443`, `tag:eos`), Device approval a zákaz Funnel. Claude API kľúč je zašifrovaný cez `systemd-creds` (`LoadCredentialEncrypted`) a má samostatný workspace s mesačným limitom. Záloha je šifrovaná cez `restic` mimo poskytovateľa a nahrádza nešifrovaný `tar` na tom istom serveri. K tomu skúšobná obnova a upozornenie na heslo aplikácie Gmailu. Plán a bezpečnostný dokument v `docs/handoff/` nesú poznámku, čo nahradilo ADR-0026. Iba dokumentácia, kód a závislosti bez zmien.
+## Výber kontextu a streamovanie v paneli Claude - 2026-11-18
+
+Panel Claude zobrazuje text priebežne a umožňuje prerušiť odpoveď. Do API posiela novú správu a najviac päť posledných výmen podľa rozpočtu. Celý uložený rozhovor ostáva dostupný v EOS. Pribudli štyri regresné testy.
+
 ## Odoslanie ponúk a Claude rozhovory v EOS (ADR-0026 Draft) - 2026-11-18
 
 Potvrdené SMTP odoslanie so zobrazením adresáta, predmetu a tela správy. Panel Claude s rozhovormi oddelenými podľa Tailscale identity, firemným API a prenosom návrhu do upraviteľného textu e-mailu. Nasadenie popisuje [návod na server](docs/manual/SERVER.md). Panel si pri navigácii v aplikácii zachová stav, dá sa zbaliť a znova otvoriť šípkou a prijíma návrhy na nástenku pre Robina. Osobné schránky sa zapínajú podľa identity. Claude môže pripraviť predvyplnený formulár nového dodávateľa. Nová zákazka sa dá založiť z vybranej objednávky Gmailu s predvyplnením údajov a uložením zdrojového textu. Pribudlo šesť testov v `tests/test_prevadzka.py` s náhradou IMAP, SMTP a Claude API.

@@ -1,0 +1,21 @@
+{
+  "formatVersion": "0.1.0",
+  "id": "20261119T144549Z-agent-kontrola-spevnenie-servera-v-server",
+  "cas": "2026-11-19T14:45:49Z",
+  "autor": "agent",
+  "pre": "robino",
+  "typ": "kontrola",
+  "stav": "otvorene",
+  "tema": "Kontrola: spevnenie servera v SERVER.md a stav nasadenia chatu",
+  "text": "Čo sa mení: iba dokumentácia. SERVER.md má krok 1a (2FA u poskytovateľa, aktualizácie, SSH iba kľúčom a cez Tailscale, ufw bez verejných portov), sandbox služby eos-ui, pravidlá prístupu v Tailnete, kľúč API cez systemd-creds a šifrovanú zálohu restic. Krok 1 už nepoužíva jeden spoločný Tailscale účet.\nNa čo sa pozrieť:\n1. PR #18 (streamovanie a výber kontextu) sa zlúčil do feature/eos-send-and-chat až po zlúčení #17, takže v main nie je. Treba nový PR feature/eos-send-and-chat → main.\n2. Na serveri over po zmene služby, že sandbox nič nezablokoval (journalctl -u eos-ui) a že systemd-analyze security je OK.\n3. Ak dnes s bratom používate jeden Tailscale účet, chat a odosielanie vás nerozlíšia. Pozvi ho ako samostatného používateľa a doplň jeho login do EOS_CHAT_USERS.\n4. EOS nemá limit € na používateľa. Nastav mesačný limit vo workspace v Claude Console.\n5. claude_chat.py, submit_feedback: návrh z chatu sa na nástenku vždy zapíše s autorom marco, aj keď ho pošle Robino.\n6. Po páde služby počas odpovede ostane zámok .request a používateľ nemôže písať, kým ho správca nezmaže.\n7. ADR-0026 je Draft, ale kód je v main. Rozhodni Accepted alebo úpravy.\nTesty: 347 passed, 0 failed, 0 skipped (Python 3.13, jsonschema 4.26.0).",
+  "zavaznost": "dolezite",
+  "vetva": "docs/server-hardening",
+  "commit": null,
+  "subory": [
+    "docs/manual/SERVER.md",
+    "scripts/web/claude_chat.py"
+  ],
+  "odpovedNa": null,
+  "vyriesil": null,
+  "vyriesene": null
+}

@@ -3,6 +3,7 @@
 **Pre koho:** Robino (Software Architect)  
 **Stav:** Návrh, doplnok k `docs/handoff/2026-11-18_claude-chat-plan.md`  
 **Dátum:** 2026-11-18, revízia 1: server je vzdialený (VPS, platí Robino), nie Mac  
+**Revízia 2 (2026-11-19):** postup na nasadenie je v [`docs/manual/SERVER.md`](../manual/SERVER.md) (cesty `/home/eos/eos`, služba `eos-ui`). Tento dokument vysvetľuje dôvody. Identitu dáva Tailscale (ADR-0026), nie Google prihlásenie, takže §5 platí až pri prípadnom prechode na Google OIDC. Šifrovaný zväzok LUKS (§4.3) zatiaľ nie je v návode a je to odporúčanie, nie povinnosť.  
 
 ---
 

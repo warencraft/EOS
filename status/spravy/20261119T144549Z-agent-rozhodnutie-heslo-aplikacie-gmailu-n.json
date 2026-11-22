@@ -1,0 +1,20 @@
+{
+  "formatVersion": "0.1.0",
+  "id": "20261119T144549Z-agent-rozhodnutie-heslo-aplikacie-gmailu-n",
+  "cas": "2026-11-19T14:45:49Z",
+  "autor": "agent",
+  "pre": "robino",
+  "typ": "rozhodnutie",
+  "stav": "otvorene",
+  "tema": "Rozhodnutie: heslo aplikácie Gmailu na serveri",
+  "text": "Heslo aplikácie Gmailu je v ~/.config/eos v čitateľnej podobe (0600). Dáva plný prístup k schránke vrátane odosielania. Je to najcitlivejší údaj na serveri.\nMožnosti:\nA. Nechať tak: chráni ho používateľ eos, sandbox a SSH iba cez Tailscale. Bez práce, riziko pri prevzatí servera.\nB. Ukladať heslo cez systemd-creds ako kľúč API. EOS by ho vedel iba čítať a pripojenie Gmailu by sa robilo príkazom na serveri, nie cez UI. Malá zmena kódu.\nC. Gmail cez OAuth namiesto hesla aplikácie (ADR-0025 to zamietlo kvôli obnove každých 7 dní pri @gmail.com v testovacom režime).\nOdporúčanie agenta: A teraz, B pri najbližšej práci na Gmaile.",
+  "zavaznost": "poznamka",
+  "vetva": "docs/server-hardening",
+  "commit": null,
+  "subory": [
+    "scripts/gmail/__init__.py"
+  ],
+  "odpovedNa": null,
+  "vyriesil": null,
+  "vyriesene": null
+}
