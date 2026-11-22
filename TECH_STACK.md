@@ -21,7 +21,7 @@ Jedno miesto, kde človek aj AI agent zistí, **na čom sa EOS programuje, čo j
 > **Výnimka – UI v0 (ADR-0021):** lokálna aplikácia `scripts/web/` (fastapi, uvicorn, jinja2, HTMX) a import excelovej šablóny `scripts/calc/` (openpyxl, xlrd), všetko ako voliteľné závislosti `.[ui,import]`. Iné technológie etapy D, B ani C výnimka nepovoľuje.
 >
 > **Výnimka – vyhľadanie cien (ADR-0024):** nástroj `scripts/ai/hladanie_cien.py` s voliteľnou závislosťou `.[ai]` (`anthropic`). Iné AI funkcie etapy E výnimka nepovoľuje.
-> **Pracovná vetva ADR-0026:** rovnaká závislosť v `scripts/ai/chat_client.py` pre ručný chat s návrhom dodávateľa bez priameho zápisu a Gmail SMTP cez štandardnú knižnicu. Pred nasadením platí rozhodnutie ADR.
+> **Pracovná vetva ADR-0026:** rovnaká závislosť v `scripts/ai/chat_client.py` pre ručný chat s návrhom dodávateľa bez priameho zápisu a Gmail SMTP cez štandardnú knižnicu. Pred nasadením platí rozhodnutie ADR. ADR-0027 pridáva nástroje iba na čítanie v `scripts/ai/nastroje.py` cez tú istú závislosť.
 
 Etapu mení Software Architect (IT strana) po dohode s Chief Engineering Knowledge Architect. Agent nesmie použiť technológiu z neskoršej etapy ani „na skúšku“.
 

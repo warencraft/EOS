@@ -24,7 +24,7 @@ include = ["scripts*"]
 [tool.setuptools.package-data]
 "scripts.calc" = ["*.json"]
 "scripts.status" = ["*.json"]
-"scripts.ai" = ["*.json"]
+"scripts.ai" = ["*.json", "*.md"]
 "scripts.prevadzka" = ["*.json"]
 "scripts.web" = ["templates/*.html", "static/*"]
 

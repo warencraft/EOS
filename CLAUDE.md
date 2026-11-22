@@ -42,7 +42,7 @@ EOS je interný inžiniersky znalostný systém pre strojársku výrobu a cenov�
 
 ## Skilly
 
-Skilly sú v `.agents/skills/<názov>/SKILL.md` (spoločný priečinok pre Codex aj Claude). Keď úloha zodpovedá riadku nižšie, **najprv si prečítaj príslušný `SKILL.md`** a postupuj podľa neho.
+Skilly sú v `.agents/skills/<názov>/SKILL.md` (spoločný priečinok pre Codex aj Claude). `.claude/skills/` je ich generovaná kópia, lebo Claude Code hľadá skilly iba tam a odkaz (symlink) na Windows nefunguje spoľahlivo. Kópiu neupravuj. Po každej zmene v `.agents/skills/` spusti `python scripts/sync_claude_skills.py`, inak zlyhá `tests/test_claude_skills.py`. Keď úloha zodpovedá riadku nižšie, **najprv si prečítaj príslušný `SKILL.md`** a postupuj podľa neho.
 
 | Skill | Kedy |
 | --- | --- |

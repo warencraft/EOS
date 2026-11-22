@@ -1,8 +1,16 @@
 # CHANGELOG
 
+## Skilly pre Claude Code aj na Windows (agenti) - 2026-11-20
+
+Claude Code hľadá skilly iba v `.claude/skills/`, odkaz na `.agents/skills/` na Windows nefunguje spoľahlivo (rozhodnutie Robina, možnosť C). `scripts/sync_claude_skills.py` (štandardná knižnica) preto skopíruje skilly do `.claude/skills/` a `--check` overí zhodu. `tests/test_claude_skills.py` zlyhá, keď sa kópia rozíde so zdrojom, a toleruje konce riadkov z Windows. Marco tak vidí skilly v Claude Code a môže ich volať lomkou (napr. `/eos-vypytaj-sa`). Zdrojom ostáva `.agents/skills/`. Bez novej závislosti.
+
 ## Skilly na rozhovor a odovzdanie (agenti) - 2026-11-20
 
 Štyri nové skilly v `.agents/skills/`, aby s agentmi vedel pracovať aj nevývojár. `eos-vypytaj-sa` vedie rozhovor v kolách s návrhom odpovede, kým nie je jasné, čo sa má urobiť. Doménu nechá Marcovi a techniku Robinovi a pred potvrdením nič neimplementuje. `eos-dotaznik` urobí z otvoreného rozhodnutia dotazník v `docs/handoff/*_otazky.md` a dá o ňom vedieť na nástenke. `eos-vysvetli-inak` povie nepochopenú odpoveď kratšie a bez žargónu. `eos-odovzdanie` zapíše rozbehnutú prácu do `docs/handoff/` bez citlivých údajov. Sú upravené zo skillov `grilling`, `to-questionnaire`, `wait-what` a `handoff` z mattpocock/skills (MIT, `.agents/skills/THIRD_PARTY_NOTICES.md`). Ostatné skilly z toho repozitára sa nepreberajú. Zápis v `CLAUDE.md` a `AGENTS.md`. Kód a závislosti bez zmien.
+
+## Claude chat vidí EOS (ADR-0027 Accepted) - 2026-11-19
+
+Panel Claude má tri nástroje iba na čítanie: hľadanie a čítanie v repozitári EOS (ADR, schémy, dokumenty, kód) a čítanie dodávateľov, skladu, knowledge base a nástenky. Všetko ide cez bránu `scripts/ai/brana.py`; `intake/`, skryté súbory, ponuky, objednávky, zákazky, kalkulácie, Gmail a kategórie KB s údajmi zákaziek sú odmietnuté do rozhodnutí Marca D1–D3. Nový systémový prompt `scripts/ai/system_prompt.md`, najviac 8 krokov s nástrojmi na odpoveď, pod odpoveďou zoznam prečítaných zdrojov. Bez novej závislosti. Nové `tests/test_chat_nastroje.py` (9 metód), 7 skúšok citlivosti. 351 → 360 úspešných metód.
 
 ## Oprava chatu: autor návrhu a zaseknutý zámok - 2026-11-19
 

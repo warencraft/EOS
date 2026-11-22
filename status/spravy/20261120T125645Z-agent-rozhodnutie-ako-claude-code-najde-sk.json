@@ -5,7 +5,7 @@
   "autor": "agent",
   "pre": "robino",
   "typ": "rozhodnutie",
-  "stav": "otvorene",
+  "stav": "vyriesene",
   "tema": "Rozhodnutie: ako Claude Code nájde skilly z .agents/skills",
   "text": "Claude Code sám načítava skilly iba z .claude/skills/. Skilly EOS sú v .agents/skills/ (spoločné s Codexom) a Claude ich nájde iba cez tabuľku v CLAUDE.md. Funguje to, keď ich agent spustí sám podľa situácie. Ale Marco ich nevie zavolať lomkou (/eos-vypytaj-sa) a v zozname skillov ich neuvidí.\nMožnosti:\nA. Nechať tak: stačí povedať „vypytuj sa ma“ a agent si skill prečíta podľa CLAUDE.md. Bez práce.\nB. Odkaz .claude/skills → ../.agents/skills (symlink). Lomka funguje, jeden zdroj. Na Windows potrebuje git core.symlinks=true, inak vznikne textový súbor.\nC. Kópia v .claude/skills generovaná skriptom a kontrolovaná testom. Funguje všade, ale sú to dve miesta.\nOdporúčanie agenta: B, ak Marco pracuje na macOS; inak C.",
   "zavaznost": "poznamka",
@@ -15,6 +15,6 @@
     "CLAUDE.md"
   ],
   "odpovedNa": null,
-  "vyriesil": null,
-  "vyriesene": null
+  "vyriesil": "robino",
+  "vyriesene": "2026-11-20T13:02:12Z"
 }
